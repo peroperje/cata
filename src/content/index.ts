@@ -29,7 +29,8 @@ function scrapeFormFields(): FormField[] {
                 labelText = parentLabel.textContent?.trim() || '';
             } else {
                 // Fallback to name or placeholder
-                labelText = element.name || element.placeholder || element.id || 'Field';
+                const placeholder = 'placeholder' in element ? (element as HTMLInputElement | HTMLTextAreaElement).placeholder : '';
+                labelText = element.name || placeholder || element.id || 'Field';
             }
         }
 
@@ -38,7 +39,7 @@ function scrapeFormFields(): FormField[] {
             name: element.name || '',
             label: labelText,
             type: element.type,
-            placeholder: (element as HTMLInputElement).placeholder || '',
+            placeholder: 'placeholder' in element ? (element as HTMLInputElement | HTMLTextAreaElement).placeholder : '',
         });
     });
 
