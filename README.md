@@ -1,50 +1,40 @@
-# CATA - AI Job Talent Assistant
+# AI Job Auto-Filler Chrome Extension
 
-A Chrome Extension for automating job applications using Gemini AI.
+A modern Chrome Extension (Manifest V3) built with Vite, TypeScript, and React that uses Gemini AI to automatically fill job application forms using data extracted from your PDF CV.
 
-## Installation Instructions
+## Features
 
-1.  **Download pdf.js**:
-    -   Go to the [pdf.js GitHub releases](https://github.com/mozilla/pdf.js/releases) or the [official website](https://mozilla.github.io/pdf.js/getting_started/#download).
-    -   Download the prebuilt version.
-    -   Extract the files and copy `pdf.js` and `pdf.worker.js` from the `build` folder into the `lib/` directory of this extension.
+- **Local PDF Parsing**: Extracts text from your CV locally in the browser using `pdfjs-dist`.
+- **AI-Powered Mapping**: Uses Google Gemini Pro (via API) to intelligently map CV content to web form fields.
+- **Framework Bypassing**: Uses a specialized "Value Setter" to ensure form values are recognized by React/Angular/Vue-based sites.
+- **Premium UI**: Sleek, modern interface built with React and Lucide icons.
 
-2.  **Add Icons**:
-    -   Place three PNG icons (16x16, 48x48, 128x128) in the `icons/` folder named `icon16.png`, `icon48.png`, and `icon128.png`.
+## Tech Stack
 
-3.  **Load the Extension**:
-    -   Open Chrome and go to `chrome://extensions/`.
-    -   Enable "Developer mode" (top right toggle).
-    -   Click "Load unpacked" and select this project folder.
+- **Core**: Vite + TypeScript + @crxjs/vite-plugin
+- **UI**: React + Lucide React
+- **PDF Logic**: PDF.js
+- **AI**: Google Generative AI (Gemini)
 
-4.  **Set up Gemini API Key**:
-    -   Right-click the extension icon and select "Options".
-    -   Enter your Google Gemini API Key and click "Save".
+## Getting Started
 
-## Folder Structure
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-```
-cata-chrome-extension/
-├── manifest.json
-├── popup.html
-├── popup.js
-├── options.html
-├── options.js
-├── content.js
-├── background.js
-├── lib/
-│   ├── pdf.js (Download separately)
-│   └── pdf.worker.js (Download separately)
-└── icons/
-    ├── icon16.png
-    ├── icon48.png
-    └── icon128.png
-```
+2. **Build the Extension**:
+   ```bash
+   npm run build
+   ```
 
-## How to Use
+3. **Load in Chrome**:
+   - Open Chrome and go to `chrome://extensions/`
+   - Enable "Developer mode"
+   - Click "Load unpacked" and select the `dist` folder.
 
-1.  Navigate to a job application page (e.g., Greenhouse, Lever, LinkedIn Easy Apply).
-2.  Click the extension icon in the toolbar.
-3.  Upload your resume (PDF).
-4.  Click "Start Filling Form".
-5.  Wait for the AI to process and watch the form being filled!
+## Usage
+
+1. **API Key**: Get a Gemini API key from [Google AI Studio](https://aistudio.google.com/) and enter it in the extension popup.
+2. **Upload CV**: Upload your CV in PDF format. The text will be extracted and stored locally.
+3. **Auto-Fill**: Navigate to a job application page and click "Auto-Fill Page".
