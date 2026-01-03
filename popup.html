@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>CATA - AI Job Filler</title>
+    <style>
+        body {
+            width: 350px;
+            padding: 15px;
+            font-family: 'Inter', sans-serif;
+            background: #fdfdfd;
+            color: #333;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #1a73e8;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .upload-section {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .upload-section:hover {
+            border-color: #1a73e8;
+            background: #f1f8ff;
+        }
+
+        .upload-section p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            width: 100%;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #1557b0;
+        }
+
+        #status {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #555;
+            min-height: 1.2em;
+        }
+
+        .cv-info {
+            font-size: 0.8rem;
+            color: #2e7d32;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .loader {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #1a73e8;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h2>CATA</h2>
+    </div>
+
+    <div class="card">
+        <div class="upload-section" id="dropZone">
+            <p id="uploadText">Click or Drag CV (PDF) here</p>
+            <input type="file" id="cvInput" accept=".pdf">
+            <div id="cvInfo" class="cv-info">✓ CV Loaded</div>
+        </div>
+
+        <button id="fillBtn" class="btn" disabled>
+            <div class="loader" id="loader"></div>
+            <span>Start Filling Form</span>
+        </button>
+
+        <div id="status"></div>
+    </div>
+
+    <script src="lib/pdf.js"></script>
+    <script src="popup.js"></script>
+</body>
+
+</html>
