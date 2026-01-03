@@ -13,4 +13,22 @@ export default defineConfig({
             '@': '/src',
         },
     },
+    build: {
+        chunkSizeWarningLimit: 1000,
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('pdfjs-dist')) {
+                        return 'pdfjs';
+                    }
+                    if (id.includes('@google/generative-ai')) {
+                        return 'gemini';
+                    }
+                    if (id.includes('node_modules')) {
+                        return 'vendor';
+                    }
+                },
+            },
+        },
+    },
 })

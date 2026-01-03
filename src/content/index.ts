@@ -7,6 +7,8 @@ function scrapeFormFields(): FormField[] {
     const fields: FormField[] = [];
     const elements = document.querySelectorAll('input, textarea, select');
 
+    console.log(`[CATA] Found ${elements.length} potential form elements.`);
+
     elements.forEach((el) => {
         const element = el as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
@@ -34,15 +36,19 @@ function scrapeFormFields(): FormField[] {
             }
         }
 
-        fields.push({
+        const field = {
             id: element.id || Math.random().toString(36).substr(2, 9),
             name: element.name || '',
             label: labelText,
             type: element.type,
             placeholder: 'placeholder' in element ? (element as HTMLInputElement | HTMLTextAreaElement).placeholder : '',
-        });
+        };
+
+        console.log(`[CATA] Scraped Field:`, field);
+        fields.push(field);
     });
 
+    console.log(`[CATA] Total scraped fields:`, fields);
     return fields;
 }
 
@@ -81,6 +87,7 @@ function setFieldValue(element: HTMLInputElement | HTMLTextAreaElement | HTMLSel
  * Executes the autofill logic.
  */
 function autofill(mappings: { fieldId: string; fieldName: string; value: string }[]) {
+    console.log(`[CATA] Starting autofill with ${mappings.length} mappings.`);
     mappings.forEach((mapping) => {
         let element: HTMLElement | null = null;
 
@@ -93,9 +100,13 @@ function autofill(mappings: { fieldId: string; fieldName: string; value: string 
         }
 
         if (element && (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement)) {
+            console.log(`[CATA] Filling field "${mapping.fieldName || mapping.fieldId}" with value: "${mapping.value}"`);
             setFieldValue(element, mapping.value);
+        } else {
+            console.warn(`[CATA] Could not find element for mapping:`, mapping);
         }
     });
+    console.log(`[CATA] Autofill complete.`);
 }
 
 // Message Listener
