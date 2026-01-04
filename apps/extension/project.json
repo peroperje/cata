@@ -1,0 +1,54 @@
+{
+    "name": "extension",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "apps/extension/src",
+    "projectType": "application",
+    "targets": {
+        "build": {
+            "executor": "@nx/vite:build",
+            "outputs": [
+                "{options.outputPath}"
+            ],
+            "options": {
+                "outputPath": "dist/apps/extension",
+                "configFile": "apps/extension/vite.config.ts"
+            },
+            "configurations": {
+                "production": {
+                    "mode": "production"
+                },
+                "development": {
+                    "mode": "development"
+                }
+            },
+            "defaultConfiguration": "production"
+        },
+        "serve": {
+            "executor": "@nx/vite:dev-server",
+            "options": {
+                "buildTarget": "extension:build",
+                "configFile": "apps/extension/vite.config.ts"
+            },
+            "configurations": {
+                "production": {
+                    "buildTarget": "extension:build:production"
+                },
+                "development": {
+                    "buildTarget": "extension:build:development"
+                }
+            },
+            "defaultConfiguration": "development"
+        },
+        "preview": {
+            "executor": "@nx/vite:preview-server",
+            "options": {
+                "buildTarget": "extension:build",
+                "configFile": "apps/extension/vite.config.ts"
+            }
+        }
+    },
+    "tags": [
+        "type:app",
+        "platform:chrome-extension"
+    ]
+}

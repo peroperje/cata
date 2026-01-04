@@ -1,0 +1,34 @@
+{
+    "name": "api",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "apps/api/app",
+    "projectType": "application",
+    "targets": {
+        "install": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "python3 -m venv venv && source venv/bin/activate && pip install -r apps/api/requirements.txt",
+                "cwd": "."
+            }
+        },
+        "serve": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "source venv/bin/activate && cd apps/api && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+                "cwd": "."
+            }
+        },
+        "test": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "source venv/bin/activate && cd apps/api && pytest",
+                "cwd": "."
+            }
+        }
+    },
+    "tags": [
+        "type:app",
+        "platform:api",
+        "language:python"
+    ]
+}

@@ -1,0 +1,20 @@
+# FastAPI and ASGI Server
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+
+# Database
+sqlalchemy==2.0.36
+psycopg2-binary==2.9.10
+alembic==1.14.0
+
+# Environment and Configuration
+python-dotenv==1.0.1
+pydantic==2.10.2
+pydantic-settings==2.6.1
+
+# CORS and Security
+python-multipart==0.0.18
+
+# Development
+pytest==8.3.4
+httpx==0.28.1
