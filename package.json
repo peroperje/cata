@@ -1,12 +1,16 @@
 {
     "name": "cata-chrome-extension",
     "version": "1.0.0",
-    "description": "AI-powered job application auto-filler",
+    "description": "AI-powered job application auto-filler - Nx Monorepo",
     "type": "module",
     "scripts": {
-        "dev": "vite",
-        "build": "tsc && vite build",
-        "preview": "vite preview"
+        "dev": "nx serve extension",
+        "build": "nx build extension",
+        "preview": "nx preview extension",
+        "api:serve": "nx serve api",
+        "api:install": "nx run api:install",
+        "docker:up": "docker-compose up --build",
+        "docker:down": "docker-compose down"
     },
     "dependencies": {
         "@crxjs/vite-plugin": "^2.0.0-beta.25",
@@ -22,6 +26,12 @@
         "@types/react-dom": "^18.3.1",
         "@vitejs/plugin-react": "^4.3.3",
         "typescript": "^5.6.3",
-        "vite": "^5.4.11"
-    }
+        "vite": "^5.4.11",
+        "nx": "^20.2.2",
+        "@nx/vite": "^20.2.2",
+        "@nx/js": "^20.2.2"
+    },
+    "workspaces": [
+        "apps/*"
+    ]
 }
