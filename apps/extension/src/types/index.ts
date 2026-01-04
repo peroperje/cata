@@ -21,9 +21,16 @@ export interface AIResponse {
     }[];
 }
 
+export interface AIModel {
+    id: number;
+    name: string;
+    provider: string;
+    model_name: string;
+}
+
 export type MessageAction =
     | { type: 'SCRAPE_DOM' }
     | { type: 'FILL_FORM', mappings: AIResponse['mappings'] }
-    | { type: 'PROCESS_AI', cvText: string, formData: FormField[] }
+    | { type: 'PROCESS_AI', cvText: string, formData: FormField[], modelId: number }
     | { type: 'AI_SUCCESS', mappings: AIResponse['mappings'] }
     | { type: 'AI_ERROR', error: string };

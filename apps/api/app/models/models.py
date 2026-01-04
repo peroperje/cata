@@ -1,0 +1,24 @@
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
+from datetime import datetime
+from app.core.database import Base
+
+class AIModel(Base):
+    __tablename__ = "ai_models"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+    provider = Column(String)  # gemini, huggingface, etc.
+    model_name = Column(String) # e.g. gemini-1.5-flash
+
+    keys = relationship("UserKey", back_populates="model")
+
+class UserKey(Base):
+    __tablename__ = "user_keys"
+
+    id = Column(Integer, primary_key=True, index=True)
+    model_id = Column(Integer, ForeignKey("ai_models.id"))
+    api_key = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    model = relationship("AIModel", back_populates="keys")
