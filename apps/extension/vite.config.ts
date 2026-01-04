@@ -4,6 +4,7 @@ import { crx } from '@crxjs/vite-plugin'
 import manifest from './src/manifest'
 
 export default defineConfig({
+    root: __dirname,
     plugins: [
         react(),
         crx({ manifest }),
@@ -15,6 +16,7 @@ export default defineConfig({
     },
     build: {
         outDir: '../../dist/apps/extension',
+        emptyOutDir: true,
         chunkSizeWarningLimit: 1000,
         rollupOptions: {
             output: {

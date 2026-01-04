@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Zap, Settings, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, Zap, CheckCircle, AlertCircle } from 'lucide-react';
 import { extractTextFromPDF } from '../utils/pdf';
 import { MessageAction, FormField, AIResponse } from '../types';
 
@@ -97,7 +97,7 @@ const App: React.FC = () => {
     return (
         <div className="container">
             <header>
-                <h1>AI Job Auto-Filler</h1>
+                <h1>AI Job Auto-Filler - V1</h1>
             </header>
 
             <section className="card input-group">
