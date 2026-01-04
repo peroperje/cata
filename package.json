@@ -15,21 +15,22 @@
     "dependencies": {
         "@crxjs/vite-plugin": "^2.0.0-beta.25",
         "@google/generative-ai": "^0.21.0",
+        "lucide-react": "^0.471.0",
         "pdfjs-dist": "^4.10.38",
         "react": "^18.3.1",
-        "react-dom": "^18.3.1",
-        "lucide-react": "^0.471.0"
+        "react-dom": "^18.3.1"
     },
     "devDependencies": {
+        "@nx/js": "^20.2.2",
+        "@nx/vite": "^20.2.2",
         "@types/chrome": "^0.0.299",
+        "@types/node": "^25.0.3",
         "@types/react": "^18.3.12",
         "@types/react-dom": "^18.3.1",
         "@vitejs/plugin-react": "^4.3.3",
-        "typescript": "^5.6.3",
-        "vite": "^5.4.11",
         "nx": "^20.2.2",
-        "@nx/vite": "^20.2.2",
-        "@nx/js": "^20.2.2"
+        "typescript": "^5.6.3",
+        "vite": "^5.4.11"
     },
     "workspaces": [
         "apps/*"
