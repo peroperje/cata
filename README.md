@@ -43,7 +43,7 @@ cata-chrome-extension/
 
 1. **Clone the repository**:
    ```bash
-   cd /home/petar/Projects/cata-chrome-extension
+   git clone git@github.com:peroperje/cata.git
    ```
 
 2. **Install dependencies**:
@@ -83,7 +83,7 @@ npx nx build extension
 **Load in Chrome**:
 1. Open Chrome and go to `chrome://extensions/`
 2. Enable "Developer mode"
-3. Click "Load unpacked" and select `dist/apps/extension`
+3. Click "Load unpacked" and select `/dist/apps/extension`
 
 ### Python API
 
