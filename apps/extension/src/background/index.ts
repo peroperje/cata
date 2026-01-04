@@ -2,7 +2,7 @@
 // but the AI logic has moved to the API server called directly from the popup.
 // We keep it as a placeholder or for other background tasks.
 
-chrome.runtime.onMessage.addListener((message: MessageAction, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // Current AI logic moved to API.
     // If you still want to route through background to avoid CORS in some environments:
     /*

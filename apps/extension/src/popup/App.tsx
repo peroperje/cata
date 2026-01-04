@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Zap, CheckCircle, AlertCircle, Settings } from 'lucide-react';
+import { Upload, Zap, CheckCircle, AlertCircle } from 'lucide-react';
 import { extractTextFromPDF } from '../utils/pdf';
-import { MessageAction, FormField, AIResponse, AIModel } from '../types';
+import {  FormField, AIResponse, AIModel } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000/api/v1';
 
@@ -136,15 +136,15 @@ const App: React.FC = () => {
     return (
         <div className="container">
             <header>
-                <h1>CATA - AI Job Filler</h1>
+                <h1>CATA - AI Job Filler - V2</h1>
             </header>
 
             <section className="card input-group">
                 <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
                     SELECT AI MODEL
                 </label>
-                <select 
-                    value={selectedModelId || ''} 
+                <select
+                    value={selectedModelId || ''}
                     onChange={(e) => {
                         const id = Number(e.target.value);
                         setSelectedModelId(id);
@@ -160,7 +160,7 @@ const App: React.FC = () => {
                 <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
                     MODEL API KEY
                 </label>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', flexDirection:'column', gap: '0.5rem' }}>
                     <input
                         type="password"
                         placeholder="Enter API Key for selected model"
@@ -168,8 +168,8 @@ const App: React.FC = () => {
                         onChange={(e) => setApiKey(e.target.value)}
                         style={{ flex: 1 }}
                     />
-                    <button onClick={saveApiKey} className="button secondary" style={{ padding: '0 1rem', whiteSpace: 'nowrap' }}>
-                        Save Key
+                    <button onClick={saveApiKey} className="button" >
+                        Save
                     </button>
                 </div>
             </section>

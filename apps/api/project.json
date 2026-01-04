@@ -7,21 +7,21 @@
         "install": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "python3 -m venv venv && source venv/bin/activate && pip install -r apps/api/requirements.txt",
+                "command": "python3 -m venv venv && . venv/bin/activate && pip install -r apps/api/requirements.txt",
                 "cwd": "."
             }
         },
         "serve": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "source venv/bin/activate && cd apps/api && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+                "command": ". venv/bin/activate && cd apps/api && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
                 "cwd": "."
             }
         },
         "test": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "source venv/bin/activate && cd apps/api && pytest",
+                "command": ". venv/bin/activate && cd apps/api && pytest",
                 "cwd": "."
             }
         }
