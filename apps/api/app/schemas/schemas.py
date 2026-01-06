@@ -42,3 +42,17 @@ class ProcessRequest(BaseModel):
 
 class ProcessResponse(BaseModel):
     mappings: List[Mapping]
+
+class CVBase(BaseModel):
+    filename: str
+    text: str
+
+class CVCreate(CVBase):
+    pass
+
+class CV(CVBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

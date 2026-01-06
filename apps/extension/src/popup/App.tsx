@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Zap, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, Zap, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import { extractTextFromPDF } from '../utils/pdf';
-import {  FormField, AIResponse, AIModel } from '../types';
+import { FormField, AIResponse, AIModel, CV } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000/api/v1';
 
@@ -10,19 +10,20 @@ const App: React.FC = () => {
     const [pdfText, setPdfText] = useState('');
     const [fileName, setFileName] = useState('');
     const [models, setModels] = useState<AIModel[]>([]);
+    const [cvs, setCvs] = useState<CV[]>([]);
     const [selectedModelId, setSelectedModelId] = useState<number | null>(null);
+    const [selectedCvId, setSelectedCvId] = useState<number | null>(null);
     const [status, setStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error'; message: string }>({
         type: 'idle',
         message: '',
     });
 
     useEffect(() => {
-        chrome.storage.local.get(['cv_text', 'cv_filename', 'selected_model_id'], (result) => {
-            if (result.cv_text) setPdfText(result.cv_text);
-            if (result.cv_filename) setFileName(result.cv_filename);
+        chrome.storage.local.get(['selected_model_id'], (result) => {
             if (result.selected_model_id) setSelectedModelId(result.selected_model_id);
         });
         fetchModels();
+        fetchCVs();
     }, []);
 
     const fetchModels = async () => {
@@ -35,6 +36,32 @@ const App: React.FC = () => {
             }
         } catch (err) {
             console.error('Failed to fetch models', err);
+        }
+    };
+
+    const fetchCVs = async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/cvs`);
+            const data = await res.json();
+            setCvs(data);
+            // Optionally auto-select the latest one
+            if (data.length > 0) {
+                const latest = data[0];
+                setSelectedCvId(latest.id);
+                setPdfText(latest.text);
+                setFileName(latest.filename);
+            }
+        } catch (err) {
+            console.error('Failed to fetch CVs', err);
+        }
+    };
+
+    const handleCvSelect = (cvId: number) => {
+        const cv = cvs.find(c => c.id === cvId);
+        if (cv) {
+            setSelectedCvId(cv.id);
+            setPdfText(cv.text);
+            setFileName(cv.filename);
         }
     };
 
@@ -57,7 +84,7 @@ const App: React.FC = () => {
 
     const handleFill = async () => {
         if (!pdfText) {
-            setStatus({ type: 'error', message: 'Please upload a CV first.' });
+            setStatus({ type: 'error', message: 'Please upload or select a CV first.' });
             return;
         }
         if (!selectedModelId) {
@@ -121,15 +148,28 @@ const App: React.FC = () => {
         setStatus({ type: 'loading', message: 'Extracting PDF text...' });
         try {
             const text = await extractTextFromPDF(file);
-            setPdfText(text);
-            setFileName(file.name);
-            chrome.storage.local.get(['cv_text'], (result) => {
-                 chrome.storage.local.set({ cv_text: text, cv_filename: file.name });
+
+            // Save to Database
+            const res = await fetch(`${API_BASE_URL}/cvs`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: file.name, text: text }),
             });
-            setStatus({ type: 'success', message: `Extracted: ${file.name}` });
+
+            if (!res.ok) throw new Error('Failed to save CV to database');
+
+            const newCv: CV = await res.json();
+
+            // Update local state
+            setCvs(prev => [...prev, newCv]);
+            setSelectedCvId(newCv.id);
+            setPdfText(newCv.text);
+            setFileName(newCv.filename);
+
+            setStatus({ type: 'success', message: `Extracted & Saved: ${file.name}` });
         } catch (err) {
             console.error(err);
-            setStatus({ type: 'error', message: 'Failed to read PDF.' });
+            setStatus({ type: 'error', message: 'Failed to process PDF.' });
         }
     };
 
@@ -160,7 +200,7 @@ const App: React.FC = () => {
                 <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
                     MODEL API KEY
                 </label>
-                <div style={{ display: 'flex', flexDirection:'column', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     <input
                         type="password"
                         placeholder="Enter API Key for selected model"
@@ -188,6 +228,26 @@ const App: React.FC = () => {
                         onChange={handleFileUpload}
                     />
                 </label>
+
+                {cvs.length > 0 && (
+                    <div style={{ marginTop: '1rem', borderTop: '1px solid #eee', paddingTop: '1rem' }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
+                            OR SELECT EXISTING CV
+                        </label>
+                        <select
+                            value={selectedCvId || ''}
+                            onChange={(e) => handleCvSelect(Number(e.target.value))}
+                            style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
+                        >
+                            <option value="" disabled>Select a CV</option>
+                            {cvs.map(cv => (
+                                <option key={cv.id} value={cv.id}>
+                                    {cv.filename}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
             </section>
 
             <button

@@ -22,3 +22,11 @@ class UserKey(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     model = relationship("AIModel", back_populates="keys")
+
+class CV(Base):
+    __tablename__ = "cvs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    filename = Column(String)
+    text = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)

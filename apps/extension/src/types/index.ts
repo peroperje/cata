@@ -28,6 +28,13 @@ export interface AIModel {
     model_name: string;
 }
 
+export interface CV {
+    id: number;
+    filename: string;
+    text: string;
+    created_at: string;
+}
+
 export type MessageAction =
     | { type: 'SCRAPE_DOM' }
     | { type: 'FILL_FORM', mappings: AIResponse['mappings'] }

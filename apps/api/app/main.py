@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from app.core.database import engine, Base
-from app.api.v1 import models as models_router, process as process_router
+from app.api.v1 import models as models_router, process as process_router, cvs as cvs_router
 from app.models import models
 from sqlalchemy.orm import Session
 from app.core.database import SessionLocal
@@ -86,6 +86,7 @@ async def api_status():
 # Include routers
 app.include_router(models_router.router, prefix="/api/v1", tags=["Models"])
 app.include_router(process_router.router, prefix="/api/v1", tags=["AI Process"])
+app.include_router(cvs_router.router, prefix="/api/v1", tags=["CVs"])
 
 if __name__ == "__main__":
     import uvicorn
