@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.core.database import Base
@@ -29,4 +29,13 @@ class CV(Base):
     id = Column(Integer, primary_key=True, index=True)
     filename = Column(String)
     text = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class Job(Base):
+    __tablename__ = "jobs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String)
+    url = Column(String)
+    similarity_score = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
