@@ -1,12 +1,11 @@
 import json
 from typing import List
-import google.generativeai as genai
+from google import genai
 from app.services.ai.base import AIBaseProvider
 
 class GeminiProvider(AIBaseProvider):
     async def process(self, cv_text: str, form_data: List[dict], api_key: str, model_name: str) -> dict:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel(model_name)
+        client = genai.Client(api_key=api_key)
 
         prompt = f"""
         You are an expert at mapping CV information to job application forms.
@@ -23,12 +22,15 @@ class GeminiProvider(AIBaseProvider):
 
         TASK:
         Map the data from the CV to the form fields.
-        Return a JSON object with a \"mappings\" array.
-        Each mapping should have: \"fieldId\", \"fieldName\", and \"value\".
+        Return a JSON object with a "mappings" array.
+        Each mapping should have: "fieldId", "fieldName", and "value".
         Only return the JSON. No preamble.
         """
 
-        response = await model.generate_content_async(prompt)
+        response = await client.aio.models.generate_content(
+            model=model_name,
+            contents=prompt
+        )
         text = response.text
 
         # Clean up code blocks if Gemini returns them
