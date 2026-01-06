@@ -4,9 +4,11 @@ export default defineManifest({
     manifest_version: 3,
     name: 'AI Job Auto-Filler',
     version: '1.0.0',
-    permissions: ['storage', 'activeTab', 'scripting'],
+    permissions: ['storage', 'activeTab', 'scripting', 'sidePanel'],
     action: {
-        default_popup: 'src/popup/index.html',
+    },
+    side_panel: {
+        default_path: 'src/popup/index.html',
     },
     background: {
         service_worker: 'src/background/index.ts',
