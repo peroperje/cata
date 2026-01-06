@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cata-api
+  labels:
+    app: cata-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cata-api
+  template:
+    metadata:
+      labels:
+        app: cata-api
+    spec:
+      containers:
+        - name: api
+          image: cata-api:latest # Needs to be built and available to K8s
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://cata_user:cata_password@cata-postgres:5432/cata_db"
+            - name: PORT
+              value: "8000"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cata-api-service
+spec:
+  selector:
+    app: cata-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+      nodePort: 30000
+  type: NodePort # Or LoadBalancer

@@ -9,7 +9,7 @@
         "preview": "nx preview extension",
         "api:serve": "nx serve api",
         "api:install": "nx run api:install",
-        "docker:up": "docker-compose up --build",
+        "docker:up": "docker compose up --build",
         "docker:down": "docker-compose down"
     },
     "dependencies": {
