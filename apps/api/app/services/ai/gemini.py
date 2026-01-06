@@ -33,6 +33,7 @@ class GeminiProvider(AIBaseProvider):
            - Return a single JSON object with a "mappings" array.
            - Each mapping must have: "fieldId", "fieldName", and "value".
            - Return ONLY the JSON. No markdown blocking (```json), no preamble.
+           - **Data Types**: All 'value' fields MUST be strings. Convert booleans (true/false) to strings ("true"/"false").
         """
 
         response = await client.aio.models.generate_content(
@@ -45,6 +46,16 @@ class GeminiProvider(AIBaseProvider):
         cleaned_text = text.replace('```json', '').replace('```', '').strip()
 
         try:
-            return json.loads(cleaned_text)
+            data = json.loads(cleaned_text)
+            # Post-processing to ensure adherence to schema (value must be string)
+            if "mappings" in data and isinstance(data["mappings"], list):
+                for item in data["mappings"]:
+                    if "value" in item:
+                        # Force string conversion for booleans/numbers
+                        if isinstance(item["value"], bool):
+                             item["value"] = str(item["value"]).lower() # "true" / "false"
+                        else:
+                             item["value"] = str(item["value"])
+            return data
         except json.JSONDecodeError:
             raise ValueError("AI returned invalid JSON structure.")
