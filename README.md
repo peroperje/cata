@@ -1,6 +1,6 @@
 # CATA - AI Job Auto-Filler (Nx Monorepo)
 
-A modern Chrome Extension (Manifest V3) with a Python FastAPI backend, built with Nx monorepo architecture. Uses Gemini AI to automatically fill job application forms using data extracted from your PDF CV.
+A modern Chrome Extension (Manifest V3) with a Python FastAPI backend, built with Nx monorepo architecture. Uses Gemini AI to automatically fill job application forms using data extracted from your PDF CV, now with persistent database storage.
 
 ## 🏗️ Project Structure
 
@@ -17,6 +17,9 @@ cata-chrome-extension/
 │       └── project.json  # Nx configuration
 ├── docker/
 │   └── api/              # Docker configuration for API
+├── k8s/                  # Kubernetes manifests
+│   ├── api.yaml
+│   └── postgres.yaml
 ├── docker-compose.yml    # PostgreSQL + API orchestration
 ├── nx.json              # Nx workspace configuration
 └── package.json         # Workspace dependencies
@@ -24,12 +27,12 @@ cata-chrome-extension/
 
 ## ✨ Features
 
-- **Local PDF Parsing**: Extracts text from your CV locally using `pdfjs-dist`
-- **AI-Powered Mapping**: Uses Google Gemini Pro to map CV content to form fields
-- **Framework Bypassing**: Specialized value setter for React/Angular/Vue sites
-- **Premium UI**: Modern interface with React and Lucide icons
-- **FastAPI Backend**: High-performance REST API with PostgreSQL
-- **Nx Monorepo**: Unified workspace for extension and backend
+- **CV Management**: Upload, extract, and store multiple CVs in PostgreSQL for easy access.
+- **Backend-Driven AI**: All AI processing is handled securely by the FastAPI backend using `google-genai`.
+- **Framework Bypassing**: Specialized value setter for React/Angular/Vue sites.
+- **Premium UI**: Modern interface with React and Lucide icons.
+- **FastAPI Backend**: High-performance REST API with PostgreSQL.
+- **Nx Monorepo**: Unified workspace for extension and backend.
 
 ## 🚀 Getting Started
 
@@ -37,7 +40,8 @@ cata-chrome-extension/
 
 - Node.js 18+ and npm/yarn
 - Python 3.11+
-- Docker and Docker Compose (for backend)
+- Docker and Docker Compose (recommended)
+- Kubernetes (optional, for cluster deployment)
 
 ### Installation
 
@@ -99,7 +103,7 @@ API will be available at `http://localhost:8000`
 ```bash
 npm run docker:up
 # or
-docker-compose up --build
+docker compose up --build
 ```
 
 **Stop Docker services**:
@@ -143,27 +147,27 @@ npx nx run-many --target=test
 ### Extension
 - **Core**: Vite + TypeScript + React
 - **Build**: @crxjs/vite-plugin
-- **PDF**: PDF.js
-- **AI**: Google Generative AI (Gemini)
 - **UI**: Lucide React icons
+- **State**: React Hooks + Chrome Storage
 
 ### Backend
 - **Framework**: FastAPI
 - **Database**: PostgreSQL
+- **AI**: Google Gen AI SDK (`google-genai`)
 - **ORM**: SQLAlchemy
-- **Server**: Uvicorn
 - **Containerization**: Docker
 
-### Monorepo
-- **Build System**: Nx
-- **Package Manager**: npm/yarn
+### Infrastructure & DevOps
+- **Monorepo**: Nx
+- **Orchestration**: Docker Compose
+- **Deployment**: Kubernetes (K8s)
 
 ## 📝 Usage
 
-1. **Get API Key**: Obtain a Gemini API key from [Google AI Studio](https://aistudio.google.com/)
-2. **Configure Extension**: Enter your API key in the extension popup
-3. **Upload CV**: Upload your CV in PDF format
-4. **Auto-Fill**: Navigate to a job application page and click "Auto-Fill Page"
+1. **Configure Extension**: Enter your API key in the extension popup (saved securely in backend).
+2. **Upload CV**: Upload your CV (PDF) via the extension. It will be parsed and stored in the database.
+3. **Select CV**: Choose which uploaded CV to use for the current session.
+4. **Auto-Fill**: Navigate to a job application page and click "Auto-Fill Page".
 
 ## 🐳 Docker Services
 
