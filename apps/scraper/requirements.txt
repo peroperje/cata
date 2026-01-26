@@ -1,0 +1,8 @@
+scrapy
+scrapy-redis
+spacy
+requests
+scikit-learn
+python-dotenv
+redis
+itemadapter
