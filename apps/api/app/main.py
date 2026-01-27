@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from app.core.database import engine, Base
-from app.api.v1 import models as models_router, process as process_router, cvs as cvs_router, jobs as jobs_router
+from app.api.v1 import models as models_router, process as process_router, cvs as cvs_router, jobs as jobs_router, scraper as scraper_router
 from app.models import models
 from sqlalchemy.orm import Session
 from app.core.database import SessionLocal
@@ -122,6 +122,7 @@ app.include_router(models_router.router, prefix="/api/v1", tags=["Models"])
 app.include_router(process_router.router, prefix="/api/v1", tags=["AI Process"])
 app.include_router(cvs_router.router, prefix="/api/v1", tags=["CVs"])
 app.include_router(jobs_router.router, prefix="/api/v1", tags=["Jobs"])
+app.include_router(scraper_router.router, prefix="/api/v1", tags=["Scraper"])
 
 if __name__ == "__main__":
     import uvicorn

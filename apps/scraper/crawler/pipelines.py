@@ -20,9 +20,10 @@ class JobMatchPipeline:
             return False
             
         text_lower = text.lower()
-        # Light 'job-data' criteria - added Serbian terms for helloworld.rs
+        # Light 'job-data' criteria - international + local
         job_keywords = [
             'requirements', 'responsibilities', 'qualifications', 'experience', 'apply', 'salary', 'benefits',
+            'job description', 'about the role', 'what you will do', 'what we offer', 'skills',
             'uslovi', 'odgovornosti', 'kvalifikacije', 'iskustvo', 'prijava', 'plata', 'benefiti', 'nudi',
             'opis posla', 'lokacija', 'radno vreme'
         ]
@@ -30,6 +31,7 @@ class JobMatchPipeline:
         
         # If it has at least 2 job-related keywords, we consider it a lead
         return len(matches) >= 2
+
 
 
     def process_item(self, item, spider):

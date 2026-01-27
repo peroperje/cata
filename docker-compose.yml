@@ -66,6 +66,15 @@ services:
       - ./apps/scraper:/app
     networks:
       - cata-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.4'
+          memory: 300M
+        reservations:
+          cpus: '0.1'
+          memory: 100M
+
 
 volumes:
   cata_postgres_data:

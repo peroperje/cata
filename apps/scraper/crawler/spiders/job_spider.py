@@ -1,40 +1,35 @@
-from scrapy.spiders import CrawlSpider, Rule
+from scrapy_redis.spiders import RedisCrawlSpider
+from scrapy.spiders import Rule
 from scrapy.linkextractors import LinkExtractor
 from crawler.items import JobItem
 from crawler.api_client import APIClient
 from urllib.parse import urlparse
 import re
 
-class JobSpider(CrawlSpider):
+class JobSpider(RedisCrawlSpider):
     name = 'job_spider'
+    redis_key = 'job_spider:start_urls'
     
-    allowed_domains = []
-    start_urls = []
-
+    # Dynamic domains will be handled in process_links or by allowed_domains setting
+    # For RedisCrawlSpider, we can still use rules
     rules = (
         Rule(LinkExtractor(), process_links='filter_links', callback='parse_item', follow=True),
     )
 
     def __init__(self, *args, **kwargs):
+        # RedisCrawlSpider handles initialization differently
         super(JobSpider, self).__init__(*args, **kwargs)
         self.api_client = APIClient()
-        
-        # Priority: explicit 'url' argument
-        url = kwargs.get('url')
-        if url:
-            self.start_urls = [url]
-            domain = urlparse(url).netloc
-            if domain:
-                self.allowed_domains = [domain]
-        elif not self.start_urls:
-            # Default fallback for testing
-            self.start_urls = ['https://www.example.com/careers']
-            self.allowed_domains = ['example.com']
 
     def filter_links(self, links):
         filtered_links = []
         # General job terms to prioritize/filter links
-        job_terms = ['job', 'career', 'vacancy', 'position', 'oglasi', 'posao', 'radno-mesto', 'konkurs', 'oglas/']
+        # Added more English terms for Glassdoor, LinkedIn, etc.
+        job_terms = [
+            'job', 'career', 'vacancy', 'position', 'oglasi', 'posao', 
+            'radno-mesto', 'konkurs', 'oglas/', 'listing', 'opening', 
+            'detail', 'description', 'apply', 'careers'
+        ]
         
         for link in links:
             url_lower = link.url.lower()
@@ -56,7 +51,6 @@ class JobSpider(CrawlSpider):
         item['title'] = (response.css('title::text').get() or 'No Title').strip()
         
         # More efficient and focused text extraction
-        # Using xpath to get all text nodes in body except scripts/styles
         texts = response.xpath('//body//text()[not(parent::script or parent::style or parent::header or parent::footer)]').getall()
         text_content = " ".join(texts)
         
@@ -65,4 +59,5 @@ class JobSpider(CrawlSpider):
         item['content'] = text_content
         
         return item
+
 

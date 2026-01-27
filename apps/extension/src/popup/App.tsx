@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Zap, CheckCircle, AlertCircle, FileText } from 'lucide-react';
+import { Upload, Zap, CheckCircle, AlertCircle, Search, StopCircle, Database } from 'lucide-react';
 import { extractTextFromPDF } from '../utils/pdf';
 import { FormField, AIResponse, AIModel, CV } from '../types';
 
@@ -18,12 +18,25 @@ const App: React.FC = () => {
         message: '',
     });
 
+    // Scraper State
+    const [scraperUrl, setScraperUrl] = useState('');
+    const [isScraping, setIsScraping] = useState(false);
+    const [jobCount, setJobCount] = useState<number | null>(null);
+    const [initialJobCount, setInitialJobCount] = useState<number>(0);
+
     useEffect(() => {
         chrome.storage.local.get(['selected_model_id'], (result) => {
             if (result.selected_model_id) setSelectedModelId(result.selected_model_id);
         });
         fetchModels();
         fetchCVs();
+        checkScraperStatus();
+
+        // Polling for scraper status if scraping
+        const interval = setInterval(() => {
+            checkScraperStatus();
+        }, 5000);
+        return () => clearInterval(interval);
     }, []);
 
     const fetchModels = async () => {
@@ -44,7 +57,6 @@ const App: React.FC = () => {
             const res = await fetch(`${API_BASE_URL}/cvs`);
             const data = await res.json();
             setCvs(data);
-            // Optionally auto-select the latest one
             if (data.length > 0) {
                 const latest = data[0];
                 setSelectedCvId(latest.id);
@@ -53,6 +65,51 @@ const App: React.FC = () => {
             }
         } catch (err) {
             console.error('Failed to fetch CVs', err);
+        }
+    };
+
+    const checkScraperStatus = async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/scraper/status`);
+            const data = await res.json();
+            setIsScraping(data.status === 'running');
+            setJobCount(data.job_count);
+        } catch (err) {
+            console.error('Failed to check scraper status', err);
+        }
+    };
+
+    const handleStartScraping = async () => {
+        if (!scraperUrl) return;
+        setStatus({ type: 'loading', message: 'Starting scraper...' });
+        try {
+            setInitialJobCount(jobCount || 0);
+            const res = await fetch(`${API_BASE_URL}/scraper/start`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: scraperUrl }),
+            });
+            if (!res.ok) throw new Error('Failed to start scraper');
+            setIsScraping(true);
+            setStatus({ type: 'success', message: 'Scraper started!' });
+        } catch (err: any) {
+            setStatus({ type: 'error', message: err.message });
+        }
+    };
+
+    const handleStopScraping = async () => {
+        setStatus({ type: 'loading', message: 'Stopping scraper...' });
+        try {
+            const res = await fetch(`${API_BASE_URL}/scraper/stop`, {
+                method: 'POST',
+            });
+            if (!res.ok) throw new Error('Failed to stop scraper');
+            setIsScraping(false);
+            const finalCount = jobCount || 0;
+            const inserted = finalCount - initialJobCount;
+            setStatus({ type: 'success', message: `Stopped. Inserted ${inserted > 0 ? inserted : 0} records.` });
+        } catch (err: any) {
+            setStatus({ type: 'error', message: err.message });
         }
     };
 
@@ -75,7 +132,7 @@ const App: React.FC = () => {
                 body: JSON.stringify({ model_id: selectedModelId, api_key: apiKey }),
             });
             if (!res.ok) throw new Error('Failed to save key');
-            setStatus({ type: 'success', message: 'API Key saved to backend!' });
+            setStatus({ type: 'success', message: 'API Key saved!' });
             setApiKey('');
         } catch (err: any) {
             setStatus({ type: 'error', message: err.message });
@@ -84,32 +141,26 @@ const App: React.FC = () => {
 
     const handleFill = async () => {
         if (!pdfText) {
-            setStatus({ type: 'error', message: 'Please upload or select a CV first.' });
+            setStatus({ type: 'error', message: 'Select a CV first.' });
             return;
         }
         if (!selectedModelId) {
-            setStatus({ type: 'error', message: 'Please select an AI model.' });
+            setStatus({ type: 'error', message: 'Select an AI model.' });
             return;
         }
 
         setStatus({ type: 'loading', message: 'Scraping form fields...' });
-
         try {
-            // 1. Get current tab
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             if (!tab?.id) throw new Error('No active tab');
 
-            // 2. Scrape DOM
             const fields: FormField[] = await chrome.tabs.sendMessage(tab.id, { type: 'SCRAPE_DOM' });
-
             if (!fields || fields.length === 0) {
-                setStatus({ type: 'error', message: 'No form fields found on this page.' });
+                setStatus({ type: 'error', message: 'No fields found.' });
                 return;
             }
 
-            setStatus({ type: 'loading', message: 'AI is mapping fields via API...' });
-
-            // 3. Call API instead of Background
+            setStatus({ type: 'loading', message: 'AI is mapping fields...' });
             const res = await fetch(`${API_BASE_URL}/process`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -120,23 +171,17 @@ const App: React.FC = () => {
                 })
             });
 
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.detail || 'API mapping failed');
-            }
+            if (!res.ok) throw new Error('Mapping failed');
+            const data: AIResponse = await res.json();
 
-            const response: AIResponse = await res.json();
-
-            // 4. Send mappings back to Content Script to fill
             setStatus({ type: 'loading', message: 'Filling form...' });
             await chrome.tabs.sendMessage(tab.id, {
                 type: 'FILL_FORM',
-                mappings: response.mappings
+                mappings: data.mappings
             });
 
-            setStatus({ type: 'success', message: 'Form filled successfully!' });
+            setStatus({ type: 'success', message: 'Form filled!' });
         } catch (err: any) {
-            console.error(err);
             setStatus({ type: 'error', message: err.message || 'Workflow failed.' });
         }
     };
@@ -145,30 +190,22 @@ const App: React.FC = () => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        setStatus({ type: 'loading', message: 'Extracting PDF text...' });
+        setStatus({ type: 'loading', message: 'Uploading...' });
         try {
             const text = await extractTextFromPDF(file);
-
-            // Save to Database
             const res = await fetch(`${API_BASE_URL}/cvs`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ filename: file.name, text: text }),
             });
-
-            if (!res.ok) throw new Error('Failed to save CV to database');
-
+            if (!res.ok) throw new Error('Save failed');
             const newCv: CV = await res.json();
-
-            // Update local state
             setCvs(prev => [...prev, newCv]);
             setSelectedCvId(newCv.id);
             setPdfText(newCv.text);
             setFileName(newCv.filename);
-
-            setStatus({ type: 'success', message: `Extracted & Saved: ${file.name}` });
+            setStatus({ type: 'success', message: `Saved: ${file.name}` });
         } catch (err) {
-            console.error(err);
             setStatus({ type: 'error', message: 'Failed to process PDF.' });
         }
     };
@@ -176,98 +213,116 @@ const App: React.FC = () => {
     return (
         <div className="container">
             <header>
-                <h1>CATA - AI Job Filler - V2</h1>
+                <h1>CATA - AI Job Suite</h1>
             </header>
 
-            <section className="card input-group">
-                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                    SELECT AI MODEL
-                </label>
-                <select
-                    value={selectedModelId || ''}
-                    onChange={(e) => {
-                        const id = Number(e.target.value);
-                        setSelectedModelId(id);
-                        chrome.storage.local.set({ selected_model_id: id });
-                    }}
-                    style={{ width: '100%', padding: '0.5rem', marginBottom: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
-                >
-                    {models.map(m => (
-                        <option key={m.id} value={m.id}>{m.name} ({m.provider})</option>
-                    ))}
-                </select>
+            {/* Autofill Section */}
+            <h2>Autofill</h2>
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <section style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <select
+                        value={selectedModelId || ''}
+                        onChange={(e) => {
+                            const id = Number(e.target.value);
+                            setSelectedModelId(id);
+                            chrome.storage.local.set({ selected_model_id: id });
+                        }}
+                    >
+                        {models.map(m => (
+                            <option key={m.id} value={m.id}>{m.name}</option>
+                        ))}
+                    </select>
 
-                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-                    MODEL API KEY
-                </label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <input
-                        type="password"
-                        placeholder="Enter API Key for selected model"
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                        style={{ flex: 1 }}
-                    />
-                    <button onClick={saveApiKey} className="button" >
-                        Save
-                    </button>
-                </div>
-            </section>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <input
+                            type="password"
+                            placeholder="API Key"
+                            value={apiKey}
+                            onChange={(e) => setApiKey(e.target.value)}
+                            style={{ flex: 1 }}
+                        />
+                        <button onClick={saveApiKey} className="button" style={{ width: 'auto' }}>
+                            Save
+                        </button>
+                    </div>
+                </section>
 
-            <section className="card">
-                <label className="upload-zone" htmlFor="cv-upload">
-                    <Upload size={24} style={{ marginBottom: '0.5rem', color: 'var(--primary)' }} />
-                    <p style={{ margin: 0, fontWeight: 500 }}>
-                        {fileName || 'Upload CV (PDF)'}
-                    </p>
-                    <input
-                        id="cv-upload"
-                        type="file"
-                        className="file-input"
-                        accept=".pdf"
-                        onChange={handleFileUpload}
-                    />
-                </label>
+                <section>
+                    <label className="upload-zone" htmlFor="cv-upload">
+                        <Upload size={18} style={{ color: 'var(--primary)' }} />
+                        <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>{fileName || 'Upload CV (PDF)'}</span>
+                        <input id="cv-upload" type="file" className="file-input" accept=".pdf" onChange={handleFileUpload} />
+                    </label>
 
-                {cvs.length > 0 && (
-                    <div style={{ marginTop: '1rem', borderTop: '1px solid #eee', paddingTop: '1rem' }}>
-                        <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem' }}>
-                            OR SELECT EXISTING CV
-                        </label>
+                    {cvs.length > 0 && (
                         <select
                             value={selectedCvId || ''}
                             onChange={(e) => handleCvSelect(Number(e.target.value))}
-                            style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', border: '1px solid #ddd' }}
+                            style={{ width: '100%', marginTop: '0.5rem' }}
                         >
-                            <option value="" disabled>Select a CV</option>
-                            {cvs.map(cv => (
-                                <option key={cv.id} value={cv.id}>
-                                    {cv.filename}
-                                </option>
-                            ))}
+                            {cvs.map(cv => <option key={cv.id} value={cv.id}>{cv.filename}</option>)}
                         </select>
-                    </div>
-                )}
-            </section>
+                    )}
+                </section>
 
-            <button
-                className="button"
-                onClick={handleFill}
-                disabled={status.type === 'loading'}
-            >
-                <Zap size={18} fill="currentColor" />
-                {status.type === 'loading' ? 'Processing...' : 'Auto-Fill Page'}
-            </button>
+                <button className="button" onClick={handleFill} disabled={status.type === 'loading'}>
+                    <Zap size={18} fill="currentColor" />
+                    Fill Form
+                </button>
+            </div>
+
+            {/* Scraper Section */}
+            <h2>Job Scraper</h2>
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {!isScraping ? (
+                    <>
+                        <input
+                            type="text"
+                            placeholder="Target URL (e.g. helloworld.rs)"
+                            value={scraperUrl}
+                            onChange={(e) => setScraperUrl(e.target.value)}
+                        />
+                        <button className="button" onClick={handleStartScraping} disabled={!scraperUrl || status.type === 'loading'}>
+                            <Search size={18} />
+                            Start Crawling
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <div style={{ textAlign: 'center', padding: '0.25rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                <div className="pulse" style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%' }}></div>
+                                <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>Scraping active...</span>
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                                <Database size={12} />
+                                Total Jobs: {jobCount || 0}
+                            </div>
+                        </div>
+                        <button className="button" onClick={handleStopScraping} style={{ background: '#ef4444' }}>
+                            <StopCircle size={18} />
+                            Stop Scraper
+                        </button>
+                    </>
+                )}
+            </div>
 
             {status.message && (
-                <div className={`status ${status.type}`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <div className={`status ${status.type}`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)' }}>
                     {status.type === 'success' && <CheckCircle size={14} color="#10b981" />}
                     {status.type === 'error' && <AlertCircle size={14} color="#ef4444" />}
-                    {status.message}
+                    <span>{status.message}</span>
                 </div>
             )}
+
+            <style>{`
+                .pulse { animation: pulse-animation 2s infinite; }
+                @keyframes pulse-animation { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+            `}</style>
         </div>
     );
 };
 
+
 export default App;
+
