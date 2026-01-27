@@ -53,9 +53,12 @@ def get_scraper_status(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/scraper/jobs")
-def get_scraped_jobs(limit: int = 1000, db: Session = Depends(get_db)):
+def get_scraped_jobs(limit: int = 1000, include_irrelevant: bool = False, db: Session = Depends(get_db)):
     try:
-        jobs = db.query(models.Job).order_by(models.Job.created_at.desc()).limit(limit).all()
+        query = db.query(models.Job)
+        if not include_irrelevant:
+            query = query.filter(models.Job.is_irrelevant == False)
+        jobs = query.order_by(models.Job.created_at.desc()).limit(limit).all()
         return jobs
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

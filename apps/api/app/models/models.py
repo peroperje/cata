@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.core.database import Base
@@ -40,3 +40,5 @@ class Job(Base):
     content = Column(String, nullable=True)
     similarity_score = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
+    is_irrelevant = Column(Boolean, default=False)
+    is_favorite = Column(Boolean, default=False)

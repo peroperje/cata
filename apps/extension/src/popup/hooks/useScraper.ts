@@ -85,6 +85,30 @@ export const useScraper = (setStatus: (status: any) => void) => {
         return () => clearInterval(interval);
     }, []);
 
+    const toggleIrrelevant = async (jobId: number) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/jobs/${jobId}/irrelevant`, {
+                method: 'PATCH',
+            });
+            if (!res.ok) throw new Error('Failed to update job');
+            await fetchScrapedJobs();
+        } catch (err: any) {
+            setStatus({ type: 'error', message: err.message });
+        }
+    };
+
+    const toggleFavorite = async (jobId: number) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/jobs/${jobId}/favorite`, {
+                method: 'PATCH',
+            });
+            if (!res.ok) throw new Error('Failed to update job');
+            await fetchScrapedJobs();
+        } catch (err: any) {
+            setStatus({ type: 'error', message: err.message });
+        }
+    };
+
     return {
         scraperUrl,
         setScraperUrl,
@@ -92,6 +116,8 @@ export const useScraper = (setStatus: (status: any) => void) => {
         jobCount,
         scrapedJobs,
         handleStartScraping,
-        handleStopScraping
+        handleStopScraping,
+        toggleIrrelevant,
+        toggleFavorite
     };
 };

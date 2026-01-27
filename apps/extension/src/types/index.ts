@@ -42,6 +42,8 @@ export interface ScrapedJob {
     content: string;
     similarity_score: number;
     created_at: string;
+    is_irrelevant?: boolean;
+    is_favorite?: boolean;
 }
 
 

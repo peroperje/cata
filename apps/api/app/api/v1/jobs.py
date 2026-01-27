@@ -16,5 +16,28 @@ def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
     return db_job
 
 @router.get("/jobs", response_model=List[schemas.Job])
-def get_jobs(db: Session = Depends(get_db)):
-    return db.query(models.Job).order_by(models.Job.created_at.desc()).all()
+def get_jobs(include_irrelevant: bool = False, db: Session = Depends(get_db)):
+    query = db.query(models.Job)
+    if not include_irrelevant:
+        query = query.filter(models.Job.is_irrelevant == False)
+    return query.order_by(models.Job.created_at.desc()).all()
+
+@router.patch("/jobs/{job_id}/irrelevant", response_model=schemas.Job)
+def toggle_job_irrelevant(job_id: int, db: Session = Depends(get_db)):
+    db_job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not db_job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    db_job.is_irrelevant = not db_job.is_irrelevant
+    db.commit()
+    db.refresh(db_job)
+    return db_job
+
+@router.patch("/jobs/{job_id}/favorite", response_model=schemas.Job)
+def toggle_job_favorite(job_id: int, db: Session = Depends(get_db)):
+    db_job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not db_job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    db_job.is_favorite = not db_job.is_favorite
+    db.commit()
+    db.refresh(db_job)
+    return db_job

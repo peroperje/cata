@@ -62,6 +62,8 @@ class JobBase(BaseModel):
     url: str
     content: Optional[str] = None
     similarity_score: float
+    is_irrelevant: bool = False
+    is_favorite: bool = False
 
 class JobCreate(JobBase):
     pass

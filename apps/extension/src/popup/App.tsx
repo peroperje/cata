@@ -51,7 +51,9 @@ const App: React.FC = () => {
         jobCount,
         scrapedJobs,
         handleStartScraping,
-        handleStopScraping
+        handleStopScraping,
+        toggleIrrelevant,
+        toggleFavorite
     } = useScraper(setStatus);
 
     const { handleFill } = useAutofill(pdfText, selectedModelId, setStatus);
@@ -108,6 +110,8 @@ const App: React.FC = () => {
                     onUrlChange={setScraperUrl}
                     onStartScraping={handleStartScraping}
                     onStopScraping={handleStopScraping}
+                    onToggleIrrelevant={toggleIrrelevant}
+                    onToggleFavorite={toggleFavorite}
                     isLoading={status.type === 'loading'}
                 />
             </CollapsibleSection>

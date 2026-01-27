@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Database, StopCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Database, StopCircle, ChevronLeft, ChevronRight, Trash2, Star } from 'lucide-react';
 import { ScrapedJob } from '../../types';
 
 interface ScraperSectionProps {
@@ -10,6 +10,8 @@ interface ScraperSectionProps {
     onUrlChange: (url: string) => void;
     onStartScraping: () => void;
     onStopScraping: () => void;
+    onToggleIrrelevant: (id: number) => void;
+    onToggleFavorite: (id: number) => void;
     isLoading: boolean;
 }
 
@@ -21,21 +23,18 @@ export const ScraperSection: React.FC<ScraperSectionProps> = ({
     onUrlChange,
     onStartScraping,
     onStopScraping,
+    onToggleIrrelevant,
+    onToggleFavorite,
     isLoading
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
-    const totalPages = Math.ceil(scrapedJobs.length / itemsPerPage);
+    const visibleJobs = scrapedJobs.filter(job => !job.is_irrelevant);
+    const totalPages = Math.ceil(visibleJobs.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentJobs = scrapedJobs.slice(indexOfFirstItem, indexOfLastItem);
-
-    // We removed the automatic reset to page 1 to allow users to browse 
-    // older results even while the scraper is still running.
-    // useEffect(() => {
-    //     setCurrentPage(1);
-    // }, [scrapedJobs.length]);
+    const currentJobs = visibleJobs.slice(indexOfFirstItem, indexOfLastItem);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -82,7 +81,7 @@ export const ScraperSection: React.FC<ScraperSectionProps> = ({
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                         <h2 style={{ margin: 0 }}>Scraped Data</h2>
                         <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '2px 8px', borderRadius: '10px', border: '1px solid var(--border)' }}>
-                            {scrapedJobs.length} Results
+                            {visibleJobs.length} Results
                         </span>
                     </div>
                     <div
@@ -97,23 +96,41 @@ export const ScraperSection: React.FC<ScraperSectionProps> = ({
                         }}
                     >
                         {currentJobs.map((job) => (
-                            <div key={job.id} className="card job-card" style={{ padding: '0.75rem', fontSize: '0.85rem', transition: 'transform 0.2s', cursor: 'pointer' }}>
+                            <div key={job.id} className="card job-card" style={{ padding: '0.75rem', fontSize: '0.85rem', transition: 'transform 0.2s', cursor: 'pointer', position: 'relative' }}>
                                 <div style={{ fontWeight: 600, color: 'var(--primary)', marginBottom: '0.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                    <a href={job.url} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', flex: 1, marginRight: '0.5rem' }}>
+                                    <a href={job.url} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', flex: 1, marginRight: '2.5rem' }}>
                                         {job.title}
                                     </a>
+                                    <div style={{ display: 'flex', gap: '0.4rem', position: 'absolute', right: '0.75rem', top: '0.75rem' }}>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); onToggleFavorite(job.id); }}
+                                            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: job.is_favorite ? '#fbbf24' : 'var(--text-muted)', opacity: job.is_favorite ? 1 : 0.4 }}
+                                            title={job.is_favorite ? "Remove from favorites" : "Mark as favorite"}
+                                        >
+                                            <Star size={16} fill={job.is_favorite ? "#fbbf24" : "none"} />
+                                        </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); onToggleIrrelevant(job.id); }}
+                                            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: '#ef4444', opacity: 0.4 }}
+                                            title="Mark as irrelevant"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '0.25rem' }}>
+                                    {job.similarity_score > 0 && (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', flex: 1 }}>
+                                            <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden', flex: 1, maxWidth: '100px' }}>
+                                                <div style={{ width: `${job.similarity_score * 100}%`, height: '100%', background: 'var(--primary)' }}></div>
+                                            </div>
+                                            <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{(job.similarity_score * 100).toFixed(0)}% Match</span>
+                                        </div>
+                                    )}
                                     <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                                         {new Date(job.created_at).toLocaleDateString()}
                                     </span>
                                 </div>
-                                {job.similarity_score > 0 && (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem' }}>
-                                        <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden', flex: 1 }}>
-                                            <div style={{ width: `${job.similarity_score * 100}%`, height: '100%', background: 'var(--primary)' }}></div>
-                                        </div>
-                                        <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{(job.similarity_score * 100).toFixed(0)}% Match</span>
-                                    </div>
-                                )}
                             </div>
                         ))}
                     </div>
@@ -142,7 +159,7 @@ export const ScraperSection: React.FC<ScraperSectionProps> = ({
                                     Page {currentPage} of {totalPages}
                                 </span>
                                 <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', opacity: 0.7 }}>
-                                    Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, scrapedJobs.length)} of {scrapedJobs.length}
+                                    Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, visibleJobs.length)} of {visibleJobs.length}
                                 </span>
                             </div>
 
