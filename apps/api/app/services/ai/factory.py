@@ -1,9 +1,10 @@
 from app.services.ai.gemini import GeminiProvider
+from app.services.ai.huggingface import HuggingFaceProvider
 
 class AIProviderFactory:
     _providers = {
         "gemini": GeminiProvider(),
-        # "huggingface": HuggingFaceProvider(),
+        "huggingface": HuggingFaceProvider(),
     }
 
     @classmethod

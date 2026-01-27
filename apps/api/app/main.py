@@ -24,7 +24,7 @@ def seed_data():
            # {"name": "Gemini 1.5 Pro", "provider": "gemini", "model_name": "gemini-1.5-pro"},
             {"name": "Gemini 2.0 flash lite", "provider": "gemini", "model_name": "gemini-2.0-flash-lite"},
             {"name": "Gemini 2.0 flash", "provider": "gemini", "model_name": "gemini-2.0-flash"},
-           # {"name": "Hugging Face Llama 3", "provider": "huggingface", "model_name": "meta-llama/Meta-Llama-3-8B-Instruct"},
+            {"name": "Hugging Face Llama 3", "provider": "huggingface", "model_name": "meta-llama/Meta-Llama-3-8B-Instruct"},
         ]
         
         # Get all existing models from DB
