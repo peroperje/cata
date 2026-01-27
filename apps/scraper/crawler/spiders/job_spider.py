@@ -22,6 +22,13 @@ class JobSpider(RedisCrawlSpider):
         self.api_client = APIClient()
 
     def filter_links(self, links):
+        # Check if we should stop
+        status = self.server.get('scraper:status')
+        if status == b'stopped' or status == 'stopped':
+            self.logger.info("Stop requested via Redis. Closing spider.")
+            self.crawler.engine.close_spider(self, 'stopped_by_user')
+            return []
+
         filtered_links = []
         # General job terms to prioritize/filter links
         # Added more English terms for Glassdoor, LinkedIn, etc.
@@ -42,6 +49,13 @@ class JobSpider(RedisCrawlSpider):
         return filtered_links
 
     def parse_item(self, response):
+        # Check if we should stop
+        status = self.server.get('scraper:status')
+        if status == b'stopped' or status == 'stopped':
+            self.logger.info("Stop requested via Redis. Closing spider.")
+            self.crawler.engine.close_spider(self, 'stopped_by_user')
+            return None
+
         if not hasattr(response, 'text'):
             return None
 

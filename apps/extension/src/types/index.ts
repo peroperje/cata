@@ -35,6 +35,16 @@ export interface CV {
     created_at: string;
 }
 
+export interface ScrapedJob {
+    id: number;
+    title: string;
+    url: string;
+    content: string;
+    similarity_score: number;
+    created_at: string;
+}
+
+
 export type MessageAction =
     | { type: 'SCRAPE_DOM' }
     | { type: 'FILL_FORM', mappings: AIResponse['mappings'] }

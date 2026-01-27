@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 :root {
   --primary: #6366f1;
   --primary-hover: #4f46e5;
@@ -13,13 +17,14 @@ body {
   font-family: 'Inter', -apple-system, sans-serif;
   background-color: var(--bg);
   color: var(--text);
-  width: 420px;
-  /* Increased width to prevent horizontal scroll */
+  width: 360px;
+  min-height: 580px;
   overflow-x: hidden;
 }
 
 #root {
-  padding: 1rem;
+  padding: 1.25rem;
+  width: 100%;
 }
 
 .container {

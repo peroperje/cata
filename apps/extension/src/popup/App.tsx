@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, Zap, CheckCircle, AlertCircle, Search, StopCircle, Database } from 'lucide-react';
 import { extractTextFromPDF } from '../utils/pdf';
-import { FormField, AIResponse, AIModel, CV } from '../types';
+import { FormField, AIResponse, AIModel, CV, ScrapedJob } from '../types';
 
 const API_BASE_URL = 'http://localhost:8000/api/v1';
 
@@ -23,6 +23,7 @@ const App: React.FC = () => {
     const [isScraping, setIsScraping] = useState(false);
     const [jobCount, setJobCount] = useState<number | null>(null);
     const [initialJobCount, setInitialJobCount] = useState<number>(0);
+    const [scrapedJobs, setScrapedJobs] = useState<ScrapedJob[]>([]);
 
     useEffect(() => {
         chrome.storage.local.get(['selected_model_id'], (result) => {
@@ -74,14 +75,28 @@ const App: React.FC = () => {
             const data = await res.json();
             setIsScraping(data.status === 'running');
             setJobCount(data.job_count);
+            return data;
         } catch (err) {
             console.error('Failed to check scraper status', err);
+            return null;
+        }
+    };
+
+
+    const fetchScrapedJobs = async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/scraper/jobs`);
+            const data = await res.json();
+            setScrapedJobs(data);
+        } catch (err) {
+            console.error('Failed to fetch scraped jobs', err);
         }
     };
 
     const handleStartScraping = async () => {
         if (!scraperUrl) return;
         setStatus({ type: 'loading', message: 'Starting scraper...' });
+        setScrapedJobs([]); // Clear previous jobs
         try {
             setInitialJobCount(jobCount || 0);
             const res = await fetch(`${API_BASE_URL}/scraper/start`, {
@@ -105,9 +120,17 @@ const App: React.FC = () => {
             });
             if (!res.ok) throw new Error('Failed to stop scraper');
             setIsScraping(false);
-            const finalCount = jobCount || 0;
-            const inserted = finalCount - initialJobCount;
-            setStatus({ type: 'success', message: `Stopped. Inserted ${inserted > 0 ? inserted : 0} records.` });
+
+            // Wait a bit for the last items to process, then fetch status and jobs
+            setTimeout(async () => {
+                const data = await checkScraperStatus();
+                await fetchScrapedJobs();
+                const freshJobCount = data?.job_count || 0;
+                const inserted = freshJobCount - initialJobCount;
+                setStatus({ type: 'success', message: `Stopped. Inserted ${inserted > 0 ? inserted : 0} records.` });
+            }, 1000);
+
+
         } catch (err: any) {
             setStatus({ type: 'error', message: err.message });
         }
@@ -216,6 +239,15 @@ const App: React.FC = () => {
                 <h1>CATA - AI Job Suite</h1>
             </header>
 
+            {status.message && (
+                <div className={`status ${status.type}`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', marginBottom: '1rem' }}>
+                    {status.type === 'success' && <CheckCircle size={14} color="#10b981" />}
+                    {status.type === 'error' && <AlertCircle size={14} color="#ef4444" />}
+                    {status.type === 'loading' && <div className="spinner" style={{ width: '14px', height: '14px', border: '2px solid var(--text-muted)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>}
+                    <span style={{ fontWeight: 500 }}>{status.message}</span>
+                </div>
+            )}
+
             {/* Autofill Section */}
             <h2>Autofill</h2>
             <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -307,17 +339,49 @@ const App: React.FC = () => {
                 )}
             </div>
 
-            {status.message && (
-                <div className={`status ${status.type}`} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', borderRadius: '8px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)' }}>
-                    {status.type === 'success' && <CheckCircle size={14} color="#10b981" />}
-                    {status.type === 'error' && <AlertCircle size={14} color="#ef4444" />}
-                    <span>{status.message}</span>
+            {/* Scraped Jobs List */}
+            {scrapedJobs.length > 0 && !isScraping && (
+                <div style={{ marginTop: '0.5rem' }}>
+                    <h2 style={{ marginBottom: '0.75rem' }}>Scraped Data</h2>
+                    <div
+                        className="custom-scrollbar"
+                        style={{
+                            maxHeight: '200px',
+                            overflowY: 'auto',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.75rem',
+                            paddingRight: '4px'
+                        }}
+                    >
+
+                        {scrapedJobs.map((job) => (
+                            <div key={job.id} className="card" style={{ padding: '0.75rem', fontSize: '0.85rem' }}>
+                                <div style={{ fontWeight: 600, color: 'var(--primary)', marginBottom: '0.25rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {job.title}
+                                </div>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.5rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    <a href={job.url} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+                                        {job.url}
+                                    </a>
+                                </div>
+                                <div style={{ fontSize: '0.75rem', lineHeight: '1.4', opacity: 0.8 }}>
+                                    {job.content.length > 120 ? job.content.substring(0, 120) + '...' : job.content}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
+
 
             <style>{`
                 .pulse { animation: pulse-animation 2s infinite; }
                 @keyframes pulse-animation { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+                @keyframes spin { to { transform: rotate(360deg); } }
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
             `}</style>
         </div>
     );

@@ -12,11 +12,27 @@ export default defineConfig({
     root: __dirname,
     plugins: [
         react(),
+        {
+            name: 'fix-server-watch',
+            enforce: 'pre',
+            configResolved(config) {
+                if (config.server && (config.server.watch as any) === false) {
+                    config.server.watch = {};
+                }
+            },
+        },
         crx({ manifest }),
     ],
     resolve: {
         alias: {
             '@': '/apps/extension/src',
+        },
+    },
+    server: {
+        port: 5173,
+        strictPort: true,
+        hmr: {
+            port: 5173,
         },
     },
     build: {

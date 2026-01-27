@@ -51,3 +51,12 @@ def get_scraper_status(db: Session = Depends(get_db)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/scraper/jobs")
+def get_scraped_jobs(limit: int = 10, db: Session = Depends(get_db)):
+    try:
+        jobs = db.query(models.Job).order_by(models.Job.created_at.desc()).limit(limit).all()
+        return jobs
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
