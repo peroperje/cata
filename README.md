@@ -121,7 +121,12 @@ docker-compose down
 
 ### Job Scraper (Crawler)
 
-**Run with Docker-Compose**:
+**Run with the main Docker-Compose** (alongside API and Postgres):
+```bash
+docker compose up --build
+```
+
+**Run independently with Docker-Compose**:
 ```bash
 cd apps/scraper
 docker-compose up --build
@@ -129,7 +134,7 @@ docker-compose up --build
 
 **Manually trigger a crawl**:
 ```bash
-docker-compose run scraper scrapy crawl job_spider -a url=https://www.example.com/careers
+docker compose run scraper scrapy crawl job_spider -a url=https://www.example.com/careers
 ```
 
 ### API Documentation

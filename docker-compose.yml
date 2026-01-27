@@ -43,6 +43,32 @@ services:
       - cata-network
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
+  # Redis for Scraper
+  redis:
+    image: redis:alpine
+    container_name: cata-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - cata-network
+
+  # Job Scraper
+  scraper:
+    build:
+      context: ./apps/scraper
+      dockerfile: Dockerfile
+    container_name: cata-scraper
+    depends_on:
+      - redis
+      - api
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - API_BASE_URL=http://api:8000/api/v1
+    volumes:
+      - ./apps/scraper:/app
+    networks:
+      - cata-network
+
 volumes:
   cata_postgres_data:
 
