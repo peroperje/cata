@@ -37,5 +37,6 @@ class Job(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
     url = Column(String)
+    content = Column(String, nullable=True)
     similarity_score = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)

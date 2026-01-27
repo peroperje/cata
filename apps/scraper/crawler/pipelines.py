@@ -1,15 +1,9 @@
-from itemadapter import ItemAdapter
-from crawler.nlp_utils import NLPUtils
 from crawler.api_client import APIClient
 import logging
 
 class JobMatchPipeline:
     def __init__(self, api_url):
-        self.nlp = NLPUtils()
         self.api_client = APIClient(api_url)
-        self.cv_text = None
-        self.cv_vector = None
-        self.threshold = 0.5 # Defined threshold
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -18,27 +12,39 @@ class JobMatchPipeline:
         )
 
     def open_spider(self, spider):
-        self.cv_text = self.api_client.get_latest_cv_text()
-        if self.cv_text:
-            self.cv_vector = self.nlp.get_vector(self.cv_text)
-            spider.logger.info("CV text fetched and vectorized.")
-        else:
-            spider.logger.warning("Could not fetch CV text from API.")
+        spider.logger.info("Pipeline opened. Acting as light job filter.")
+
+    def is_likely_job(self, text):
+        """Very light filter to check if page content looks like a job post."""
+        if not text:
+            return False
+            
+        text_lower = text.lower()
+        # Light 'job-data' criteria - added Serbian terms for helloworld.rs
+        job_keywords = [
+            'requirements', 'responsibilities', 'qualifications', 'experience', 'apply', 'salary', 'benefits',
+            'uslovi', 'odgovornosti', 'kvalifikacije', 'iskustvo', 'prijava', 'plata', 'benefiti', 'nudi',
+            'opis posla', 'lokacija', 'radno vreme'
+        ]
+        matches = [kw for kw in job_keywords if kw in text_lower]
+        
+        # If it has at least 2 job-related keywords, we consider it a lead
+        return len(matches) >= 2
+
 
     def process_item(self, item, spider):
-        if not self.cv_vector is None and item.get('content'):
-            score = self.nlp.calculate_similarity_vector(self.cv_vector, item['content'])
-            item['similarity_score'] = float(score)
-
-            if score >= self.threshold:
-                spider.logger.info(f"Match found! Score: {score} for URL: {item['url']}")
-                job_payload = {
-                    "title": item.get('title', 'Unknown Title'),
-                    "url": item['url'],
-                    "similarity_score": float(score)
-                }
-                self.api_client.post_job_found(job_payload)
-            else:
-                spider.logger.debug(f"Score {score} beLow threshold for URL: {item['url']}")
+        content = item.get('content', '')
+        
+        if self.is_likely_job(content):
+            spider.logger.info(f"Light match found for URL: {item['url']}")
+            job_payload = {
+                "title": item.get('title', 'Unknown Title'),
+                "url": item['url'],
+                "content": content,
+                "similarity_score": 0.0 # Placeholder for now
+            }
+            self.api_client.post_job_found(job_payload)
+        else:
+            spider.logger.debug(f"Skipping non-job page: {item['url']}")
         
         return item

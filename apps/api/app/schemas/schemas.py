@@ -60,6 +60,7 @@ class CV(CVBase):
 class JobBase(BaseModel):
     title: str
     url: str
+    content: Optional[str] = None
     similarity_score: float
 
 class JobCreate(JobBase):

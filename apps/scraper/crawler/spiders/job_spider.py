@@ -2,17 +2,14 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from crawler.items import JobItem
 from crawler.api_client import APIClient
-from crawler.nlp_utils import NLPUtils
-import spacy
+from urllib.parse import urlparse
+import re
 
 class JobSpider(CrawlSpider):
     name = 'job_spider'
     
-    # These should ideally be passed as arguments or config
-    allowed_domains = ['example.com'] # specific job board or just empty for broad crawl? 
-    # Broad crawl is dangerous without limits. I'll adhere to specific domains if possible. 
-    # But the prompt implies "discovers jobs", likely from a set of start_urls.
-    start_urls = ['https://www.example.com/careers'] 
+    allowed_domains = []
+    start_urls = []
 
     rules = (
         Rule(LinkExtractor(), process_links='filter_links', callback='parse_item', follow=True),
@@ -21,55 +18,51 @@ class JobSpider(CrawlSpider):
     def __init__(self, *args, **kwargs):
         super(JobSpider, self).__init__(*args, **kwargs)
         self.api_client = APIClient()
-        self.nlp_utils = NLPUtils()
         
-        cv_text = self.api_client.get_latest_cv_text()
-        self.keywords = []
-        if cv_text:
-            doc = self.nlp_utils._nlp(cv_text)
-            # Simple keyword extraction: Nouns and PROPNs
-            self.keywords = [token.text.lower() for token in doc if token.pos_ in ('NOUN', 'PROPN') and not token.is_stop]
-            self.keywords = list(set(self.keywords)) # deduplicate
-        
-        # Ensure we have start_urls if passed
-        if 'url' in kwargs:
-             self.start_urls = [kwargs.get('url')]
+        # Priority: explicit 'url' argument
+        url = kwargs.get('url')
+        if url:
+            self.start_urls = [url]
+            domain = urlparse(url).netloc
+            if domain:
+                self.allowed_domains = [domain]
+        elif not self.start_urls:
+            # Default fallback for testing
+            self.start_urls = ['https://www.example.com/careers']
+            self.allowed_domains = ['example.com']
 
     def filter_links(self, links):
-        if not self.keywords:
-            return links
-            
         filtered_links = []
+        # General job terms to prioritize/filter links
+        job_terms = ['job', 'career', 'vacancy', 'position', 'oglasi', 'posao', 'radno-mesto', 'konkurs', 'oglas/']
+        
         for link in links:
-            # Check if any keyword matches the link text or url path
-            # This is a bit naive but serves the purpose of "filtering/prioritizing"
-            # We can also prioritize by yielding important links first, but filtering is easier to show.
-            # Let's simple check if link text contains any keyword.
-            text_lower = link.text.lower()
             url_lower = link.url.lower()
+            text_lower = link.text.lower()
             
-            # If standard job terms are in URL, always allow
-            if any(term in url_lower for term in ['job', 'career', 'vacancy', 'position']):
+            # If standard job terms are in URL or link text, allow it
+            if any(term in url_lower or term in text_lower for term in job_terms):
                 filtered_links.append(link)
-                continue
-                
-            # Otherwise check for keywords
-            if any(kw in text_lower or kw in url_lower for kw in self.keywords):
-                 filtered_links.append(link)
         
         return filtered_links
 
     def parse_item(self, response):
-        self.logger.info(f'Crawled: {response.url}')
+        if not hasattr(response, 'text'):
+            return None
+
+        self.logger.info(f'Processing possible job: {response.url}')
         item = JobItem()
         item['url'] = response.url
-        item['title'] = response.css('title::text').get()
+        item['title'] = (response.css('title::text').get() or 'No Title').strip()
         
-        # Extract text content from the body, removing scripts and styles
-        text_content = " ".join(response.css('body *::text').getall())
-        # Clean up text
-        import re
+        # More efficient and focused text extraction
+        # Using xpath to get all text nodes in body except scripts/styles
+        texts = response.xpath('//body//text()[not(parent::script or parent::style or parent::header or parent::footer)]').getall()
+        text_content = " ".join(texts)
+        
+        # Clean up text - remove redundant whitespace
         text_content = re.sub(r'\s+', ' ', text_content).strip()
         item['content'] = text_content
         
         return item
+

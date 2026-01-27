@@ -129,7 +129,7 @@ docker compose up --build
 **Run independently with Docker-Compose**:
 ```bash
 cd apps/scraper
-docker-compose up --build
+docker compose up --build
 ```
 
 **Manually trigger a crawl**:
