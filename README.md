@@ -11,10 +11,15 @@ cata-chrome-extension/
 │   │   ├── src/          # Extension source code
 │   │   ├── icons/        # Extension icons
 │   │   └── project.json  # Nx configuration
-│   └── api/              # Python FastAPI Backend
-│       ├── app/          # API source code
-│       ├── requirements.txt
-│       └── project.json  # Nx configuration
+│   ├── api/              # Python FastAPI Backend
+│   │   ├── app/          # API source code
+│   │   ├── requirements.txt
+│   │   └── project.json  # Nx configuration
+│   └── scraper/          # Scrapy CrawlSpider Service
+│       ├── crawler/      # Scraper logic (spiders, pipelines, NLP)
+│       ├── Dockerfile
+│       ├── docker-compose.yml
+│       └── requirements.txt
 ├── docker/
 │   └── api/              # Docker configuration for API
 ├── k8s/                  # Kubernetes manifests
@@ -30,6 +35,7 @@ cata-chrome-extension/
 - **CV Management**: Upload, extract, and store multiple CVs in PostgreSQL for easy access.
 - **Backend-Driven AI**: All AI processing is handled securely by the FastAPI backend using `google-genai`.
 - **Framework Bypassing**: Specialized value setter for React/Angular/Vue sites.
+- **Automated Job Discovery**: A production-ready Scrapy CrawlSpider microservice that discovers jobs matching your CV using NLP similarity.
 - **Premium UI**: Modern interface with React and Lucide icons.
 - **FastAPI Backend**: High-performance REST API with PostgreSQL.
 - **Nx Monorepo**: Unified workspace for extension and backend.
@@ -45,26 +51,26 @@ cata-chrome-extension/
 
 ### Installation
 
-1. **Clone the repository**:
-   ```bash
-   git clone git@github.com:peroperje/cata.git
-   ```
+1.  **Clone the repository**:
+    ```bash
+    git clone git@github.com:peroperje/cata.git
+    ```
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-3. **Install Python dependencies** (for local API development):
-   ```bash
-   npm run api:install
-   ```
+3.  **Install Python dependencies** (for local API development):
+    ```bash
+    npm run api:install
+    ```
 
-4. **Set up environment variables**:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
+4.  **Set up environment variables**:
+    ```bash
+    cp .env.example .env
+    # Edit .env with your configuration
+    ```
 
 ## 🛠️ Development
 
@@ -85,9 +91,9 @@ npx nx build extension
 ```
 
 **Load in Chrome**:
-1. Open Chrome and go to `chrome://extensions/`
-2. Enable "Developer mode"
-3. Click "Load unpacked" and select `/dist/apps/extension`
+1.  Open Chrome and go to `chrome://extensions/`
+2.  Enable "Developer mode"
+3.  Click "Load unpacked" and select `/dist/apps/extension`
 
 ### Python API
 
@@ -111,6 +117,19 @@ docker compose up --build
 npm run docker:down
 # or
 docker-compose down
+```
+
+### Job Scraper (Crawler)
+
+**Run with Docker-Compose**:
+```bash
+cd apps/scraper
+docker-compose up --build
+```
+
+**Manually trigger a crawl**:
+```bash
+docker-compose run scraper scrapy crawl job_spider -a url=https://www.example.com/careers
 ```
 
 ### API Documentation
@@ -157,6 +176,12 @@ npx nx run-many --target=test
 - **ORM**: SQLAlchemy
 - **Containerization**: Docker
 
+### Scraper (Crawler)
+- **Framework**: Scrapy
+- **State Management**: Scrapy-Redis + Redis
+- **NLP**: spaCy (`en_core_web_md`) + Scikit-learn
+- **API Client**: Requests
+
 ### Infrastructure & DevOps
 - **Monorepo**: Nx
 - **Orchestration**: Docker Compose
@@ -164,16 +189,18 @@ npx nx run-many --target=test
 
 ## 📝 Usage
 
-1. **Configure Extension**: Enter your API key in the extension popup (saved securely in backend).
-2. **Upload CV**: Upload your CV (PDF) via the extension. It will be parsed and stored in the database.
-3. **Select CV**: Choose which uploaded CV to use for the current session.
-4. **Auto-Fill**: Navigate to a job application page and click "Auto-Fill Page".
+1.  **Configure Extension**: Enter your API key in the extension popup (saved securely in backend).
+2.  **Upload CV**: Upload your CV (PDF) via the extension. It will be parsed and stored in the database.
+3.  **Select CV**: Choose which uploaded CV to use for the current session.
+4.  **Auto-Fill**: Navigate to a job application page and click "Auto-Fill Page".
 
 ## 🐳 Docker Services
 
 The `docker-compose.yml` includes:
 - **PostgreSQL**: Database on port 5432
 - **FastAPI**: Backend API on port 8000
+- **Redis**: Scraper task queue and state management on port 6379
+- **Scraper**: Independent CrawlSpider service
 
 ## 🤝 Contributing
 
