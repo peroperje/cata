@@ -54,7 +54,7 @@ const App: React.FC = () => {
         handleStopScraping,
         toggleIrrelevant,
         toggleFavorite
-    } = useScraper(setStatus);
+    } = useScraper(setStatus, expandedSections.scraper);
 
     const { handleFill } = useAutofill(pdfText, selectedModelId, setStatus);
 

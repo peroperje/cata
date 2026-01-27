@@ -6,7 +6,11 @@ SPIDER_MODULES = ['crawler.spiders']
 NEWSPIDER_MODULE = 'crawler.spiders'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
+
+# Reduce logging noise
+LOGSTATS_ENABLED = False
+LOG_LEVEL = 'INFO'
 
 # Scrapy-Redis Configuration
 # Fix: SCHEDULER must be uppercase

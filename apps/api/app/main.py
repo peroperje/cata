@@ -22,8 +22,8 @@ def seed_data():
         models_to_seed = [
            # {"name": "Gemini 1.5 Flash", "provider": "gemini", "model_name": "gemini-1.5-flash"},
            # {"name": "Gemini 1.5 Pro", "provider": "gemini", "model_name": "gemini-1.5-pro"},
-            {"name": "Gemini 2.5 flash lite", "provider": "gemini", "model_name": "gemini-2.5-flash-lite"},
-            {"name": "Gemini 2.5 flash", "provider": "gemini", "model_name": "gemini-2.5-flash"},
+            {"name": "Gemini 2.0 flash lite", "provider": "gemini", "model_name": "gemini-2.0-flash-lite"},
+            {"name": "Gemini 2.0 flash", "provider": "gemini", "model_name": "gemini-2.0-flash"},
            # {"name": "Hugging Face Llama 3", "provider": "huggingface", "model_name": "meta-llama/Meta-Llama-3-8B-Instruct"},
         ]
         

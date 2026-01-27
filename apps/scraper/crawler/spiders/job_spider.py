@@ -21,12 +21,14 @@ class JobSpider(RedisCrawlSpider):
         super(JobSpider, self).__init__(*args, **kwargs)
         self.api_client = APIClient()
 
+
+    def parse_start_url(self, response):
+        return self.parse_item(response)
+
     def filter_links(self, links):
         # Check if we should stop
         status = self.server.get('scraper:status')
         if status == b'stopped' or status == 'stopped':
-            self.logger.info("Stop requested via Redis. Closing spider.")
-            self.crawler.engine.close_spider(self, 'stopped_by_user')
             return []
 
         filtered_links = []
@@ -38,6 +40,8 @@ class JobSpider(RedisCrawlSpider):
             'detail', 'description', 'apply', 'careers'
         ]
         
+        self.logger.info(f"Filtering {len(links)} links from {links[0].url if links else 'unknown'}")
+        
         for link in links:
             url_lower = link.url.lower()
             text_lower = link.text.lower()
@@ -46,14 +50,13 @@ class JobSpider(RedisCrawlSpider):
             if any(term in url_lower or term in text_lower for term in job_terms):
                 filtered_links.append(link)
         
+        self.logger.info(f"Kept {len(filtered_links)} links")
         return filtered_links
 
     def parse_item(self, response):
         # Check if we should stop
         status = self.server.get('scraper:status')
         if status == b'stopped' or status == 'stopped':
-            self.logger.info("Stop requested via Redis. Closing spider.")
-            self.crawler.engine.close_spider(self, 'stopped_by_user')
             return None
 
         if not hasattr(response, 'text'):

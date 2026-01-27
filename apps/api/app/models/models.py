@@ -17,7 +17,7 @@ class UserKey(Base):
     __tablename__ = "user_keys"
 
     id = Column(Integer, primary_key=True, index=True)
-    model_id = Column(Integer, ForeignKey("ai_models.id"))
+    model_id = Column(Integer, ForeignKey("ai_models.id", ondelete="CASCADE"))
     api_key = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 

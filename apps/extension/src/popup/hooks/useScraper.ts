@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../constants';
 import { ScrapedJob } from '../../types';
 
-export const useScraper = (setStatus: (status: any) => void) => {
+export const useScraper = (setStatus: (status: any) => void, isExpanded: boolean) => {
     const [scraperUrl, setScraperUrl] = useState('');
     const [isScraping, setIsScraping] = useState(false);
     const [jobCount, setJobCount] = useState<number | null>(null);
@@ -72,6 +72,8 @@ export const useScraper = (setStatus: (status: any) => void) => {
     };
 
     useEffect(() => {
+        if (!isExpanded) return;
+
         checkScraperStatus();
         fetchScrapedJobs();
 
@@ -83,7 +85,7 @@ export const useScraper = (setStatus: (status: any) => void) => {
             });
         }, 5000);
         return () => clearInterval(interval);
-    }, []);
+    }, [isExpanded]);
 
     const toggleIrrelevant = async (jobId: number) => {
         try {

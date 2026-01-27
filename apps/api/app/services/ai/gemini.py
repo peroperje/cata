@@ -5,6 +5,7 @@ from app.services.ai.base import AIBaseProvider
 
 class GeminiProvider(AIBaseProvider):
     async def process(self, cv_text: str, form_data: List[dict], api_key: str, model_name: str) -> dict:
+        print(f"DEBUG: Processing with model {model_name}")
         client = genai.Client(api_key=api_key)
 
         prompt = f"""
@@ -32,30 +33,68 @@ class GeminiProvider(AIBaseProvider):
         3. **Output Format**:
            - Return a single JSON object with a "mappings" array.
            - Each mapping must have: "fieldId", "fieldName", and "value".
-           - Return ONLY the JSON. No markdown blocking (```json), no preamble.
            - **Data Types**: All 'value' fields MUST be strings. Convert booleans (true/false) to strings ("true"/"false").
         """
 
-        response = await client.aio.models.generate_content(
-            model=model_name,
-            contents=prompt
-        )
-        text = response.text
+        try:
+            response = await client.aio.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config={
+                    'response_mime_type': 'application/json',
+                }
+            )
+        except Exception as e:
+            print(f"DEBUG: Error calling Gemini API: {str(e)}")
+            raise ValueError(f"Gemini API error: {str(e)}")
 
-        # Clean up code blocks if Gemini returns them
+        if not response.text:
+            print(f"DEBUG: Gemini returned empty response. Safety filters might be triggered. Response: {response}")
+            raise ValueError("AI returned an empty response. This may be due to safety filters.")
+
+        text = response.text
+        print(f"DEBUG: AI raw response: {text}")
+
+        # Clean up code blocks if Gemini returns them (though JSON mode should prevent this)
         cleaned_text = text.replace('```json', '').replace('```', '').strip()
 
         try:
             data = json.loads(cleaned_text)
-            # Post-processing to ensure adherence to schema (value must be string)
+            
+            # If the AI returned the list directly, wrap it in a mappings object
+            if isinstance(data, list):
+                data = {"mappings": data}
+            
+            # Post-processing to ensure adherence to schema
             if "mappings" in data and isinstance(data["mappings"], list):
+                valid_mappings = []
                 for item in data["mappings"]:
-                    if "value" in item:
-                        # Force string conversion for booleans/numbers
-                        if isinstance(item["value"], bool):
-                             item["value"] = str(item["value"]).lower() # "true" / "false"
-                        else:
-                             item["value"] = str(item["value"])
-            return data
+                    if not isinstance(item, dict):
+                        continue
+                        
+                    # Ensure required fields exist, use defaults if missing
+                    field_id = str(item.get("fieldId", item.get("id", "")))
+                    field_name = str(item.get("fieldName", item.get("name", "")))
+                    value = item.get("value", "")
+                    
+                    # Force string conversion for value
+                    if isinstance(value, bool):
+                        value = str(value).lower()
+                    else:
+                        value = str(value)
+                        
+                    if field_id or field_name:
+                        valid_mappings.append({
+                            "fieldId": field_id,
+                            "fieldName": field_name,
+                            "value": value
+                        })
+                
+                return {"mappings": valid_mappings}
+            else:
+                print(f"DEBUG: AI response missing 'mappings' key: {data}")
+                raise ValueError("AI response missing 'mappings' key.")
+                
         except json.JSONDecodeError:
+            print(f"DEBUG: Failed to parse JSON: {cleaned_text}")
             raise ValueError("AI returned invalid JSON structure.")

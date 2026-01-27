@@ -30,9 +30,10 @@ def start_scraper(data: ScraperStart):
 @router.post("/scraper/stop")
 def stop_scraper():
     try:
-        # Clear the queues
+        # Clear the queues and dupefilter
         r.delete('job_spider:start_urls')
         r.delete('job_spider:requests')
+        r.delete('job_spider:dupefilter')
         # Scrapy-redis takes care of dupefilters too if we want, but let's keep it simple
         r.set('scraper:status', 'stopped')
         return {"status": "stopped"}

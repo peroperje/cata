@@ -1,11 +1,30 @@
 import { API_BASE_URL } from '../constants';
-import { FormField, AIResponse } from '../../types';
+import { FormField, AIResponse, MessageAction } from '../../types';
 
 export const useAutofill = (
     pdfText: string,
     selectedModelId: number | null,
     setStatus: (status: any) => void
 ) => {
+    const sendMessageToActiveTab = async (message: MessageAction): Promise<any> => {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tab?.id) throw new Error('No active tab found.');
+
+        // Verify we are on a webpage (not a chrome:// or about:blank page)
+        if (!tab.url?.startsWith('http')) {
+            throw new Error('Please open a job application page first.');
+        }
+
+        try {
+            return await chrome.tabs.sendMessage(tab.id, message);
+        } catch (err: any) {
+            if (err.message.includes('Could not establish connection')) {
+                throw new Error('Extension connection lost. Please refresh the job application page and try again.');
+            }
+            throw err;
+        }
+    };
+
     const handleFill = async () => {
         if (!pdfText) {
             setStatus({ type: 'error', message: 'Select a CV first.' });
@@ -18,12 +37,10 @@ export const useAutofill = (
 
         setStatus({ type: 'loading', message: 'Scraping form fields...' });
         try {
-            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-            if (!tab?.id) throw new Error('No active tab');
+            const fields: FormField[] = await sendMessageToActiveTab({ type: 'SCRAPE_DOM' });
 
-            const fields: FormField[] = await chrome.tabs.sendMessage(tab.id, { type: 'SCRAPE_DOM' });
             if (!fields || fields.length === 0) {
-                setStatus({ type: 'error', message: 'No fields found.' });
+                setStatus({ type: 'error', message: 'No fields found on this page.' });
                 return;
             }
 
@@ -38,17 +55,22 @@ export const useAutofill = (
                 })
             });
 
-            if (!res.ok) throw new Error('Mapping failed');
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.detail || 'Mapping failed');
+            }
+
             const data: AIResponse = await res.json();
 
             setStatus({ type: 'loading', message: 'Filling form...' });
-            await chrome.tabs.sendMessage(tab.id, {
+            await sendMessageToActiveTab({
                 type: 'FILL_FORM',
                 mappings: data.mappings
             });
 
-            setStatus({ type: 'success', message: 'Form filled!' });
+            setStatus({ type: 'success', message: 'Form filled successfully!' });
         } catch (err: any) {
+            console.error('Autofill error:', err);
             setStatus({ type: 'error', message: err.message || 'Workflow failed.' });
         }
     };
