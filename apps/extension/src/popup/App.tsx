@@ -65,6 +65,7 @@ const App: React.FC = () => {
         applications,
         currentJob,
         isExtracting,
+        isSaving,
         addApplication,
         updateStatus,
         deleteApplication,
@@ -138,6 +139,7 @@ const App: React.FC = () => {
                     applications={applications}
                     currentJob={currentJob}
                     isExtracting={isExtracting}
+                    isSaving={isSaving}
                     onAdd={addApplication}
                     onUpdateStatus={updateStatus}
                     onDelete={deleteApplication}

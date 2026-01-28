@@ -10,6 +10,7 @@ export const useJobTracker = (setStatus: (status: any) => void, isExpanded: bool
         url: '',
     });
     const [isExtracting, setIsExtracting] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
 
     const fetchApplications = async () => {
         try {
@@ -23,17 +24,45 @@ export const useJobTracker = (setStatus: (status: any) => void, isExpanded: bool
     };
 
     const fetchPageMetadata = () => {
+        setIsExtracting(true);
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             if (tabs[0]?.id) {
-                chrome.tabs.sendMessage(tabs[0].id, { type: 'GET_JOB_METADATA' }, (response: MetadataResponse) => {
+                chrome.tabs.sendMessage(tabs[0].id, { type: 'GET_JOB_METADATA' }, async (response: MetadataResponse) => {
                     if (response) {
                         setCurrentJob({
                             title: response.title,
                             company: response.company,
                             url: response.url
                         });
+
+                        // If AI model is selected and we have page text, try to improve extraction
+                        if (selectedModelId && response.pageText && (!response.title || !response.company)) {
+                            try {
+                                const aiRes = await fetch(`${API_BASE_URL}/job-applications/extract-metadata`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        pageText: response.pageText,
+                                        modelId: selectedModelId
+                                    })
+                                });
+                                if (aiRes.ok) {
+                                    const aiData = await aiRes.json();
+                                    setCurrentJob(prev => ({
+                                        ...prev,
+                                        title: aiData.title || prev.title,
+                                        company: aiData.company || prev.company
+                                    }));
+                                }
+                            } catch (err) {
+                                console.error('AI Metadata extraction failed', err);
+                            }
+                        }
                     }
+                    setIsExtracting(false);
                 });
+            } else {
+                setIsExtracting(false);
             }
         });
     };
@@ -41,63 +70,37 @@ export const useJobTracker = (setStatus: (status: any) => void, isExpanded: bool
     useEffect(() => {
         if (isExpanded) {
             fetchApplications();
-            fetchPageMetadata();
+            // Don't auto-fetch metadata on expand, let user click the button if they want
         }
     }, [isExpanded]);
 
-    const addApplication = async (notes: string) => {
-        setStatus({ type: 'loading', message: 'Reading page and saving...' });
-        setIsExtracting(true);
+    const addApplication = async (data: { title: string; company: string; notes: string }) => {
+        if (isSaving) return;
+        setIsSaving(true);
+        setStatus({ type: 'loading', message: 'Saving application...' });
 
-        // 1. Get current page content fresh
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            if (!tabs[0]?.id) {
-                setStatus({ type: 'error', message: 'No active tab found' });
-                setIsExtracting(false);
-                return;
-            }
-
-            chrome.tabs.sendMessage(tabs[0].id, { type: 'GET_JOB_METADATA' }, async (response: MetadataResponse) => {
-                if (!response) {
-                    setStatus({ type: 'error', message: 'Could not read page content' });
-                    setIsExtracting(false);
-                    return;
-                }
-
-                try {
-                    // 2. Send to backend - backend will handle AI extraction if needed
-                    const res = await fetch(`${API_BASE_URL}/job-applications`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            title: response.title,
-                            company: response.company,
-                            url: response.url,
-                            notes: notes,
-                            pageText: response.pageText,
-                            modelId: selectedModelId,
-                            status: 'Interested'
-                        }),
-                    });
-
-                    if (!res.ok) throw new Error('Failed to save application');
-
-                    setStatus({ type: 'success', message: 'Application saved!' });
-                    fetchApplications();
-                    // Update current job in case backend found better info
-                    const savedApp = await res.json();
-                    setCurrentJob({
-                        title: savedApp.title,
-                        company: savedApp.company,
-                        url: savedApp.url
-                    });
-                } catch (err: any) {
-                    setStatus({ type: 'error', message: err.message });
-                } finally {
-                    setIsExtracting(false);
-                }
+        try {
+            const res = await fetch(`${API_BASE_URL}/job-applications`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: data.title,
+                    company: data.company,
+                    url: currentJob.url,
+                    notes: data.notes,
+                    status: 'Interested'
+                }),
             });
-        });
+
+            if (!res.ok) throw new Error('Failed to save application');
+
+            setStatus({ type: 'success', message: 'Application saved!' });
+            await fetchApplications();
+        } catch (err: any) {
+            setStatus({ type: 'error', message: err.message });
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const updateStatus = async (id: number, status: string) => {
@@ -131,6 +134,7 @@ export const useJobTracker = (setStatus: (status: any) => void, isExpanded: bool
         applications,
         currentJob,
         isExtracting,
+        isSaving,
         addApplication,
         updateStatus,
         deleteApplication,

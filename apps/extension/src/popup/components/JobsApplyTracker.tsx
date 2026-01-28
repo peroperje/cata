@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
-import { Briefcase, Plus, Trash2, CheckCircle, Clock, XCircle, Info } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Briefcase, Plus, Trash2, CheckCircle, Clock, XCircle, Info, RefreshCw } from 'lucide-react';
 import { JobApplication } from '../../types';
 
 interface JobsApplyTrackerProps {
     applications: JobApplication[];
     currentJob: { title: string; company: string; url: string };
     isExtracting: boolean;
-    onAdd: (notes: string) => void;
+    isSaving: boolean;
+    onAdd: (data: { title: string; company: string; notes: string }) => void;
     onUpdateStatus: (id: number, status: string) => void;
     onDelete: (id: number) => void;
     onRefresh: () => void;
@@ -32,15 +33,25 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
     applications,
     currentJob,
     isExtracting,
+    isSaving,
     onAdd,
     onUpdateStatus,
     onDelete,
+    onRefresh
 }) => {
+    const [title, setTitle] = useState(currentJob.title);
+    const [company, setCompany] = useState(currentJob.company);
     const [notes, setNotes] = useState('');
     const statuses = ['Interested', 'Applied', 'Interview', 'Offer', 'Rejected'];
 
+    // Update local state when prop changes (e.g. after refresh/extract)
+    useEffect(() => {
+        setTitle(currentJob.title);
+        setCompany(currentJob.company);
+    }, [currentJob.title, currentJob.company]);
+
     const handleAdd = () => {
-        onAdd(notes);
+        onAdd({ title, company, notes });
         setNotes('');
     };
 
@@ -49,20 +60,65 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
             {/* Add New Section */}
             <div className="card">
                 <div style={{ marginBottom: '0.75rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#6366f1' }}>Current Page Job:</div>
-                        {isExtracting && (
-                            <div className="pulse" style={{ fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <div style={{ width: '6px', height: '6px', background: 'currentColor', borderRadius: '50%' }}></div>
-                                Processing...
-                            </div>
-                        )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#6366f1' }}>Job Details:</div>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            {isExtracting && (
+                                <div className="pulse" style={{ fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <div style={{ width: '6px', height: '6px', background: 'currentColor', borderRadius: '50%' }}></div>
+                                    Extracting...
+                                </div>
+                            )}
+                            <button
+                                onClick={onRefresh}
+                                disabled={isExtracting || isSaving}
+                                title="Extract from page"
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#6366f1',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    padding: '2px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '600'
+                                }}
+                            >
+                                <RefreshCw size={14} className={isExtracting ? 'spin' : ''} />
+                            </button>
+                        </div>
                     </div>
-                    <div style={{ fontSize: '1rem', fontWeight: '600' }}>
-                        {isExtracting ? '...' : (currentJob.title || 'Ready to track')}
-                    </div>
-                    <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
-                        {isExtracting ? '...' : currentJob.company}
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <input
+                            type="text"
+                            placeholder="Job Title"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '0.5rem',
+                                borderRadius: '4px',
+                                border: '1px solid #d1d5db',
+                                fontSize: '0.9rem',
+                                fontWeight: '600'
+                            }}
+                        />
+                        <input
+                            type="text"
+                            placeholder="Company"
+                            value={company}
+                            onChange={(e) => setCompany(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '0.5rem',
+                                borderRadius: '4px',
+                                border: '1px solid #d1d5db',
+                                fontSize: '0.85rem'
+                            }}
+                        />
                     </div>
                 </div>
 
@@ -72,7 +128,7 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
                     onChange={(e) => setNotes(e.target.value)}
                     style={{
                         width: '100%',
-                        minHeight: '80px',
+                        minHeight: '60px',
                         padding: '0.5rem',
                         borderRadius: '4px',
                         border: '1px solid #d1d5db',
@@ -81,8 +137,9 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
                     }}
                 />
 
-                <button className="button" onClick={handleAdd} disabled={isExtracting} style={{ width: '100%' }}>
-                    <Plus size={18} /> Add to Tracker
+                <button className="button" onClick={handleAdd} disabled={isExtracting || isSaving} style={{ width: '100%' }}>
+                    {isSaving ? <RefreshCw size={18} className="spin" /> : <Plus size={18} />}
+                    {isSaving ? 'Saving...' : 'Add to Tracker'}
                 </button>
             </div>
 
@@ -96,7 +153,18 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
                         return (
                             <div key={app.id} className="card" style={{ padding: '0.75rem', position: 'relative' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                                    <h3 style={{ fontSize: '0.95rem', margin: 0, paddingRight: '2rem' }}>{app.title}</h3>
+                                    <h3 style={{ fontSize: '0.95rem', margin: 0, paddingRight: '2rem' }}>
+                                        <a
+                                            href={app.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{ color: 'inherit', textDecoration: 'none' }}
+                                            onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                                            onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
+                                        >
+                                            {app.title}
+                                        </a>
+                                    </h3>
                                     <button
                                         onClick={() => onDelete(app.id)}
                                         style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
@@ -123,7 +191,15 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
                                 </div>
 
                                 {app.notes && (
-                                    <div style={{ fontSize: '0.8rem', backgroundColor: '#f9fafb', padding: '0.5rem', borderRadius: '4px', marginBottom: '0.75rem', borderLeft: '3px solid #e5e7eb' }}>
+                                    <div style={{
+                                        fontSize: '0.8rem',
+                                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                        color: '#f8fafc',
+                                        padding: '0.5rem',
+                                        borderRadius: '4px',
+                                        marginBottom: '0.75rem',
+                                        borderLeft: '3px solid #6366f1'
+                                    }}>
                                         {app.notes}
                                     </div>
                                 )}
@@ -137,9 +213,9 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
                                                 fontSize: '0.7rem',
                                                 padding: '2px 6px',
                                                 borderRadius: '4px',
-                                                border: `1px solid ${app.status === s ? statusColors[s] : '#e5e7eb'}`,
-                                                backgroundColor: app.status === s ? statusColors[s] : 'white',
-                                                color: app.status === s ? 'white' : '#6b7280',
+                                                border: `1px solid ${app.status === s ? statusColors[s] : '#334155'}`,
+                                                backgroundColor: app.status === s ? statusColors[s] : 'transparent',
+                                                color: app.status === s ? 'white' : '#94a3b8',
                                                 cursor: 'pointer'
                                             }}
                                         >
