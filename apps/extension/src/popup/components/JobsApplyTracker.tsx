@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Briefcase, List, Plus, Trash2, Edit2, CheckCircle, Clock, XCircle, Info } from 'lucide-react';
+import { Briefcase, Plus, Trash2, CheckCircle, Clock, XCircle, Info } from 'lucide-react';
 import { JobApplication } from '../../types';
 
 interface JobsApplyTrackerProps {
     applications: JobApplication[];
     currentJob: { title: string; company: string; url: string };
+    isExtracting: boolean;
     onAdd: (notes: string) => void;
     onUpdateStatus: (id: number, status: string) => void;
     onDelete: (id: number) => void;
@@ -30,10 +31,10 @@ const statusIcons: { [key: string]: any } = {
 export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
     applications,
     currentJob,
+    isExtracting,
     onAdd,
     onUpdateStatus,
     onDelete,
-    onRefresh
 }) => {
     const [notes, setNotes] = useState('');
     const statuses = ['Interested', 'Applied', 'Interview', 'Offer', 'Rejected'];
@@ -48,13 +49,25 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
             {/* Add New Section */}
             <div className="card">
                 <div style={{ marginBottom: '0.75rem' }}>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#6366f1' }}>Current Page Job:</div>
-                    <div style={{ fontSize: '1rem', fontWeight: '600' }}>{currentJob.title || 'No job detected'}</div>
-                    <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>{currentJob.company}</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#6366f1' }}>Current Page Job:</div>
+                        {isExtracting && (
+                            <div className="pulse" style={{ fontSize: '0.75rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <div style={{ width: '6px', height: '6px', background: 'currentColor', borderRadius: '50%' }}></div>
+                                Processing...
+                            </div>
+                        )}
+                    </div>
+                    <div style={{ fontSize: '1rem', fontWeight: '600' }}>
+                        {isExtracting ? '...' : (currentJob.title || 'Ready to track')}
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+                        {isExtracting ? '...' : currentJob.company}
+                    </div>
                 </div>
 
                 <textarea
-                    placeholder="Add some notes..."
+                    placeholder="Add some notes (optional)..."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     style={{
@@ -68,14 +81,9 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
                     }}
                 />
 
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button className="button" onClick={handleAdd} disabled={!currentJob.title} style={{ flex: 1 }}>
-                        <Plus size={18} /> Add to Tracker
-                    </button>
-                    <button className="button" onClick={onRefresh} style={{ width: '40px', padding: '0' }} title="Reload metadata">
-                        <Edit2 size={16} />
-                    </button>
-                </div>
+                <button className="button" onClick={handleAdd} disabled={isExtracting} style={{ width: '100%' }}>
+                    <Plus size={18} /> Add to Tracker
+                </button>
             </div>
 
             {/* List Section */}

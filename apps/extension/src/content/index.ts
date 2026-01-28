@@ -296,7 +296,7 @@ function getJobMetadata() {
         title = document.querySelector('meta[property="og:title"]')?.getAttribute('content') || document.title;
     }
 
-    return { title, company, url };
+    return { title, company, url, pageText: document.body.innerText };
 }
 
 // Message Listener

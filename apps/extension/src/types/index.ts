@@ -65,3 +65,10 @@ export type MessageAction =
     | { type: 'AI_SUCCESS', mappings: AIResponse['mappings'] }
     | { type: 'AI_ERROR', error: string }
     | { type: 'GET_JOB_METADATA' };
+
+export type MetadataResponse = {
+    title: string;
+    company: string;
+    url: string;
+    pageText?: string;
+};

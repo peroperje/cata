@@ -105,3 +105,47 @@ class HuggingFaceProvider(AIBaseProvider):
         except json.JSONDecodeError:
             print(f"DEBUG: Failed to parse JSON from Hugging Face: {cleaned_text}")
             raise ValueError("AI returned invalid JSON structure.")
+
+    async def extract_metadata(self, page_text: str, api_key: str, model_name: str) -> dict:
+        print(f"DEBUG: Extracting metadata with Hugging Face model {model_name}")
+        client = InferenceClient(api_key=api_key, base_url="https://router.huggingface.co")
+
+        prompt = f"""
+        You are an expert at extracting job information from webpage content.
+        Your task is to identify the **Job Title** and **Company Name** from the provided text.
+
+        PAGE CONTENT:
+        \"\"\"
+        {page_text[:8000]}
+        \"\"\"
+
+        INSTRUCTIONS:
+        1. Look for headings, prominent text, and job-related keywords.
+        2. Return a single JSON object with: "title" (string) and "company" (string).
+        3. If not found, use empty strings.
+        4. Return ONLY raw JSON.
+        """
+
+        try:
+            messages = [
+                {"role": "system", "content": "You are a specialized JSON extractor. Return ONLY raw JSON."},
+                {"role": "user", "content": prompt}
+            ]
+            
+            response = client.chat_completion(
+                model=model_name,
+                messages=messages,
+                max_tokens=512,
+                response_format={"type": "json_object"}
+            )
+            
+            text = response.choices[0].message.content
+            data = json.loads(text.replace('```json', '').replace('```', '').strip())
+            
+            return {
+                "title": str(data.get("title", "")).strip(),
+                "company": str(data.get("company", "")).strip()
+            }
+        except Exception as e:
+            print(f"DEBUG: Error extracting metadata with Hugging Face: {str(e)}")
+            return {"title": "", "company": ""}

@@ -64,11 +64,12 @@ const App: React.FC = () => {
     const {
         applications,
         currentJob,
+        isExtracting,
         addApplication,
         updateStatus,
         deleteApplication,
         refreshMetadata
-    } = useJobTracker(setStatus, expandedSections.jat);
+    } = useJobTracker(setStatus, expandedSections.jat, selectedModelId);
 
     return (
         <div className="container">
@@ -136,6 +137,7 @@ const App: React.FC = () => {
                 <JobsApplyTracker
                     applications={applications}
                     currentJob={currentJob}
+                    isExtracting={isExtracting}
                     onAdd={addApplication}
                     onUpdateStatus={updateStatus}
                     onDelete={deleteApplication}

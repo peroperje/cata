@@ -5,8 +5,40 @@ from datetime import datetime
 from app.models import models
 from app.schemas import schemas
 
-def create_job_application(db: Session, application: schemas.JobApplicationCreate):
-    db_application = models.JobApplication(**application.dict())
+from app.services.ai.factory import AIProviderFactory
+
+async def create_job_application(db: Session, application: schemas.JobApplicationCreate):
+    app_dict = application.dict(exclude={'pageText', 'modelId'})
+    
+    # If title or company is missing, try AI extraction
+    if application.pageText and application.modelId and (not application.title or not application.company):
+        try:
+            model = db.query(models.AIModel).filter(models.AIModel.id == application.modelId).first()
+            if model:
+                user_key = db.query(models.UserKey).filter(models.UserKey.model_id == model.id).order_by(models.UserKey.created_at.desc()).first()
+                if user_key:
+                    provider = AIProviderFactory.get_provider(model.provider)
+                    # Run extraction
+                    metadata = await provider.extract_metadata(
+                        page_text=application.pageText,
+                        api_key=user_key.api_key,
+                        model_name=model.model_name
+                    )
+                    
+                    if not app_dict.get('title'):
+                        app_dict['title'] = metadata.get('title', 'Unknown Title')
+                    if not app_dict.get('company'):
+                        app_dict['company'] = metadata.get('company', 'Unknown Company')
+        except Exception as e:
+            print(f"ERROR: AI extraction during create failed: {e}")
+
+    # Fallbacks
+    if not app_dict.get('title'):
+        app_dict['title'] = 'Unknown Title'
+    if not app_dict.get('company'):
+        app_dict['company'] = 'Unknown Company'
+
+    db_application = models.JobApplication(**app_dict)
     db.add(db_application)
     db.commit()
     db.refresh(db_application)

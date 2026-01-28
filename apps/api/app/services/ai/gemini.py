@@ -98,3 +98,52 @@ class GeminiProvider(AIBaseProvider):
         except json.JSONDecodeError:
             print(f"DEBUG: Failed to parse JSON: {cleaned_text}")
             raise ValueError("AI returned invalid JSON structure.")
+
+    async def extract_metadata(self, page_text: str, api_key: str, model_name: str) -> dict:
+        print(f"DEBUG: Extracting metadata with model {model_name}")
+        client = genai.Client(api_key=api_key)
+
+        prompt = f"""
+        You are an expert at extracting job information from webpage content.
+        Your task is to identify the **Job Title** and **Company Name** from the provided text.
+
+        PAGE CONTENT:
+        \"\"\"
+        {page_text[:10000]}  # Truncate to avoid context window issues
+        \"\"\"
+
+        INSTRUCTIONS:
+        1. Look for headings, prominent text, and job-related keywords.
+        2. If the company name is not explicitly mentioned but implied (e.g., in the header), return it.
+        3. Return a single JSON object with the following fields:
+           - "title": The title of the job (string).
+           - "company": The name of the hiring company (string).
+        4. If you cannot find the information, return empty strings for the fields.
+
+        Return ONLY the JSON object.
+        """
+
+        try:
+            response = await client.aio.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config={
+                    'response_mime_type': 'application/json',
+                }
+            )
+        except Exception as e:
+            print(f"DEBUG: Error calling Gemini API: {str(e)}")
+            raise ValueError(f"Gemini API error: {str(e)}")
+
+        if not response.text:
+            raise ValueError("AI returned an empty response.")
+
+        try:
+            data = json.loads(response.text)
+            return {
+                "title": str(data.get("title", "")).strip(),
+                "company": str(data.get("company", "")).strip()
+            }
+        except json.JSONDecodeError:
+            print(f"DEBUG: Failed to parse metadata JSON: {response.text}")
+            return {"title": "", "company": ""}

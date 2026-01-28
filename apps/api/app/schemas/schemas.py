@@ -82,8 +82,14 @@ class JobApplicationBase(BaseModel):
     status: str = "Interested"
     notes: Optional[str] = None
 
-class JobApplicationCreate(JobApplicationBase):
-    pass
+class JobApplicationCreate(BaseModel):
+    title: Optional[str] = None
+    url: str
+    company: Optional[str] = None
+    status: Optional[str] = "Interested"
+    notes: Optional[str] = None
+    pageText: Optional[str] = None
+    modelId: Optional[int] = None
 
 class JobApplicationUpdate(BaseModel):
     title: Optional[str] = None
@@ -99,3 +105,11 @@ class JobApplication(JobApplicationBase):
 
     class Config:
         from_attributes = True
+
+class MetadataExtractionRequest(BaseModel):
+    pageText: str
+    modelId: int
+
+class MetadataExtractionResponse(BaseModel):
+    title: str
+    company: str

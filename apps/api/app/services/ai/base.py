@@ -5,3 +5,7 @@ class AIBaseProvider(ABC):
     @abstractmethod
     async def process(self, cv_text: str, form_data: List[dict], api_key: str, model_name: str) -> dict:
         pass
+
+    @abstractmethod
+    async def extract_metadata(self, page_text: str, api_key: str, model_name: str) -> dict:
+        pass
