@@ -34,10 +34,11 @@ cata-chrome-extension/
 
 - **Multi-AI Provider Support**: Choose between Google Gemini (Pro, Flash, Flash Lite) and Hugging Face (Llama 3) for form filling logic via a unified AI Factory.
 - **Advanced CV Management**: Upload, extract, and store multiple CVs in PostgreSQL. Switch between different CVs for different applications seamlessly.
-- **Modular Extension UI**: Reorganized into three distinct sections:
+- **Modular Extension UI**: Reorganized into four focused sections:
   - **CV Section**: Manage and select your professional profiles.
   - **Autofill Section**: Intelligent form filling with framework-specific value setters (React/Angular/Vue).
   - **Scraper Section**: Discover new job opportunities matching your profile.
+  - **Jobs Tracker Section**: Personal CRM for job applications with automatic metadata extraction (title, company, URL) and status tracking.
 - **Production-Ready Scraper**: A Scrapy CrawlSpider service that uses NLP similarity to find jobs, now with a scrollable results UI in the extension.
 - **Real-time Status Updates**: Improved feedback with a status banner in the extension UI.
 - **Nx Monorepo**: Scalable workspace architecture for extension, API, and scraper.
@@ -181,9 +182,8 @@ npx nx run-many --target=test
 - **Framework**: FastAPI
 - **Database**: PostgreSQL
 - **AI Providers**: 
-  - **Google Gemini**: Support for 1.5 Pro, 2.0 Flash, and 2.0 Flash Lite.
-  - **Hugging Face**: Support for Llama 3 and other Inference API models.
-- **AI Factory**: Modular provider system in `app/services/ai`.
+  - **Google Gemini**: Support for 1.5 Pro, 2.0 Flash, and 2.0 Flash Lite for both **Form Filling** and **Metadata Extraction**.
+  - **Hugging Face**: Support for Llama 3 and other Inference API models via a unified **AI Factory**.
 - **ORM**: SQLAlchemy
 - **Containerization**: Docker
 
@@ -210,6 +210,10 @@ npx nx run-many --target=test
     - Enter a job search URL.
     - Click **"Start Scraping"** to discover jobs matching your profile.
     - View discovered jobs and their similarity scores in the scrollable list.
+6.  **Jobs Tracker Section**:
+    - Click **"Add to Tracker"** on any job page to automatically capture job details.
+    - AI-powered metadata extraction will attempt to pull the **Job Title** and **Company** from the page context.
+    - Manage your application pipeline by updating statuses and adding personal notes.
 
 ## 🐳 Docker Services
 
