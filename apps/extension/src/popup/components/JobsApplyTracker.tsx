@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Plus, Trash2, CheckCircle, Clock, XCircle, Info, RefreshCw } from 'lucide-react';
 import { JobApplication } from '../../types';
+import { ConfirmModal } from './ConfirmModal';
 
 interface JobsApplyTrackerProps {
     applications: JobApplication[];
@@ -42,6 +43,7 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
     const [title, setTitle] = useState(currentJob.title);
     const [company, setCompany] = useState(currentJob.company);
     const [notes, setNotes] = useState('');
+    const [idToDelete, setIdToDelete] = useState<number | null>(null);
     const statuses = ['Interested', 'Applied', 'Interview', 'Offer', 'Rejected'];
 
     // Update local state when prop changes (e.g. after refresh/extract)
@@ -53,6 +55,17 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
     const handleAdd = () => {
         onAdd({ title, company, notes });
         setNotes('');
+    };
+
+    const handleDeleteClick = (id: number) => {
+        setIdToDelete(id);
+    };
+
+    const handleConfirmDelete = () => {
+        if (idToDelete !== null) {
+            onDelete(idToDelete);
+            setIdToDelete(null);
+        }
     };
 
     return (
@@ -166,7 +179,7 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
                                         </a>
                                     </h3>
                                     <button
-                                        onClick={() => onDelete(app.id)}
+                                        onClick={() => handleDeleteClick(app.id)}
                                         style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
                                     >
                                         <Trash2 size={16} />
@@ -228,6 +241,16 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
                     })
                 )}
             </div>
+
+            <ConfirmModal
+                isOpen={idToDelete !== null}
+                onClose={() => setIdToDelete(null)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Application"
+                message="Are you sure you want to delete this application? This action cannot be undone."
+                confirmText="Delete"
+                type="danger"
+            />
         </div>
     );
 };

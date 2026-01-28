@@ -118,7 +118,6 @@ export const useJobTracker = (setStatus: (status: any) => void, isExpanded: bool
     };
 
     const deleteApplication = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this application?')) return;
         try {
             const res = await fetch(`${API_BASE_URL}/job-applications/${id}`, {
                 method: 'DELETE',
