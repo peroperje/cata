@@ -24,6 +24,13 @@
                 "command": ". venv/bin/activate && cd apps/api && pytest",
                 "cwd": "."
             }
+        },
+        "mcp": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": ". venv/bin/activate && cd apps/api && python3 -m app.mcp_server",
+                "cwd": "."
+            }
         }
     },
     "tags": [

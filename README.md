@@ -215,6 +215,34 @@ npx nx run-many --target=test
     - AI-powered metadata extraction will attempt to pull the **Job Title** and **Company** from the page context.
     - Manage your application pipeline by updating statuses and adding personal notes.
 
+## 💡 MCP Integration (Experimental)
+
+CATA now supports the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). This allows you to connect your favorite AI clients (like Claude Desktop or Cursor) directly to your job search data.
+
+### Available Tools
+- `get_user_cvs`: Lists all your uploaded CVs.
+- `search_scraped_jobs`: Semantic search (keyword-based) over your scraped job listings.
+- `add_to_tracker`: Remote command to add a new job application to your tracker.
+
+### How to Run
+You can run the MCP server locally using Nx:
+```bash
+npx nx run api:mcp
+```
+
+### Configuration
+To use with **Claude Desktop**, add the following to your `claude_desktop_config.json`:
+```json
+{
+  "mcpServers": {
+    "cata": {
+      "command": "npx",
+      "args": ["nx", "run", "api:mcp"]
+    }
+  }
+}
+```
+
 ## 🐳 Docker Services
 
 The `docker-compose.yml` includes:
