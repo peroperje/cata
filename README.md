@@ -37,10 +37,11 @@ cata-chrome-extension/
 - **Modular Extension UI**: Reorganized into four focused sections:
   - **CV Section**: Manage and select your professional profiles.
   - **Autofill Section**: Intelligent form filling with framework-specific value setters (React/Angular/Vue).
-  - **Scraper Section**: Discover new job opportunities matching your profile.
-  - **Jobs Tracker Section**: Personal CRM for job applications with automatic metadata extraction (title, company, URL) and status tracking.
-- **Production-Ready Scraper**: A Scrapy CrawlSpider service that uses NLP similarity to find jobs, now with a scrollable results UI in the extension.
-- **Real-time Status Updates**: Improved feedback with a status banner in the extension UI.
+  - **Scraper Section**: Discover new job opportunities matching your profile with **pagination** and **real-time results**.
+  - **Jobs Tracker Section**: Personal CRM for job applications with **server-side metadata extraction** (title, company, URL), **clickable job links**, and status tracking.
+- **Production-Ready Scraper**: A Scrapy CrawlSpider service that uses NLP similarity to find jobs, now with a scrollable results UI and pagination in the extension.
+- **Real-time Status Updates**: Improved feedback with a status banner and dynamic UI updates in the extension.
+- **Reusable Component Suite**: Implementation of a modern UI library including **custom modals**, **loaders**, and **paginators**.
 - **Nx Monorepo**: Scalable workspace architecture for extension, API, and scraper.
 
 ## 🚀 Getting Started
@@ -209,11 +210,12 @@ npx nx run-many --target=test
 5.  **Scraper Section**: 
     - Enter a job search URL.
     - Click **"Start Scraping"** to discover jobs matching your profile.
-    - View discovered jobs and their similarity scores in the scrollable list.
+    - View discovered jobs and their similarity scores in the scrollable list with **pagination**.
 6.  **Jobs Tracker Section**:
     - Click **"Add to Tracker"** on any job page to automatically capture job details.
-    - AI-powered metadata extraction will attempt to pull the **Job Title** and **Company** from the page context.
-    - Manage your application pipeline by updating statuses and adding personal notes.
+    - **Server-side AI Extraction**: The backend automatically attempts to pull the **Job Title** and **Company** from the page context.
+    - Clickable job titles lead directly back to the application page.
+    - Manage your application pipeline by updating statuses and adding **optional personal notes**.
 
 ## 💡 MCP Integration (Experimental)
 
@@ -221,7 +223,12 @@ CATA now supports the [Model Context Protocol (MCP)](https://modelcontextprotoco
 
 ### Available Tools
 - `get_user_cvs`: Lists all your uploaded CVs.
+- `get_cv_content`: Fetches the full text content of a specific CV.
 - `search_scraped_jobs`: Semantic search (keyword-based) over your scraped job listings.
+- `get_scraped_job_details`: Fetches the full content and metadata of a specific scraped job.
+- `get_latest_scraped_jobs`: Retrieves the most recently discovered job opportunities.
+- `list_tracked_jobs`: Lists all job applications in your tracker, with optional status filtering.
+- `update_job_status`: Updates statuses (e.g., "Interview", "Applied") and notes for tracked jobs.
 - `add_to_tracker`: Remote command to add a new job application to your tracker.
 
 ### How to Run
