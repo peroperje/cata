@@ -42,3 +42,15 @@ class Job(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     is_irrelevant = Column(Boolean, default=False)
     is_favorite = Column(Boolean, default=False)
+
+class JobApplication(Base):
+    __tablename__ = "job_applications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String)
+    url = Column(String)
+    company = Column(String)
+    status = Column(String, default="Interested") # Interested, Applied, Interview, Offer, Rejected
+    notes = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

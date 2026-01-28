@@ -46,10 +46,22 @@ export interface ScrapedJob {
     is_favorite?: boolean;
 }
 
+export interface JobApplication {
+    id: number;
+    title: string;
+    url: string;
+    company: string;
+    status: string;
+    notes?: string;
+    created_at: string;
+    updated_at: string;
+}
+
 
 export type MessageAction =
     | { type: 'SCRAPE_DOM' }
     | { type: 'FILL_FORM', mappings: AIResponse['mappings'] }
     | { type: 'PROCESS_AI', cvText: string, formData: FormField[], modelId: number }
     | { type: 'AI_SUCCESS', mappings: AIResponse['mappings'] }
-    | { type: 'AI_ERROR', error: string };
+    | { type: 'AI_ERROR', error: string }
+    | { type: 'GET_JOB_METADATA' };

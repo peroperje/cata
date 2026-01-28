@@ -4,10 +4,12 @@ import { CollapsibleSection } from './components/CollapsibleSection';
 import { CvSection } from './components/CvSection';
 import { AutofillSection } from './components/AutofillSection';
 import { ScraperSection } from './components/ScraperSection';
+import { JobsApplyTracker } from './components/JobsApplyTracker';
 import { useCvs } from './hooks/useCvs';
 import { useModels } from './hooks/useModels';
 import { useScraper } from './hooks/useScraper';
 import { useAutofill } from './hooks/useAutofill';
+import { useJobTracker } from './hooks/useJobTracker';
 
 const App: React.FC = () => {
     const [status, setStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error'; message: string }>({
@@ -18,7 +20,8 @@ const App: React.FC = () => {
     const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
         cv: true,
         autofill: false,
-        scraper: false
+        scraper: false,
+        jat: false
     });
 
     const toggleSection = (section: string) => {
@@ -57,6 +60,15 @@ const App: React.FC = () => {
     } = useScraper(setStatus, expandedSections.scraper);
 
     const { handleFill } = useAutofill(pdfText, selectedModelId, setStatus);
+
+    const {
+        applications,
+        currentJob,
+        addApplication,
+        updateStatus,
+        deleteApplication,
+        refreshMetadata
+    } = useJobTracker(setStatus, expandedSections.jat);
 
     return (
         <div className="container">
@@ -113,6 +125,21 @@ const App: React.FC = () => {
                     onToggleIrrelevant={toggleIrrelevant}
                     onToggleFavorite={toggleFavorite}
                     isLoading={status.type === 'loading'}
+                />
+            </CollapsibleSection>
+
+            <CollapsibleSection
+                title="Jobs Apply Tracker"
+                isExpanded={expandedSections.jat}
+                onToggle={() => toggleSection('jat')}
+            >
+                <JobsApplyTracker
+                    applications={applications}
+                    currentJob={currentJob}
+                    onAdd={addApplication}
+                    onUpdateStatus={updateStatus}
+                    onDelete={deleteApplication}
+                    onRefresh={refreshMetadata}
                 />
             </CollapsibleSection>
         </div >

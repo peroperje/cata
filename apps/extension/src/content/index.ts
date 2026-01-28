@@ -265,6 +265,40 @@ function autofill(mappings: { fieldId: string; fieldName: string; value: string 
     console.log(`[CATA] Autofill complete.`);
 }
 
+/**
+ * Extracts job title, company, and URL from the current page.
+ */
+function getJobMetadata() {
+    const url = window.location.href;
+    let title = '';
+    let company = '';
+
+    // LinkedIn Specific
+    if (url.includes('linkedin.com/jobs/view') || url.includes('linkedin.com/jobs/search')) {
+        title = document.querySelector('.job-details-jobs-unified-top-card__job-title')?.textContent?.trim() ||
+            document.querySelector('.t-24.t-bold')?.textContent?.trim() || '';
+
+        company = document.querySelector('.job-details-jobs-unified-top-card__company-name')?.textContent?.trim() ||
+            document.querySelector('.jobs-unified-top-card__company-name')?.textContent?.trim() || '';
+    }
+
+    // Glassdoor Specific
+    else if (url.includes('glassdoor.com')) {
+        title = document.querySelector('[data-test="jobTitle"]')?.textContent?.trim() ||
+            document.querySelector('.job-title')?.textContent?.trim() || '';
+
+        company = document.querySelector('[data-test="employerName"]')?.textContent?.trim() ||
+            document.querySelector('.employer-name')?.textContent?.trim() || '';
+    }
+
+    // Generic fallback (OpenGraph)
+    if (!title) {
+        title = document.querySelector('meta[property="og:title"]')?.getAttribute('content') || document.title;
+    }
+
+    return { title, company, url };
+}
+
 // Message Listener
 chrome.runtime.onMessage.addListener((message: MessageAction, sender, sendResponse) => {
     if (message.type === 'SCRAPE_DOM') {
@@ -282,6 +316,14 @@ chrome.runtime.onMessage.addListener((message: MessageAction, sender, sendRespon
         } catch (err) {
             console.error('[CATA] Fill error:', err);
             sendResponse({ success: false, error: String(err) });
+        }
+    } else if (message.type === 'GET_JOB_METADATA') {
+        try {
+            const metadata = getJobMetadata();
+            sendResponse(metadata);
+        } catch (err) {
+            console.error('[CATA] Metadata error:', err);
+            sendResponse({ title: '', company: '', url: window.location.href });
         }
     }
     return true;

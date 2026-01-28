@@ -74,3 +74,28 @@ class Job(JobBase):
 
     class Config:
         from_attributes = True
+
+class JobApplicationBase(BaseModel):
+    title: str
+    url: str
+    company: str
+    status: str = "Interested"
+    notes: Optional[str] = None
+
+class JobApplicationCreate(JobApplicationBase):
+    pass
+
+class JobApplicationUpdate(BaseModel):
+    title: Optional[str] = None
+    url: Optional[str] = None
+    company: Optional[str] = None
+    status: Optional[str] = None
+    notes: Optional[str] = None
+
+class JobApplication(JobApplicationBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
