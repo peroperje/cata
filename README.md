@@ -32,13 +32,15 @@ cata-chrome-extension/
 
 ## ✨ Features
 
-- **CV Management**: Upload, extract, and store multiple CVs in PostgreSQL for easy access.
-- **Backend-Driven AI**: All AI processing is handled securely by the FastAPI backend using `google-genai`.
-- **Framework Bypassing**: Specialized value setter for React/Angular/Vue sites.
-- **Automated Job Discovery**: A production-ready Scrapy CrawlSpider microservice that discovers jobs matching your CV using NLP similarity.
-- **Premium UI**: Modern interface with React and Lucide icons.
-- **FastAPI Backend**: High-performance REST API with PostgreSQL.
-- **Nx Monorepo**: Unified workspace for extension and backend.
+- **Multi-AI Provider Support**: Choose between Google Gemini (Pro, Flash, Flash Lite) and Hugging Face (Llama 3) for form filling logic via a unified AI Factory.
+- **Advanced CV Management**: Upload, extract, and store multiple CVs in PostgreSQL. Switch between different CVs for different applications seamlessly.
+- **Modular Extension UI**: Reorganized into three distinct sections:
+  - **CV Section**: Manage and select your professional profiles.
+  - **Autofill Section**: Intelligent form filling with framework-specific value setters (React/Angular/Vue).
+  - **Scraper Section**: Discover new job opportunities matching your profile.
+- **Production-Ready Scraper**: A Scrapy CrawlSpider service that uses NLP similarity to find jobs, now with a scrollable results UI in the extension.
+- **Real-time Status Updates**: Improved feedback with a status banner in the extension UI.
+- **Nx Monorepo**: Scalable workspace architecture for extension, API, and scraper.
 
 ## 🚀 Getting Started
 
@@ -116,17 +118,17 @@ docker compose up --build
 ```bash
 npm run docker:down
 # or
-docker-compose down
+docker compose down
 ```
 
 ### Job Scraper (Crawler)
 
-**Run with the main Docker-Compose** (alongside API and Postgres):
+**Run with the main Docker Compose** (alongside API and Postgres):
 ```bash
 docker compose up --build
 ```
 
-**Run independently with Docker-Compose**:
+**Run independently with Docker Compose**:
 ```bash
 cd apps/scraper
 docker compose up --build
@@ -170,14 +172,18 @@ npx nx run-many --target=test
 
 ### Extension
 - **Core**: Vite + TypeScript + React
+- **Architecture**: Modular layout with dedicated components for **CV Management**, **Autofill**, and **Job Scraping**.
 - **Build**: @crxjs/vite-plugin
-- **UI**: Lucide React icons
-- **State**: React Hooks + Chrome Storage
+- **UI**: Lucide React icons + CSS Variables for theming.
+- **State**: Custom hooks and Chrome Local/Session Storage.
 
 ### Backend
 - **Framework**: FastAPI
 - **Database**: PostgreSQL
-- **AI**: Google Gen AI SDK (`google-genai`)
+- **AI Providers**: 
+  - **Google Gemini**: Support for 1.5 Pro, 2.0 Flash, and 2.0 Flash Lite.
+  - **Hugging Face**: Support for Llama 3 and other Inference API models.
+- **AI Factory**: Modular provider system in `app/services/ai`.
 - **ORM**: SQLAlchemy
 - **Containerization**: Docker
 
@@ -194,10 +200,16 @@ npx nx run-many --target=test
 
 ## 📝 Usage
 
-1.  **Configure Extension**: Enter your API key in the extension popup (saved securely in backend).
-2.  **Upload CV**: Upload your CV (PDF) via the extension. It will be parsed and stored in the database.
-3.  **Select CV**: Choose which uploaded CV to use for the current session.
-4.  **Auto-Fill**: Navigate to a job application page and click "Auto-Fill Page".
+1.  **Configure API Keys**: Enter your Google Gemini or Hugging Face API keys in the extension popup.
+2.  **CV Section**: Upload your CV (PDF). It will be parsed and stored in the PostgreSQL database.
+3.  **CV Selection**: Choose which CV to use for the current application session.
+4.  **Autofill Section**: 
+    - Select your preferred **AI Model** (Gemini or Hugging Face).
+    - Navigate to a job application page and click **"Auto-Fill Page"**.
+5.  **Scraper Section**: 
+    - Enter a job search URL.
+    - Click **"Start Scraping"** to discover jobs matching your profile.
+    - View discovered jobs and their similarity scores in the scrollable list.
 
 ## 🐳 Docker Services
 
