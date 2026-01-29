@@ -26,12 +26,24 @@ const plugins = [
   withNx,
 ];
 
-const config = composePlugins(...plugins)(nextConfig);
+const configFn = composePlugins(...plugins)(nextConfig);
 
-// Workaround for Next.js 16 / Nx 20 compatibility where these keys are now deprecated/unsupported in next.config.js
-// @ts-ignore
-if (config.eslint) delete config.eslint;
-// @ts-ignore
-if (config.typescript) delete config.typescript;
+/**
+ * Workaround for Next.js 16 compatibility.
+ * Next.js 16 no longer supports 'eslint' and 'typescript' keys in next.config.js.
+ * We wrap the configuration function to remove these keys before Next.js processes them.
+ */
+export default async (phase, context) => {
+  const config = await (typeof configFn === 'function'
+    ? configFn(phase, context)
+    : configFn);
 
-export default config;
+  if (config.eslint) {
+    delete config.eslint;
+  }
+  if (config.typescript) {
+    delete config.typescript;
+  }
+
+  return config;
+};
