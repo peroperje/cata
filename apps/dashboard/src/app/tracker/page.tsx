@@ -12,7 +12,7 @@ export default function TrackerPage() {
     const [filterStatus, setFilterStatus] = useState('');
     const [idToDelete, setIdToDelete] = useState<number | null>(null);
 
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 
     const fetchApplications = async () => {
         setIsLoading(true);

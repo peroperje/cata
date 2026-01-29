@@ -11,10 +11,12 @@ interface JobCardProps {
 export const JobCard: React.FC<JobCardProps> = ({ job, onToggleFavorite, onToggleIrrelevant }) => {
     return (
         <div className="card job-card" style={{ padding: '0.75rem', fontSize: '0.85rem', transition: 'transform 0.2s', cursor: 'pointer', position: 'relative' }}>
-            <div style={{ fontWeight: 600, color: 'var(--primary)', marginBottom: '0.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <a href={job.url} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', flex: 1, marginRight: '2.5rem' }}>
-                    {job.title}
-                </a>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                <h3 style={{ fontSize: '0.95rem', margin: 0, paddingRight: '2rem' }}>
+                    <a href={job.url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+                        {job.title}
+                    </a>
+                </h3>
                 <div style={{ display: 'flex', gap: '0.4rem', position: 'absolute', right: '0.75rem', top: '0.75rem' }}>
                     <button
                         onClick={(e) => { e.stopPropagation(); onToggleFavorite(job.id); }}

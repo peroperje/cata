@@ -4,10 +4,11 @@ import { JobApplication, MetadataResponse } from '@cata/shared-types';
 
 export const useJobTracker = (setStatus: (status: any) => void, isExpanded: boolean, selectedModelId: number | null) => {
     const [applications, setApplications] = useState<JobApplication[]>([]);
-    const [currentJob, setCurrentJob] = useState<{ title: string; company: string; url: string }>({
+    const [currentJob, setCurrentJob] = useState<{ title: string; company: string; url: string; pageText?: string }>({
         title: '',
         company: '',
         url: '',
+        pageText: ''
     });
     const [isExtracting, setIsExtracting] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -32,7 +33,8 @@ export const useJobTracker = (setStatus: (status: any) => void, isExpanded: bool
                         setCurrentJob({
                             title: response.title,
                             company: response.company,
-                            url: response.url
+                            url: response.url,
+                            pageText: response.pageText
                         });
 
                         // If AI model is selected and we have page text, try to improve extraction
@@ -88,7 +90,9 @@ export const useJobTracker = (setStatus: (status: any) => void, isExpanded: bool
                     company: data.company,
                     url: currentJob.url,
                     notes: data.notes,
-                    status: 'Interested'
+                    status: 'Interested',
+                    pageText: currentJob.pageText,
+                    modelId: selectedModelId
                 }),
             });
 

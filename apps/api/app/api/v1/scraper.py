@@ -6,6 +6,8 @@ import redis
 import os
 import json
 from pydantic import BaseModel
+from typing import List, Optional
+from app.schemas import schemas
 
 router = APIRouter()
 
