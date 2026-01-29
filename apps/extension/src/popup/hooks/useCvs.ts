@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../constants';
-import { CV } from '../../types';
+import { CV } from '@cata/shared-types';
 import { extractTextFromPDF } from '../../utils/pdf';
 
 export const useCvs = (setStatus: (status: any) => void) => {

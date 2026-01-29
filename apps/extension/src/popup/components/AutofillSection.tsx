@@ -1,6 +1,6 @@
 import React from 'react';
 import { Zap } from 'lucide-react';
-import { AIModel } from '../../types';
+import { AIModel } from '@cata/shared-types';
 
 interface AutofillSectionProps {
     models: AIModel[];

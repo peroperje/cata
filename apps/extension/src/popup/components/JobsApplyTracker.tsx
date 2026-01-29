@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Plus, Trash2, CheckCircle, Clock, XCircle, Info, RefreshCw } from 'lucide-react';
-import { JobApplication } from '../../types';
-import { ConfirmModal } from './ConfirmModal';
+import { Plus, RefreshCw } from 'lucide-react';
+import { JobApplication } from '@cata/shared-types';
+import { ApplicationCard, ConfirmModal } from '@cata/shared-ui';
 
 interface JobsApplyTrackerProps {
     applications: JobApplication[];
@@ -13,22 +13,6 @@ interface JobsApplyTrackerProps {
     onDelete: (id: number) => void;
     onRefresh: () => void;
 }
-
-const statusColors: { [key: string]: string } = {
-    'Interested': '#3b82f6',
-    'Applied': '#10b981',
-    'Interview': '#8b5cf6',
-    'Offer': '#f59e0b',
-    'Rejected': '#ef4444'
-};
-
-const statusIcons: { [key: string]: any } = {
-    'Interested': Info,
-    'Applied': CheckCircle,
-    'Interview': Clock,
-    'Offer': Briefcase,
-    'Rejected': XCircle
-};
 
 export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
     applications,
@@ -44,7 +28,6 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
     const [company, setCompany] = useState(currentJob.company);
     const [notes, setNotes] = useState('');
     const [idToDelete, setIdToDelete] = useState<number | null>(null);
-    const statuses = ['Interested', 'Applied', 'Interview', 'Offer', 'Rejected'];
 
     // Update local state when prop changes (e.g. after refresh/extract)
     useEffect(() => {
@@ -161,84 +144,14 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
                 {applications.length === 0 ? (
                     <div style={{ textAlign: 'center', color: '#9ca3af', padding: '1rem' }}>No applications tracked yet.</div>
                 ) : (
-                    applications.map(app => {
-                        const Icon = statusIcons[app.status] || Info;
-                        return (
-                            <div key={app.id} className="card" style={{ padding: '0.75rem', position: 'relative' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                                    <h3 style={{ fontSize: '0.95rem', margin: 0, paddingRight: '2rem' }}>
-                                        <a
-                                            href={app.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            style={{ color: 'inherit', textDecoration: 'none' }}
-                                            onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
-                                            onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}
-                                        >
-                                            {app.title}
-                                        </a>
-                                    </h3>
-                                    <button
-                                        onClick={() => handleDeleteClick(app.id)}
-                                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                                <div style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.5rem' }}>{app.company}</div>
-
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                                    <span style={{
-                                        fontSize: '0.75rem',
-                                        padding: '2px 8px',
-                                        borderRadius: '12px',
-                                        backgroundColor: `${statusColors[app.status]}20`,
-                                        color: statusColors[app.status],
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '4px',
-                                        fontWeight: '600'
-                                    }}>
-                                        <Icon size={12} /> {app.status}
-                                    </span>
-                                </div>
-
-                                {app.notes && (
-                                    <div style={{
-                                        fontSize: '0.8rem',
-                                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                                        color: '#f8fafc',
-                                        padding: '0.5rem',
-                                        borderRadius: '4px',
-                                        marginBottom: '0.75rem',
-                                        borderLeft: '3px solid #6366f1'
-                                    }}>
-                                        {app.notes}
-                                    </div>
-                                )}
-
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                    {statuses.map(s => (
-                                        <button
-                                            key={s}
-                                            onClick={() => onUpdateStatus(app.id, s)}
-                                            style={{
-                                                fontSize: '0.7rem',
-                                                padding: '2px 6px',
-                                                borderRadius: '4px',
-                                                border: `1px solid ${app.status === s ? statusColors[s] : '#334155'}`,
-                                                backgroundColor: app.status === s ? statusColors[s] : 'transparent',
-                                                color: app.status === s ? 'white' : '#94a3b8',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            {s}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        );
-                    })
+                    applications.map(app => (
+                        <ApplicationCard
+                            key={app.id}
+                            app={app}
+                            onUpdateStatus={onUpdateStatus}
+                            onDeleteClick={handleDeleteClick}
+                        />
+                    ))
                 )}
             </div>
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../constants';
-import { AIModel } from '../../types';
+import { AIModel } from '@cata/shared-types';
 
 export const useModels = (setStatus: (status: any) => void) => {
     const [models, setModels] = useState<AIModel[]>([]);

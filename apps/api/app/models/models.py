@@ -52,5 +52,7 @@ class JobApplication(Base):
     company = Column(String)
     status = Column(String, default="Interested") # Interested, Applied, Interview, Offer, Rejected
     notes = Column(String, nullable=True)
+    is_favorite = Column(Boolean, default=False)
+    is_irrelevant = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

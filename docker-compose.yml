@@ -74,7 +74,20 @@ services:
         reservations:
           cpus: '0.1'
           memory: 100M
-
+  # Next.js Dashboard
+  dashboard:
+    build:
+      context: .
+      dockerfile: docker/dashboard/Dockerfile
+    container_name: cata-dashboard
+    environment:
+      - NEXT_PUBLIC_API_URL=http://api:8000/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    networks:
+      - cata-network
 
 volumes:
   cata_postgres_data:

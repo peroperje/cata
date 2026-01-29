@@ -1,0 +1,14 @@
+node_modules
+dist
+.nx/cache
+.next
+out
+build
+*.log
+.env
+.env.*
+.git
+.github
+.vscode
+.idea
+.DS_Store

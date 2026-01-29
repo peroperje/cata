@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../constants';
-import { ScrapedJob } from '../../types';
+import { ScrapedJob } from '@cata/shared-types';
 
 export const useScraper = (setStatus: (status: any) => void, isExpanded: boolean) => {
     const [scraperUrl, setScraperUrl] = useState('');

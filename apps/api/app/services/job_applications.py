@@ -53,7 +53,10 @@ def get_job_applications(
     limit: int = 100,
     status: Optional[str] = None,
     company: Optional[str] = None,
-    job_title: Optional[str] = None
+    job_title: Optional[str] = None,
+    url: Optional[str] = None,
+    is_favorite: Optional[bool] = None,
+    is_irrelevant: Optional[bool] = None
 ):
     query = db.query(models.JobApplication)
     
@@ -63,6 +66,12 @@ def get_job_applications(
         query = query.filter(models.JobApplication.company.ilike(f"%{company}%"))
     if job_title:
         query = query.filter(models.JobApplication.title.ilike(f"%{job_title}%"))
+    if url:
+        query = query.filter(models.JobApplication.url.ilike(f"%{url}%"))
+    if is_favorite is not None:
+        query = query.filter(models.JobApplication.is_favorite == is_favorite)
+    if is_irrelevant is not None:
+        query = query.filter(models.JobApplication.is_irrelevant == is_irrelevant)
         
     return query.order_by(desc(models.JobApplication.created_at)).offset(skip).limit(limit).all()
 

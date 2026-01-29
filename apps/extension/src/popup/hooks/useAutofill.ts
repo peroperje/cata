@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../constants';
-import { FormField, AIResponse, MessageAction } from '../../types';
+import { FormField, AIResponse, MessageAction } from '@cata/shared-types';
 
 export const useAutofill = (
     pdfText: string,

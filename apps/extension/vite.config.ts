@@ -25,7 +25,9 @@ export default defineConfig({
     ],
     resolve: {
         alias: {
-            '@': '/apps/extension/src',
+            '@': `${__dirname}/src`,
+            '@cata/shared-ui': `${__dirname}/../../libs/shared-ui/src/index.ts`,
+            '@cata/shared-types': `${__dirname}/../../libs/shared-types/src/index.ts`,
         },
     },
     server: {

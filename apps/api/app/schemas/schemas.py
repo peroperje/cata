@@ -81,6 +81,8 @@ class JobApplicationBase(BaseModel):
     company: str
     status: str = "Interested"
     notes: Optional[str] = None
+    is_favorite: bool = False
+    is_irrelevant: bool = False
 
 class JobApplicationCreate(BaseModel):
     title: Optional[str] = None
@@ -97,6 +99,8 @@ class JobApplicationUpdate(BaseModel):
     company: Optional[str] = None
     status: Optional[str] = None
     notes: Optional[str] = None
+    is_favorite: Optional[bool] = None
+    is_irrelevant: Optional[bool] = None
 
 class JobApplication(JobApplicationBase):
     id: int

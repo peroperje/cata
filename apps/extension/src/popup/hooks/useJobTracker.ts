@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../constants';
-import { JobApplication, MetadataResponse } from '../../types';
+import { JobApplication, MetadataResponse } from '@cata/shared-types';
 
 export const useJobTracker = (setStatus: (status: any) => void, isExpanded: boolean, selectedModelId: number | null) => {
     const [applications, setApplications] = useState<JobApplication[]>([]);

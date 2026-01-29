@@ -1,4 +1,4 @@
-import { FormField, MessageAction } from '../types';
+import { FormField, MessageAction } from '@cata/shared-types';
 
 /**
  * Finds all input-like elements recursively, including those in Shadow DOM and same-origin IFrames.

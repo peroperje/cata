@@ -1,6 +1,6 @@
 import React from 'react';
 import { Upload } from 'lucide-react';
-import { CV } from '../../types';
+import { CV } from '@cata/shared-types';
 
 interface CvSectionProps {
     fileName: string;
