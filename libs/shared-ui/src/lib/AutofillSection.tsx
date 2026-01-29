@@ -13,6 +13,7 @@ interface AutofillSectionProps {
     onAddModel: (name: string, provider: string, modelName: string) => void;
     onDeleteModel: (id: number) => void;
     isLoading: boolean;
+    renderAutofillButton?: boolean;
 }
 
 export const AutofillSection: React.FC<AutofillSectionProps> = ({
@@ -25,7 +26,8 @@ export const AutofillSection: React.FC<AutofillSectionProps> = ({
     onFill,
     onAddModel,
     onDeleteModel,
-    isLoading
+    isLoading,
+    renderAutofillButton = true
 }) => {
     const [isAddingMode, setIsAddingMode] = React.useState(false);
     const [newName, setNewName] = React.useState('');
@@ -42,15 +44,17 @@ export const AutofillSection: React.FC<AutofillSectionProps> = ({
 
     return (
         <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <button
-                className="button"
-                onClick={onFill}
-                disabled={isLoading || !selectedModelId}
-                style={{ width: '100%' }}
-            >
-                <Zap size={18} fill="currentColor" />
-                Autofill Form
-            </button>
+            {renderAutofillButton && (
+                <button
+                    className="button"
+                    onClick={onFill}
+                    disabled={isLoading || !selectedModelId}
+                    style={{ width: '100%' }}
+                >
+                    <Zap size={18} fill="currentColor" />
+                    Autofill Form
+                </button>
+            )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -154,10 +158,10 @@ export const AutofillSection: React.FC<AutofillSectionProps> = ({
                                 >
                                     <CheckCircle2 size={16} style={{ color: selectedModelId === m.id ? '#6366f1' : '#4b5563' }} />
                                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <span style={{ fontSize: '0.85rem', fontWeight: '500', color: selectedModelId === m.id ? '#1e293b' : '#64748b' }}>
+                                        <span style={{ fontSize: '0.85rem', fontWeight: '500', color: selectedModelId === m.id ? '#f8fafc' : '#94a3b8' }}>
                                             {m.name}
                                         </span>
-                                        <span style={{ fontSize: '0.7rem', color: '#6b7280' }}>
+                                        <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
                                             {m.provider} / {m.model_name}
                                         </span>
                                     </div>

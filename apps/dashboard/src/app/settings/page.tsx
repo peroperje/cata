@@ -115,16 +115,16 @@ export default function SettingsPage() {
     };
 
     return (
-        <div className="p-8 max-w-5xl mx-auto">
+        <div className="p-8 max-w-6xl mx-auto">
             <div className="mb-10">
                 <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Settings</h1>
                 <p className="text-slate-500 mt-2 text-lg">Manage your CVs and AI model configurations.</p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div className="grid grid-cols-1 gap-10">
                 <div className="space-y-6">
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <div className="bg-[#1e293b] p-8 rounded-2xl shadow-lg border border-slate-700 text-slate-100">
+                        <h2 className="text-2xl font-bold text-slate-100 mb-6 flex items-center gap-2">
                             Manage CVs
                         </h2>
                         <CvSection
@@ -138,8 +138,8 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-6">
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                    <div className="bg-[#1e293b] p-8 rounded-2xl shadow-lg border border-slate-700 text-slate-100">
+                        <h2 className="text-2xl font-bold text-slate-100 mb-6 flex items-center gap-2">
                             AI Models & Autofill
                         </h2>
                         <AutofillSection
@@ -155,6 +155,7 @@ export default function SettingsPage() {
                             onAddModel={handleAddModel}
                             onDeleteModel={handleModelDelete}
                             isLoading={isLoading}
+                            renderAutofillButton={false}
                         />
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, RefreshCw } from 'lucide-react';
+import { Plus, RefreshCw, Search } from 'lucide-react';
 import { JobApplication } from '@cata/shared-types';
 import { ApplicationCard, ConfirmModal } from '@cata/shared-ui';
 
@@ -30,6 +30,18 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
     const [company, setCompany] = useState(currentJob.company);
     const [notes, setNotes] = useState('');
     const [idToDelete, setIdToDelete] = useState<number | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('Interested');
+
+    const statuses = ['Interested', 'Applied', 'Interview', 'Offer', 'Rejected'];
+
+    const filteredApplications = applications.filter(app => {
+        const matchesSearch = searchTerm === '' ||
+            app.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            app.company?.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = filterStatus === '' || app.status === filterStatus;
+        return matchesSearch && matchesStatus;
+    });
 
     // Update local state when prop changes (e.g. after refresh/extract)
     useEffect(() => {
@@ -143,12 +155,73 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
                 </button>
             </div>
 
+            {/* Filter & Search Section */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ position: 'relative' }}>
+                    <Search
+                        size={16}
+                        style={{
+                            position: 'absolute',
+                            left: '10px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: '#9ca3af'
+                        }}
+                    />
+                    <input
+                        type="text"
+                        placeholder="Search applications..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{
+                            width: '100%',
+                            padding: '0.5rem 0.5rem 0.5rem 2rem',
+                            borderRadius: '6px',
+                            border: '1px solid #e5e7eb',
+                            fontSize: '0.85rem',
+                            outline: 'none'
+                        }}
+                    />
+                </div>
+
+                <div style={{
+                    display: 'flex',
+                    gap: '4px',
+                    borderBottom: '1px solid #e5e7eb',
+                    paddingBottom: '2px',
+                    overflowX: 'auto',
+                    whiteSpace: 'nowrap'
+                }}>
+                    {statuses.map(s => (
+                        <button
+                            key={s}
+                            onClick={() => setFilterStatus(s)}
+                            style={{
+                                padding: '4px 8px',
+                                fontSize: '0.75rem',
+                                fontWeight: '500',
+                                border: 'none',
+                                background: 'none',
+                                cursor: 'pointer',
+                                color: filterStatus === s ? '#6366f1' : '#6b7280',
+                                borderBottom: filterStatus === s ? '2px solid #6366f1' : '2px solid transparent',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {s}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
             {/* List Section */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '400px', overflowY: 'auto', paddingRight: '4px' }}>
-                {applications.length === 0 ? (
-                    <div style={{ textAlign: 'center', color: '#9ca3af', padding: '1rem' }}>No applications tracked yet.</div>
+                {filteredApplications.length === 0 ? (
+                    <div style={{ textAlign: 'center', color: '#9ca3af', padding: '1rem', fontSize: '0.85rem' }}>
+                        No {filterStatus.toLowerCase()} applications found.
+                    </div>
                 ) : (
-                    applications.map(app => (
+                    filteredApplications.map(app => (
                         <ApplicationCard
                             key={app.id}
                             app={app}

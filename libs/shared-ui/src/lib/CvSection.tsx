@@ -66,7 +66,7 @@ export const CvSection: React.FC<CvSectionProps> = ({
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
-                                        color: selectedCvId === cv.id ? '#1e293b' : '#64748b'
+                                        color: '#f8fafc'
                                     }}>
                                         {cv.filename}
                                     </span>

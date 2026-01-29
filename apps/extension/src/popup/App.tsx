@@ -17,7 +17,7 @@ const App: React.FC = () => {
     });
 
     const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
-        cv: true,
+        cv: false,
         autofill: false,
         scraper: false,
         jat: false
@@ -84,7 +84,7 @@ const App: React.FC = () => {
             <StatusBanner status={status} />
 
             <CollapsibleSection
-                title="Manage CV"
+                title={` Manage CV ${!selectedCvId ? '- (No CV selected)' : ''}`}
                 isExpanded={expandedSections.cv}
                 onToggle={() => toggleSection('cv')}
             >
@@ -98,7 +98,10 @@ const App: React.FC = () => {
             </CollapsibleSection>
 
             <CollapsibleSection
-                title="Autofill Page"
+                title={`Autofill Page ${!selectedModelId ? '- (No model selected)' : ((selectedModelId, models) => {
+                    const model = models.find((m) => m.id === selectedModelId);
+                    return model ? ` with ${model.name}` : '';
+                })(selectedModelId, models)}`}
                 isExpanded={expandedSections.autofill}
                 onToggle={() => toggleSection('autofill')}
             >
@@ -113,6 +116,24 @@ const App: React.FC = () => {
                     onAddModel={addModel}
                     onDeleteModel={deleteModel}
                     isLoading={status.type === 'loading'}
+                    renderAutofillButton={true}
+                />
+            </CollapsibleSection>
+            <CollapsibleSection
+                title={`Jobs Apply Tracker ${isExtracting ? '- (Extracting)' : ''} ${isSaving ? '- (Saving)' : ''}`}
+                isExpanded={expandedSections.jat}
+                onToggle={() => toggleSection('jat')}
+            >
+                <JobsApplyTracker
+                    applications={applications}
+                    currentJob={currentJob}
+                    isExtracting={isExtracting}
+                    isSaving={isSaving}
+                    onAdd={addApplication}
+                    onUpdateStatus={updateStatus}
+                    onUpdateNotes={updateNotes}
+                    onDelete={deleteApplication}
+                    onRefresh={refreshMetadata}
                 />
             </CollapsibleSection>
 
@@ -135,23 +156,7 @@ const App: React.FC = () => {
                 />
             </CollapsibleSection>
 
-            <CollapsibleSection
-                title="Jobs Apply Tracker"
-                isExpanded={expandedSections.jat}
-                onToggle={() => toggleSection('jat')}
-            >
-                <JobsApplyTracker
-                    applications={applications}
-                    currentJob={currentJob}
-                    isExtracting={isExtracting}
-                    isSaving={isSaving}
-                    onAdd={addApplication}
-                    onUpdateStatus={updateStatus}
-                    onUpdateNotes={updateNotes}
-                    onDelete={deleteApplication}
-                    onRefresh={refreshMetadata}
-                />
-            </CollapsibleSection>
+
         </div >
     );
 };
