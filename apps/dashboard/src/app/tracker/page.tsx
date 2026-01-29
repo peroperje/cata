@@ -1,18 +1,25 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { ApplicationCard, ConfirmModal } from '@cata/shared-ui';
 import { JobApplication } from '@cata/shared-types';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Edit2 } from 'lucide-react';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import Link from 'next/link';
 
-export default function TrackerPage() {
+function TrackerContent() {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const pathname = usePathname();
     const [applications, setApplications] = useState<JobApplication[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState('');
     const [idToDelete, setIdToDelete] = useState<number | null>(null);
 
+    const filterStatus = searchParams.get('status') || '';
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
+
+    const statuses = ['Interested', 'Applied', 'Interview', 'Offer', 'Rejected'];
 
     const fetchApplications = async () => {
         setIsLoading(true);
@@ -60,17 +67,30 @@ export default function TrackerPage() {
         }
     };
 
+    const updateFilter = (status: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (status) {
+            params.set('status', status);
+        } else {
+            params.delete('status');
+        }
+        router.push(`${pathname}?${params.toString()}`);
+    };
+
     return (
         <div className="p-6 max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">Job Applications Tracker</h1>
-                <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition">
+                <Link
+                    href="/tracker/add"
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition"
+                >
                     <Plus size={20} />
                     Add Application
-                </button>
+                </Link>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-4 mb-8">
+            <div className="flex flex-col gap-6 mb-8">
                 <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input
@@ -81,19 +101,29 @@ export default function TrackerPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="flex gap-4">
-                    <select
-                        className="px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
-                        value={filterStatus}
-                        onChange={(e) => setFilterStatus(e.target.value)}
+
+                <div className="flex flex-wrap gap-2 border-b border-gray-200">
+                    <button
+                        onClick={() => updateFilter('')}
+                        className={`px-4 py-2 text-sm font-medium transition-colors relative ${filterStatus === ''
+                            ? 'text-indigo-600 border-b-2 border-indigo-600'
+                            : 'text-gray-500 hover:text-gray-700'
+                            }`}
                     >
-                        <option value="">All Statuses</option>
-                        <option value="Interested">Interested</option>
-                        <option value="Applied">Applied</option>
-                        <option value="Interview">Interview</option>
-                        <option value="Offer">Offer</option>
-                        <option value="Rejected">Rejected</option>
-                    </select>
+                        All Statuses
+                    </button>
+                    {statuses.map(s => (
+                        <button
+                            key={s}
+                            onClick={() => updateFilter(s)}
+                            className={`px-4 py-2 text-sm font-medium transition-colors relative ${filterStatus === s
+                                ? 'text-indigo-600 border-b-2 border-indigo-600'
+                                : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            {s}
+                        </button>
+                    ))}
                 </div>
             </div>
 
@@ -109,6 +139,15 @@ export default function TrackerPage() {
                             app={app}
                             onUpdateStatus={handleUpdateStatus}
                             onDeleteClick={setIdToDelete}
+                            editLink={
+                                <Link
+                                    href={`/tracker/edit/${app.id}`}
+                                    className="p-1 text-gray-400 hover:text-indigo-600 transition-colors"
+                                    title="Edit Application"
+                                >
+                                    <Edit2 size={16} />
+                                </Link>
+                            }
                         />
                     ))}
                     {applications.length === 0 && (
@@ -128,5 +167,13 @@ export default function TrackerPage() {
                 type="danger"
             />
         </div>
+    );
+}
+
+export default function TrackerPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <TrackerContent />
+        </Suspense>
     );
 }

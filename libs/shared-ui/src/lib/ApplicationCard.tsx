@@ -1,11 +1,12 @@
 import React from 'react';
-import { LucideIcon, Trash2, Info, CheckCircle, Clock, Briefcase, XCircle } from 'lucide-react';
+import { LucideIcon, Trash2, Info, CheckCircle, Clock, Briefcase, XCircle, Edit2 } from 'lucide-react';
 import { JobApplication } from '@cata/shared-types';
 
 interface ApplicationCardProps {
     app: JobApplication;
     onUpdateStatus: (id: number, status: string) => void;
     onDeleteClick: (id: number) => void;
+    editLink?: React.ReactNode;
 }
 
 const statusColors: { [key: string]: string } = {
@@ -26,13 +27,13 @@ const statusIcons: { [key: string]: LucideIcon } = {
 
 const statuses = ['Interested', 'Applied', 'Interview', 'Offer', 'Rejected'];
 
-export const ApplicationCard: React.FC<ApplicationCardProps> = ({ app, onUpdateStatus, onDeleteClick }) => {
+export const ApplicationCard: React.FC<ApplicationCardProps> = ({ app, onUpdateStatus, onDeleteClick, editLink }) => {
     const Icon = statusIcons[app.status] || Info;
 
     return (
         <div className="card" style={{ padding: '0.75rem', position: 'relative' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                <h3 style={{ fontSize: '0.95rem', margin: 0, paddingRight: '2rem' }}>
+                <h3 style={{ fontSize: '0.95rem', margin: 0, paddingRight: '3rem' }}>
                     <a
                         href={app.url}
                         target="_blank"
@@ -42,12 +43,15 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({ app, onUpdateS
                         {app.title}
                     </a>
                 </h3>
-                <button
-                    onClick={() => onDeleteClick(app.id)}
-                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
-                >
-                    <Trash2 size={16} />
-                </button>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                    {editLink}
+                    <button
+                        onClick={() => onDeleteClick(app.id)}
+                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px' }}
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                </div>
             </div>
             <div style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.5rem' }}>{app.company}</div>
 
