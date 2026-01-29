@@ -44,9 +44,46 @@ export const useModels = (setStatus: (status: any) => void) => {
         }
     };
 
-    const handleModelChange = (id: number) => {
+    const handleModelChange = (id: number | null) => {
         setSelectedModelId(id);
-        chrome.storage.local.set({ selected_model_id: id });
+        if (id) {
+            chrome.storage.local.set({ selected_model_id: id });
+        } else {
+            chrome.storage.local.remove('selected_model_id');
+        }
+    };
+
+    const addModel = async (name: string, provider: string, modelName: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/models`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, provider, model_name: modelName }),
+            });
+            if (!res.ok) throw new Error('Failed to add model');
+            const data = await res.json();
+            setModels(prev => [...prev, data]);
+            setStatus({ type: 'success', message: 'Model added!' });
+        } catch (err: any) {
+            setStatus({ type: 'error', message: err.message });
+        }
+    };
+
+    const deleteModel = async (id: number) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/models/${id}`, {
+                method: 'DELETE',
+            });
+            if (!res.ok) throw new Error('Failed to delete model');
+            setModels(prev => prev.filter(m => m.id !== id));
+            if (selectedModelId === id) {
+                setSelectedModelId(null);
+                chrome.storage.local.remove('selected_model_id');
+            }
+            setStatus({ type: 'success', message: 'Model deleted!' });
+        } catch (err: any) {
+            setStatus({ type: 'error', message: err.message });
+        }
     };
 
     useEffect(() => {
@@ -59,6 +96,8 @@ export const useModels = (setStatus: (status: any) => void) => {
         apiKey,
         setApiKey,
         saveApiKey,
-        handleModelChange
+        handleModelChange,
+        addModel,
+        deleteModel
     };
 };

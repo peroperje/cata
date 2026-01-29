@@ -10,6 +10,7 @@ interface JobsApplyTrackerProps {
     isSaving: boolean;
     onAdd: (data: { title: string; company: string; notes: string }) => void;
     onUpdateStatus: (id: number, status: string) => void;
+    onUpdateNotes: (id: number, notes: string) => void;
     onDelete: (id: number) => void;
     onRefresh: () => void;
 }
@@ -21,6 +22,7 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
     isSaving,
     onAdd,
     onUpdateStatus,
+    onUpdateNotes,
     onDelete,
     onRefresh
 }) => {
@@ -38,6 +40,8 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
     const handleAdd = () => {
         onAdd({ title, company, notes });
         setNotes('');
+        setTitle('');
+        setCompany('');
     };
 
     const handleDeleteClick = (id: number) => {
@@ -149,6 +153,7 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
                             key={app.id}
                             app={app}
                             onUpdateStatus={onUpdateStatus}
+                            onUpdateNotes={onUpdateNotes}
                             onDeleteClick={handleDeleteClick}
                         />
                     ))

@@ -107,6 +107,20 @@ export const useJobTracker = (setStatus: (status: any) => void, isExpanded: bool
         }
     };
 
+    const updateNotes = async (id: number, notes: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/job-applications/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes }),
+            });
+            if (!res.ok) throw new Error('Failed to update notes');
+            fetchApplications();
+        } catch (err: any) {
+            setStatus({ type: 'error', message: err.message });
+        }
+    };
+
     const updateStatus = async (id: number, status: string) => {
         try {
             const res = await fetch(`${API_BASE_URL}/job-applications/${id}`, {
@@ -140,6 +154,7 @@ export const useJobTracker = (setStatus: (status: any) => void, isExpanded: bool
         isSaving,
         addApplication,
         updateStatus,
+        updateNotes,
         deleteApplication,
         refreshMetadata: fetchPageMetadata
     };

@@ -18,3 +18,12 @@ def create_cv(cv: schemas.CVCreate, db: Session = Depends(get_db)):
 @router.get("/cvs", response_model=List[schemas.CV])
 def get_cvs(db: Session = Depends(get_db)):
     return db.query(models.CV).order_by(models.CV.created_at.desc()).all()
+
+@router.delete("/cvs/{cv_id}")
+def delete_cv(cv_id: int, db: Session = Depends(get_db)):
+    db_cv = db.query(models.CV).filter(models.CV.id == cv_id).first()
+    if not db_cv:
+        raise HTTPException(status_code=404, detail="CV not found")
+    db.delete(db_cv)
+    db.commit()
+    return {"message": "CV deleted"}

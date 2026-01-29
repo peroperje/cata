@@ -12,6 +12,7 @@ class AIModelCreate(AIModelBase):
 
 class AIModel(AIModelBase):
     id: int
+    has_key: bool = False
 
     class Config:
         from_attributes = True

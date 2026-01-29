@@ -58,6 +58,24 @@ export const useCvs = (setStatus: (status: any) => void) => {
         }
     };
 
+    const deleteCv = async (id: number) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/cvs/${id}`, {
+                method: 'DELETE',
+            });
+            if (!res.ok) throw new Error('Delete failed');
+            setCvs(prev => prev.filter(cv => cv.id !== id));
+            if (selectedCvId === id) {
+                setSelectedCvId(null);
+                setPdfText('');
+                setFileName('');
+            }
+            setStatus({ type: 'success', message: 'CV deleted' });
+        } catch (err) {
+            setStatus({ type: 'error', message: 'Failed to delete CV.' });
+        }
+    };
+
     useEffect(() => {
         fetchCVs();
     }, []);
@@ -68,6 +86,7 @@ export const useCvs = (setStatus: (status: any) => void) => {
         pdfText,
         fileName,
         handleCvSelect,
-        handleFileUpload
+        handleFileUpload,
+        deleteCv
     };
 };

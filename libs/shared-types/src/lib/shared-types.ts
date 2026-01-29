@@ -26,6 +26,7 @@ export interface AIModel {
   name: string;
   provider: string;
   model_name: string;
+  has_key?: boolean;
 }
 
 export interface CV {

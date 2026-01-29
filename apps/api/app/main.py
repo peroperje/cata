@@ -18,43 +18,25 @@ Base.metadata.create_all(bind=engine)
 def seed_data():
     db = SessionLocal()
     try:
-        # Define the source of truth
+        # Check if any models already exist
+        if db.query(models.AIModel).first() is not None:
+            return
+
+        # Define the source of truth for initial seeding
         models_to_seed = [
-           # {"name": "Gemini 1.5 Flash", "provider": "gemini", "model_name": "gemini-1.5-flash"},
-           # {"name": "Gemini 1.5 Pro", "provider": "gemini", "model_name": "gemini-1.5-pro"},
             {"name": "Gemini 2.0 flash lite", "provider": "gemini", "model_name": "gemini-2.0-flash-lite"},
             {"name": "Gemini 2.0 flash", "provider": "gemini", "model_name": "gemini-2.0-flash"},
             {"name": "Hugging Face Llama 3", "provider": "huggingface", "model_name": "meta-llama/Meta-Llama-3-8B-Instruct"},
         ]
         
-        # Get all existing models from DB
-        db_models = db.query(models.AIModel).all()
-        db_models_map = {m.model_name: m for m in db_models}
-        
-        seed_model_names = {m["model_name"] for m in models_to_seed}
-        
-        # 1. Delete models from DB that are not in models_to_seed
-        for model_name, db_model in db_models_map.items():
-            if model_name not in seed_model_names:
-                db.delete(db_model)
-        
-        # 2. Add or update models
+        # Add models
         for seed_item in models_to_seed:
-            model_name = seed_item["model_name"]
-            if model_name in db_models_map:
-                # Update if different
-                db_model = db_models_map[model_name]
-                if db_model.name != seed_item["name"] or db_model.provider != seed_item["provider"]:
-                    db_model.name = seed_item["name"]
-                    db_model.provider = seed_item["provider"]
-            else:
-                # Add new model
-                new_model = models.AIModel(
-                    name=seed_item["name"],
-                    provider=seed_item["provider"],
-                    model_name=seed_item["model_name"]
-                )
-                db.add(new_model)
+            new_model = models.AIModel(
+                name=seed_item["name"],
+                provider=seed_item["provider"],
+                model_name=seed_item["model_name"]
+            )
+            db.add(new_model)
         
         db.commit()
     except Exception as e:

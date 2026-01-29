@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { StatusBanner } from './components/StatusBanner';
+import { CvSection, AutofillSection, ApplicationCard, ConfirmModal } from '@cata/shared-ui';
 import { CollapsibleSection } from './components/CollapsibleSection';
-import { CvSection } from './components/CvSection';
-import { AutofillSection } from './components/AutofillSection';
 import { ScraperSection } from './components/ScraperSection';
 import { JobsApplyTracker } from './components/JobsApplyTracker';
 import { useCvs } from './hooks/useCvs';
@@ -35,7 +34,8 @@ const App: React.FC = () => {
         pdfText,
         fileName,
         handleCvSelect,
-        handleFileUpload
+        handleFileUpload,
+        deleteCv
     } = useCvs(setStatus);
 
     const {
@@ -44,7 +44,9 @@ const App: React.FC = () => {
         apiKey,
         setApiKey,
         saveApiKey,
-        handleModelChange
+        handleModelChange,
+        addModel,
+        deleteModel
     } = useModels(setStatus);
 
     const {
@@ -68,6 +70,7 @@ const App: React.FC = () => {
         isSaving,
         addApplication,
         updateStatus,
+        updateNotes,
         deleteApplication,
         refreshMetadata
     } = useJobTracker(setStatus, expandedSections.jat, selectedModelId);
@@ -86,11 +89,11 @@ const App: React.FC = () => {
                 onToggle={() => toggleSection('cv')}
             >
                 <CvSection
-                    fileName={fileName}
                     cvs={cvs}
                     selectedCvId={selectedCvId}
                     onFileUpload={handleFileUpload}
                     onCvSelect={handleCvSelect}
+                    onDeleteCv={deleteCv}
                 />
             </CollapsibleSection>
 
@@ -107,6 +110,8 @@ const App: React.FC = () => {
                     onApiKeyChange={setApiKey}
                     onSaveApiKey={saveApiKey}
                     onFill={handleFill}
+                    onAddModel={addModel}
+                    onDeleteModel={deleteModel}
                     isLoading={status.type === 'loading'}
                 />
             </CollapsibleSection>
@@ -142,6 +147,7 @@ const App: React.FC = () => {
                     isSaving={isSaving}
                     onAdd={addApplication}
                     onUpdateStatus={updateStatus}
+                    onUpdateNotes={updateNotes}
                     onDelete={deleteApplication}
                     onRefresh={refreshMetadata}
                 />
