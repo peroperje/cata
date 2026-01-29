@@ -9,16 +9,16 @@ cata-chrome-extension/
 ├── apps/
 │   ├── extension/         # React Chrome Extension (Vite + TypeScript)
 │   │   ├── src/          # Extension source code
-│   │   ├── icons/        # Extension icons
+│   │   └── project.json  # Nx configuration
+│   ├── dashboard/         # Next.js Management Dashboard (React + TypeScript)
+│   │   ├── app/          # Next.js App Router source code
 │   │   └── project.json  # Nx configuration
 │   ├── api/              # Python FastAPI Backend
 │   │   ├── app/          # API source code
-│   │   ├── requirements.txt
 │   │   └── project.json  # Nx configuration
 │   └── scraper/          # Scrapy CrawlSpider Service
 │       ├── crawler/      # Scraper logic (spiders, pipelines, NLP)
 │       ├── Dockerfile
-│       ├── docker-compose.yml
 │       └── requirements.txt
 ├── docker/
 │   └── api/              # Docker configuration for API
@@ -38,7 +38,11 @@ cata-chrome-extension/
   - **CV Section**: Manage and select your professional profiles.
   - **Autofill Section**: Intelligent form filling with framework-specific value setters (React/Angular/Vue).
   - **Scraper Section**: Discover new job opportunities matching your profile with **pagination** and **real-time results**.
-  - **Jobs Tracker Section**: Personal CRM for job applications with **server-side metadata extraction** (title, company, URL), **clickable job links**, and status tracking.
+  - **Jobs Tracker Dashboard**: A dedicated **Next.js web application** for managing your job search pipeline.
+    - **Edit/Add Applications**: Manually create or update job application details.
+    - **Tabbed Navigation**: Effortlessly filter jobs by status (Applied, Interview, Rejected, etc.) via a URL-synced tab system.
+    - **Favorite & Archive**: Mark key opportunities and archive irrelevant ones.
+  - **Server-side AI Metadata**: Automatic extraction of job title and company from page context during tracking.
 - **Production-Ready Scraper**: A Scrapy CrawlSpider service that uses NLP similarity to find jobs, now with a scrollable results UI and pagination in the extension.
 - **Real-time Status Updates**: Improved feedback with a status banner and dynamic UI updates in the extension.
 - **Reusable Component Suite**: Implementation of a modern UI library including **custom modals**, **loaders**, and **paginators**.
@@ -98,6 +102,16 @@ npx nx build extension
 1.  Open Chrome and go to `chrome://extensions/`
 2.  Enable "Developer mode"
 3.  Click "Load unpacked" and select `/dist/apps/extension`
+
+### Management Dashboard
+
+**Development mode**:
+```bash
+npm run dashboard:dev
+# or
+npx nx serve dashboard
+```
+Dashboard will be available at `http://localhost:3000`
 
 ### Python API
 
@@ -172,12 +186,12 @@ npx nx run-many --target=test
 
 ## 🔧 Tech Stack
 
-### Extension
-- **Core**: Vite + TypeScript + React
+### Frontend & Dashboard
+- **Extension**: Vite + TypeScript + React
+- **Dashboard**: Next.js 16 (App Router) + Tailwind CSS
+- **UI Components**: Lucide React icons + Custom Modal System + CSS Variables for theming.
 - **Architecture**: Modular layout with dedicated components for **CV Management**, **Autofill**, and **Job Scraping**.
-- **Build**: @crxjs/vite-plugin
-- **UI**: Lucide React icons + CSS Variables for theming.
-- **State**: Custom hooks and Chrome Local/Session Storage.
+- **State**: Custom hooks and Chrome Local/Session Storage + URL-based state for dashboard.
 
 ### Backend
 - **Framework**: FastAPI
@@ -213,9 +227,10 @@ npx nx run-many --target=test
     - View discovered jobs and their similarity scores in the scrollable list with **pagination**.
 6.  **Jobs Tracker Section**:
     - Click **"Add to Tracker"** on any job page to automatically capture job details.
-    - **Server-side AI Extraction**: The backend automatically attempts to pull the **Job Title** and **Company** from the page context.
-    - Clickable job titles lead directly back to the application page.
-    - Manage your application pipeline by updating statuses and adding **optional personal notes**.
+    - **Next.js Dashboard**: Visit the dashboard to see a comprehensive view of your applications.
+    - **Advanced Editing**: Use the "Edit" feature to manually adjust job titles, companies, or add detailed notes.
+    - **Filtering**: Use the top tabs to filter your applications by their current stage in the hiring process.
+    - **Clickable Links**: Clickable job titles lead directly back to the original application page.
 
 ## 💡 MCP Integration (Experimental)
 
