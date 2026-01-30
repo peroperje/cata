@@ -123,7 +123,7 @@ export default function SettingsPage() {
 
             <div className="grid grid-cols-1 gap-10">
                 <div className="space-y-6">
-                    <div className="bg-[#1e293b] p-8 rounded-2xl shadow-lg border border-slate-700 text-slate-100">
+                    <div className="bg-[#1e293b] p-8 rounded-2xl shadow-lg text-slate-100">
                         <h2 className="text-2xl font-bold text-slate-100 mb-6 flex items-center gap-2">
                             Manage CVs
                         </h2>
@@ -138,7 +138,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-6">
-                    <div className="bg-[#1e293b] p-8 rounded-2xl shadow-lg border border-slate-700 text-slate-100">
+                    <div className="bg-[#1e293b] p-8 rounded-2xl shadow-lg text-slate-100">
                         <h2 className="text-2xl font-bold text-slate-100 mb-6 flex items-center gap-2">
                             AI Models & Autofill
                         </h2>

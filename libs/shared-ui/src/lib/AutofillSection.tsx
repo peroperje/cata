@@ -77,84 +77,7 @@ export const AutofillSection: React.FC<AutofillSectionProps> = ({
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#6b7280' }}>Models:</div>
-                    {!isAddingMode && (
-                        <button
-                            onClick={() => setIsAddingMode(true)}
-                            style={{
-                                background: 'transparent',
-                                border: 'none',
-                                color: '#6366f1',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                fontSize: '0.75rem',
-                                fontWeight: '600'
-                            }}
-                        >
-                            <Plus size={14} /> Add New
-                        </button>
-                    )}
-                </div>
-
-                {isAddingMode && (
-                    <div style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.5rem',
-                        padding: '0.75rem',
-                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                        borderRadius: '8px',
-                        border: '1px solid rgba(99, 102, 241, 0.3)'
-                    }}>
-                        <input
-                            type="text"
-                            placeholder="Display Name"
-                            value={newName}
-                            onChange={(e) => setNewName(e.target.value)}
-                            style={{ fontSize: '0.8rem', padding: '4px 8px' }}
-                        />
-                        <select
-                            value={newProvider}
-                            onChange={(e) => setNewProvider(e.target.value)}
-                            style={{ fontSize: '0.8rem', padding: '4px 8px' }}
-                        >
-                            <option value="gemini">Gemini</option>
-                            <option value="huggingface">HuggingFace</option>
-                            <option value="openai">OpenAI</option>
-                        </select>
-                        <input
-                            type="text"
-                            placeholder="Model Name (e.g. gemini-1.5-flash)"
-                            value={newModelName}
-                            onChange={(e) => setNewModelName(e.target.value)}
-                            style={{ fontSize: '0.8rem', padding: '4px 8px' }}
-                        />
-                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
-                            <button
-                                onClick={() => setIsAddingMode(false)}
-                                className="button"
-                                style={{
-                                    backgroundColor: 'transparent',
-                                    border: '1px solid #334155',
-                                    padding: '4px 8px',
-                                    fontSize: '0.75rem'
-                                }}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleAdd}
-                                className="button"
-                                style={{ flex: 1, padding: '4px 8px', fontSize: '0.75rem' }}
-                            >
-                                Add Model
-                            </button>
-                        </div>
-                    </div>
-                )}
+                <div style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#6b7280' }}>Models:</div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {models.map(m => (
@@ -239,6 +162,108 @@ export const AutofillSection: React.FC<AutofillSectionProps> = ({
                         </div>
                     ))}
                 </div>
+
+                {!isAddingMode ? (
+                    <button
+                        onClick={() => setIsAddingMode(true)}
+                        style={{
+                            background: 'transparent',
+                            border: '1px dashed rgba(99, 102, 241, 0.4)',
+                            borderRadius: '8px',
+                            color: '#6366f1',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                            padding: '0.5rem',
+                            marginTop: '0.25rem'
+                        }}
+                    >
+                        <Plus size={14} /> Add New Model
+                    </button>
+                ) : (
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.5rem',
+                        padding: '0.75rem',
+                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(99, 102, 241, 0.3)'
+                    }}>
+                        <input
+                            type="text"
+                            placeholder="Display Name"
+                            value={newName}
+                            onChange={(e) => setNewName(e.target.value)}
+                            style={{ 
+                                fontSize: '0.8rem', 
+                                padding: '6px 10px',
+                                backgroundColor: 'rgba(0,0,0,0.2)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '4px',
+                                color: '#f8fafc'
+                            }}
+                        />
+                        <select
+                            value={newProvider}
+                            onChange={(e) => setNewProvider(e.target.value)}
+                            style={{ 
+                                fontSize: '0.8rem', 
+                                padding: '6px 10px',
+                                backgroundColor: 'rgba(0,0,0,0.2)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '4px',
+                                color: '#f8fafc'
+                            }}
+                        >
+                            <option value="gemini">Gemini</option>
+                            <option value="huggingface">HuggingFace</option>
+                            <option value="openai">OpenAI</option>
+                        </select>
+                        <input
+                            type="text"
+                            placeholder="Model Name (e.g. gemini-1.5-flash)"
+                            value={newModelName}
+                            onChange={(e) => setNewModelName(e.target.value)}
+                            style={{ 
+                                fontSize: '0.8rem', 
+                                padding: '6px 10px',
+                                backgroundColor: 'rgba(0,0,0,0.2)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: '4px',
+                                color: '#f8fafc'
+                            }}
+                        />
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
+                            <button
+                                onClick={() => setIsAddingMode(false)}
+                                className="button"
+                                style={{
+                                    flex: 1,
+                                    backgroundColor: 'transparent',
+                                    border: '1px solid #334155',
+                                    padding: '6px 10px',
+                                    fontSize: '0.75rem',
+                                    color: '#94a3b8'
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleAdd}
+                                className="button"
+                                style={{ flex: 1, padding: '6px 10px', fontSize: '0.75rem' }}
+                            >
+                                Add Model
+                            </button>
+                        </div>
+                    </div>
+                )}
+
             </div>
         </div>
     );

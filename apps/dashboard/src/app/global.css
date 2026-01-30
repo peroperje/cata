@@ -21,7 +21,6 @@ body {
 
 .card {
   background: var(--card-bg);
-  border: 1px solid var(--border);
   border-radius: 0.75rem;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   transition: all 0.2s;
@@ -29,8 +28,8 @@ body {
 }
 
 .card:hover {
-  border-color: var(--primary);
   transform: translateY(-2px);
+  box-shadow: 0 12px 20px -5px rgb(0 0 0 / 0.3);
 }
 
 /* Shared Component Styles */
