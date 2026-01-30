@@ -63,6 +63,7 @@ def get_scraped_jobs(
     skip: int = 0,
     limit: int = 100, 
     include_irrelevant: bool = False, 
+    only_irrelevant: bool = False,
     is_favorite: Optional[bool] = None,
     title: Optional[str] = None,
     url: Optional[str] = None,
@@ -70,8 +71,12 @@ def get_scraped_jobs(
 ):
     try:
         query = db.query(models.Job)
-        if not include_irrelevant:
+        
+        if only_irrelevant:
+            query = query.filter(models.Job.is_irrelevant == True)
+        elif not include_irrelevant:
             query = query.filter(models.Job.is_irrelevant == False)
+            
         if is_favorite is not None:
             query = query.filter(models.Job.is_favorite == is_favorite)
         if title:

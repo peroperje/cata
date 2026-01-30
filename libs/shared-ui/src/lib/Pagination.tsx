@@ -7,6 +7,7 @@ interface PaginationProps {
     onPageChange: (page: number) => void;
     itemsPerPage: number;
     totalItems: number;
+    textColor?: string;
 }
 
 export const Pagination: React.FC<PaginationProps> = ({
@@ -15,6 +16,7 @@ export const Pagination: React.FC<PaginationProps> = ({
     onPageChange,
     itemsPerPage,
     totalItems,
+    textColor,
 }) => {
     if (totalPages <= 1) return null;
 
@@ -63,14 +65,14 @@ export const Pagination: React.FC<PaginationProps> = ({
             }}>
                 <span style={{ 
                     fontSize: '0.95rem', 
-                    color: 'var(--text)', 
+                    color: textColor || 'var(--text)', 
                     fontWeight: 600 
                 }}>
                     Page {currentPage} of {totalPages}
                 </span>
                 <span style={{ 
                     fontSize: '0.75rem', 
-                    color: 'var(--text-muted)', 
+                    color: textColor || 'var(--text-muted)', 
                     fontWeight: 500,
                     opacity: 0.8 
                 }}>

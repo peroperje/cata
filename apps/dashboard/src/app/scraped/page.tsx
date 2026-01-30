@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { JobCard, Pagination } from '@cata/shared-ui';
 import { ScrapedJob } from '@cata/shared-types';
 import { Search, Database, StopCircle, Play, Trash2, Calendar } from 'lucide-react';
+import { cn } from '../../lib/utils';
 
 export default function ScrapedPage() {
     const [jobs, setJobs] = useState<ScrapedJob[]>([]);
@@ -13,6 +14,7 @@ export default function ScrapedPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [isScraping, setIsScraping] = useState(false);
     const [includeIrrelevant, setIncludeIrrelevant] = useState(false);
+    const [onlyIrrelevant, setOnlyIrrelevant] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [deleteBeforeDate, setDeleteBeforeDate] = useState('');
     const itemsPerPage = 20;
@@ -27,7 +29,11 @@ export default function ScrapedPage() {
         try {
             let url = `${API_BASE_URL}/scraper/jobs?limit=100`;
             if (searchTerm) url += `&title=${encodeURIComponent(searchTerm)}`;
-            if (includeIrrelevant) url += `&include_irrelevant=true`;
+            if (onlyIrrelevant) {
+                url += `&only_irrelevant=true`;
+            } else if (includeIrrelevant) {
+                url += `&include_irrelevant=true`;
+            }
 
             const res = await fetch(url);
             const data = await res.json();
@@ -55,7 +61,7 @@ export default function ScrapedPage() {
         fetchStatus();
         const interval = setInterval(fetchStatus, 5000);
         return () => clearInterval(interval);
-    }, [searchTerm, includeIrrelevant]);
+    }, [searchTerm, includeIrrelevant, onlyIrrelevant]);
 
     const handleStartScraper = async () => {
         if (!scraperUrl) return;
@@ -134,22 +140,43 @@ export default function ScrapedPage() {
                         <Database size={16} className="text-indigo-400" />
                         <span className="text-sm font-semibold text-indigo-400">{status.job_count} Total</span>
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-1 bg-transparent rounded-lg border border-red-900/30">
-                        <Trash2 size={16} className="text-red-400" />
-                        <span className="text-sm font-semibold text-red-400">{status.irrelevant_count} Irrelevant</span>
-                    </div>
-                    <label className="flex items-center gap-2 px-3 py-1 bg-indigo-950/20 rounded-lg border border-indigo-500/30 cursor-pointer hover:bg-indigo-950/40 transition">
-                        <input 
-                            type="checkbox" 
-                            checked={includeIrrelevant} 
-                            onChange={(e) => {
-                                setIncludeIrrelevant(e.target.checked);
-                                setCurrentPage(1);
-                            }}
-                            className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                        />
-                        <span className="text-sm font-semibold text-indigo-300">Show Irrelevant</span>
-                    </label>
+                    {!onlyIrrelevant && (
+                        <label className={cn(
+                            "flex items-center gap-2 px-3 py-1 rounded-lg border cursor-pointer transition",
+                            {
+                                "bg-indigo-500/20 border-indigo-500 text-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.2)]": includeIrrelevant,
+                                "bg-transparent border-indigo-900/30 text-indigo-400 hover:bg-indigo-900/10": !includeIrrelevant
+                            }
+                        )}>
+                            <input 
+                                type="checkbox" 
+                                checked={includeIrrelevant} 
+                                onChange={(e) => {
+                                    setIncludeIrrelevant(e.target.checked);
+                                    setCurrentPage(1);
+                                }}
+                                className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            />
+                            <span className="text-sm font-semibold">Show Irrelevant</span>
+                        </label>
+                    )}
+                    <button 
+                        onClick={() => {
+                            setOnlyIrrelevant(!onlyIrrelevant);
+                            setCurrentPage(1);
+                        }}
+                        className={cn(
+                            "flex items-center gap-2 px-3 py-1 rounded-lg border transition",
+                            {
+                                "bg-red-500/20 border-red-500 text-red-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]": onlyIrrelevant,
+                                "bg-transparent border-red-900/30 text-red-400 hover:bg-red-900/10": !onlyIrrelevant
+                            }
+                        )}
+                    >
+                        <Trash2 size={16} className={cn(onlyIrrelevant ? "text-red-500" : "text-red-400")} />
+                        <span className="text-sm font-semibold">{status.irrelevant_count} Irrelevant</span>
+                    </button>
+                    
                 </div>
             </div>
 
@@ -274,6 +301,7 @@ export default function ScrapedPage() {
                         onPageChange={setCurrentPage}
                         itemsPerPage={itemsPerPage}
                         totalItems={jobs.length}
+                        textColor="#1e293b"
                     />
                 </>
             )}
