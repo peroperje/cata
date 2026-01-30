@@ -8,10 +8,11 @@ import { Search, Database, StopCircle, Play, Trash2, Calendar } from 'lucide-rea
 export default function ScrapedPage() {
     const [jobs, setJobs] = useState<ScrapedJob[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [status, setStatus] = useState({ status: 'stopped', job_count: 0 });
+    const [status, setStatus] = useState({ status: 'stopped', job_count: 0, irrelevant_count: 0 });
     const [scraperUrl, setScraperUrl] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [isScraping, setIsScraping] = useState(false);
+    const [includeIrrelevant, setIncludeIrrelevant] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [deleteBeforeDate, setDeleteBeforeDate] = useState('');
     const itemsPerPage = 20;
@@ -26,6 +27,7 @@ export default function ScrapedPage() {
         try {
             let url = `${API_BASE_URL}/scraper/jobs?limit=100`;
             if (searchTerm) url += `&title=${encodeURIComponent(searchTerm)}`;
+            if (includeIrrelevant) url += `&include_irrelevant=true`;
 
             const res = await fetch(url);
             const data = await res.json();
@@ -53,7 +55,7 @@ export default function ScrapedPage() {
         fetchStatus();
         const interval = setInterval(fetchStatus, 5000);
         return () => clearInterval(interval);
-    }, [searchTerm]);
+    }, [searchTerm, includeIrrelevant]);
 
     const handleStartScraper = async () => {
         if (!scraperUrl) return;
@@ -126,12 +128,28 @@ export default function ScrapedPage() {
     return (
         <div className="p-6 max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold text-white">Scraped Jobs</h1>
+                <h1 className="text-3xl font-bold text-indigo-400">Scraped Jobs</h1>
                 <div className="flex items-center gap-4 bg-transparent p-2 rounded-xl border border-[#334155] shadow-sm">
-                    <div className="flex items-center gap-2 px-3 py-1 bg-transparent rounded-lg">
+                    <div className="flex items-center gap-2 px-3 py-1 bg-transparent rounded-lg border border-[#334155]">
                         <Database size={16} className="text-indigo-400" />
-                        <span className="text-sm font-semibold text-white">{status.job_count} Total</span>
+                        <span className="text-sm font-semibold text-indigo-400">{status.job_count} Total</span>
                     </div>
+                    <div className="flex items-center gap-2 px-3 py-1 bg-transparent rounded-lg border border-red-900/30">
+                        <Trash2 size={16} className="text-red-400" />
+                        <span className="text-sm font-semibold text-red-400">{status.irrelevant_count} Irrelevant</span>
+                    </div>
+                    <label className="flex items-center gap-2 px-3 py-1 bg-indigo-950/20 rounded-lg border border-indigo-500/30 cursor-pointer hover:bg-indigo-950/40 transition">
+                        <input 
+                            type="checkbox" 
+                            checked={includeIrrelevant} 
+                            onChange={(e) => {
+                                setIncludeIrrelevant(e.target.checked);
+                                setCurrentPage(1);
+                            }}
+                            className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        <span className="text-sm font-semibold text-indigo-300">Show Irrelevant</span>
+                    </label>
                 </div>
             </div>
 
@@ -144,7 +162,7 @@ export default function ScrapedPage() {
                     <input
                         type="text"
                         placeholder="Target URL (e.g. helloworld.rs)"
-                        className="flex-1 px-4 py-2 bg-transparent border border-[#334155] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-white placeholder-gray-500"
+                        className="flex-1 px-4 py-2 bg-transparent border border-[#334155] rounded-lg focus:ring-2 text-indigo-400 focus:ring-indigo-500 outline-none placeholder-gray-500"
                         value={scraperUrl}
                         onChange={(e) => setScraperUrl(e.target.value)}
                         disabled={isScraping}
@@ -183,7 +201,7 @@ export default function ScrapedPage() {
                         <input
                             type="text"
                             placeholder="Search scraped jobs..."
-                            className="w-full pl-10 pr-4 py-2.5 bg-transparent border border-[#334155] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-white placeholder-gray-500"
+                            className="w-full pl-10 pr-4 py-2.5 bg-transparent border border-[#334155] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-indigo-400 placeholder-gray-500"
                             value={searchTerm}
                             onChange={(e) => {
                                 setSearchTerm(e.target.value);

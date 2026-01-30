@@ -47,11 +47,13 @@ def stop_scraper():
 def get_scraper_status(db: Session = Depends(get_db)):
     try:
         status = r.get('scraper:status') or 'stopped'
-        # Count jobs found today or altogether
-        job_count = db.query(models.Job).count()
+        # Count jobs found
+        total_count = db.query(models.Job).count()
+        irrelevant_count = db.query(models.Job).filter(models.Job.is_irrelevant == True).count()
         return {
             "status": status,
-            "job_count": job_count
+            "job_count": total_count,
+            "irrelevant_count": irrelevant_count
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

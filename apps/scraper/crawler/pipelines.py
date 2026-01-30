@@ -42,8 +42,7 @@ class JobMatchPipeline:
             job_payload = {
                 "title": item.get('title', 'Unknown Title'),
                 "url": item['url'],
-                "content": content,
-                "similarity_score": 0.0 # Placeholder for now
+                "content": content
             }
             self.api_client.post_job_found(job_payload)
         else:

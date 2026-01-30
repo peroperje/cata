@@ -10,7 +10,7 @@ interface JobCardProps {
 
 export const JobCard: React.FC<JobCardProps> = ({ job, onToggleFavorite, onToggleIrrelevant }) => {
     return (
-        <div className="card job-card" style={{ padding: '0.75rem', fontSize: '0.85rem', transition: 'transform 0.2s', cursor: 'pointer', position: 'relative' }}>
+        <div className={`card job-card ${job.is_irrelevant ? 'opacity-50 grayscale' : ''}`} style={{ padding: '0.75rem', fontSize: '0.85rem', transition: 'transform 0.2s', cursor: 'pointer', position: 'relative' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                 <h3 style={{ fontSize: '0.95rem', margin: 0, paddingRight: '2rem' }}>
                     <a href={job.url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
@@ -35,12 +35,12 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onToggleFavorite, onToggl
                 </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '0.25rem' }}>
-                {job.similarity_score > 0 && (
+                {job.similarity_score !== undefined && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', flex: 1 }}>
                         <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden', flex: 1, maxWidth: '100px' }}>
-                            <div style={{ width: `${job.similarity_score * 100}%`, height: '100%', background: 'var(--primary)' }}></div>
+                            <div style={{ width: `${job.similarity_score * 100}%`, height: '100%', background: job.is_irrelevant ? '#64748b' : 'var(--primary)' }}></div>
                         </div>
-                        <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{(job.similarity_score * 100).toFixed(0)}% Match</span>
+                        <span style={{ color: job.is_irrelevant ? '#64748b' : 'var(--primary)', fontWeight: 600 }}>{(job.similarity_score * 100).toFixed(0)}% Similarity</span>
                     </div>
                 )}
                 <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>

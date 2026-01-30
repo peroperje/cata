@@ -99,7 +99,7 @@ function TrackerContent() {
                     <input
                         type="text"
                         placeholder="Search by title, company..."
-                        className="w-full pl-10 pr-10 py-2.5 bg-transparent border border-[#334155] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-white transition-all placeholder-gray-500 shadow-sm"
+                        className="w-full pl-10 pr-10 py-2.5 bg-transparent border border-[#334155] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-indigo-400 transition-all placeholder-gray-500 shadow-sm"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
