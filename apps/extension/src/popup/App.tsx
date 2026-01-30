@@ -12,7 +12,11 @@ import { APP_VERSION } from '@cata/shared-types';
 import { useJobTracker } from './hooks/useJobTracker';
 
 const App: React.FC = () => {
-    const [status, setStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error'; message: string }>({
+    const [status, setStatus] = useState<{ 
+        type: 'idle' | 'loading' | 'success' | 'error'; 
+        message: string;
+        errorType?: string;
+    }>({
         type: 'idle',
         message: '',
     });
@@ -131,6 +135,7 @@ const App: React.FC = () => {
                     currentJob={currentJob}
                     isExtracting={isExtracting}
                     isSaving={isSaving}
+                    status={status}
                     onAdd={addApplication}
                     onUpdateStatus={updateStatus}
                     onUpdateNotes={updateNotes}

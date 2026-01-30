@@ -8,7 +8,8 @@ interface JobsApplyTrackerProps {
     currentJob: { title: string; company: string; url: string };
     isExtracting: boolean;
     isSaving: boolean;
-    onAdd: (data: { title: string; company: string; notes: string }) => void;
+    status: { type: 'idle' | 'loading' | 'success' | 'error'; message: string; errorType?: string };
+    onAdd: (data: { title: string; company: string; notes: string }, force?: boolean) => void;
     onUpdateStatus: (id: number, status: string) => void;
     onUpdateNotes: (id: number, notes: string) => void;
     onDelete: (id: number) => void;
@@ -20,6 +21,7 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
     currentJob,
     isExtracting,
     isSaving,
+    status,
     onAdd,
     onUpdateStatus,
     onUpdateNotes,
@@ -49,12 +51,15 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
         setCompany(currentJob.company);
     }, [currentJob.title, currentJob.company]);
 
-    const handleAdd = () => {
-        onAdd({ title, company, notes });
-        setNotes('');
-        setTitle('');
-        setCompany('');
+    const handleAdd = (force = false) => {
+        onAdd({ title, company, notes }, force);
     };
+
+    useEffect(() => {
+        if (status.type === 'success') {
+            setNotes('');
+        }
+    }, [status.type]);
 
     const handleDeleteClick = (id: number) => {
         setIdToDelete(id);
@@ -149,10 +154,30 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
                     }}
                 />
 
-                <button className="button" onClick={handleAdd} disabled={isExtracting || isSaving} style={{ width: '100%' }}>
+                <button 
+                    className="button" 
+                    onClick={() => handleAdd(false)} 
+                    disabled={isExtracting || isSaving} 
+                    style={{ width: '100%' }}
+                >
                     {isSaving ? <RefreshCw size={18} className="spin" /> : <Plus size={18} />}
                     {isSaving ? 'Saving...' : 'Add to Tracker'}
                 </button>
+
+                {status.type === 'error' && status.errorType === 'POTENTIAL_DUPLICATE' && (
+                    <button 
+                        className="button" 
+                        onClick={() => onAdd({ title, company, notes }, true)} 
+                        style={{ 
+                            width: '100%', 
+                            marginTop: '0.5rem', 
+                            background: '#10b981', 
+                            borderColor: '#10b981' 
+                        }}
+                    >
+                        Save Anyway
+                    </button>
+                )}
             </div>
 
             {/* Filter & Search Section */}

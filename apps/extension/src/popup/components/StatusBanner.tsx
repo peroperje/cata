@@ -5,6 +5,7 @@ interface StatusBannerProps {
     status: {
         type: 'idle' | 'loading' | 'success' | 'error';
         message: string;
+        errorType?: string;
     };
 }
 

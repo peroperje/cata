@@ -2,7 +2,13 @@ import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../constants';
 import { JobApplication, MetadataResponse } from '@cata/shared-types';
 
-export const useJobTracker = (setStatus: (status: any) => void, isExpanded: boolean, selectedModelId: number | null) => {
+interface Status {
+    type: 'idle' | 'loading' | 'success' | 'error';
+    message: string;
+    errorType?: string;
+}
+
+export const useJobTracker = (setStatus: (status: Status) => void, isExpanded: boolean, selectedModelId: number | null) => {
     const [applications, setApplications] = useState<JobApplication[]>([]);
     const [currentJob, setCurrentJob] = useState<{ title: string; company: string; url: string; pageText?: string }>({
         title: '',
@@ -19,7 +25,7 @@ export const useJobTracker = (setStatus: (status: any) => void, isExpanded: bool
             if (!res.ok) throw new Error('Failed to fetch job applications');
             const data = await res.json();
             setApplications(data);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
         }
     };
@@ -76,7 +82,7 @@ export const useJobTracker = (setStatus: (status: any) => void, isExpanded: bool
         }
     }, [isExpanded]);
 
-    const addApplication = async (data: { title: string; company: string; notes: string }) => {
+    const addApplication = async (data: { title: string; company: string; notes: string }, force = false) => {
         if (isSaving) return;
         setIsSaving(true);
         setStatus({ type: 'loading', message: 'Saving application...' });
@@ -92,14 +98,31 @@ export const useJobTracker = (setStatus: (status: any) => void, isExpanded: bool
                     notes: data.notes,
                     status: 'Interested',
                     pageText: currentJob.pageText,
-                    modelId: selectedModelId
+                    modelId: selectedModelId,
+                    force: force
                 }),
             });
 
-            if (!res.ok) throw new Error('Failed to save application');
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                const detail = errorData.detail;
+                
+                if (typeof detail === 'object') {
+                    setStatus({ 
+                        type: 'error', 
+                        message: detail.message,
+                        errorType: detail.type 
+                    });
+                    return; // Don't throw, we handled it via setStatus
+                }
+                
+                throw new Error(detail || 'Failed to save application');
+            }
 
             setStatus({ type: 'success', message: 'Application saved!' });
             await fetchApplications();
+            // Clear current job after success
+            setCurrentJob(prev => ({ ...prev, title: '', company: '' }));
         } catch (err: any) {
             setStatus({ type: 'error', message: err.message });
         } finally {
