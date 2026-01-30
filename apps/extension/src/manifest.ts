@@ -3,7 +3,7 @@ import { defineManifest } from '@crxjs/vite-plugin'
 export default defineManifest({
     manifest_version: 3,
     name: 'AI Job Auto-Filler',
-    version: '1.0.3',
+    version: '1.0.4',
     permissions: ['storage', 'activeTab', 'scripting', 'sidePanel'],
     action: {
     },
