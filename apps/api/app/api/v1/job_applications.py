@@ -21,13 +21,14 @@ def read_job_applications(
     company: Optional[str] = Query(None),
     job_title: Optional[str] = Query(None),
     url: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
     is_favorite: Optional[bool] = Query(None),
     is_irrelevant: Optional[bool] = Query(None),
     db: Session = Depends(get_db)
 ):
     applications = service.get_job_applications(
         db, skip=skip, limit=limit, status=status, company=company, job_title=job_title,
-        url=url, is_favorite=is_favorite, is_irrelevant=is_irrelevant
+        url=url, search=search, is_favorite=is_favorite, is_irrelevant=is_irrelevant
     )
     return applications
 

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { ApplicationCard, ConfirmModal } from '@cata/shared-ui';
 import { JobApplication } from '@cata/shared-types';
-import { Plus, Search, Edit2 } from 'lucide-react';
+import { Plus, Search, Edit2, X } from 'lucide-react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 
@@ -25,8 +25,11 @@ function TrackerContent() {
         setIsLoading(true);
         try {
             let url = `${API_BASE_URL}/job-applications?limit=100`;
-            if (searchTerm) url += `&job_title=${encodeURIComponent(searchTerm)}`;
-            if (filterStatus) url += `&status=${encodeURIComponent(filterStatus)}`;
+            if (searchTerm) {
+                url += `&search=${encodeURIComponent(searchTerm)}`;
+            } else if (filterStatus) {
+                url += `&status=${encodeURIComponent(filterStatus)}`;
+            }
 
             const res = await fetch(url);
             const data = await res.json();
@@ -91,40 +94,51 @@ function TrackerContent() {
             </div>
 
             <div className="flex flex-col gap-6 mb-8">
-                <div className="relative flex-1">
+                <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                     <input
                         type="text"
                         placeholder="Search by title, company..."
-                        className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                        className="w-full pl-10 pr-10 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
+                    {searchTerm && (
+                        <button
+                            onClick={() => setSearchTerm('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                            title="Clear search"
+                        >
+                            <X size={18} />
+                        </button>
+                    )}
                 </div>
 
-                <div className="flex flex-wrap gap-2 border-b border-gray-200">
-                    <button
-                        onClick={() => updateFilter('')}
-                        className={`px-4 py-2 text-sm font-medium transition-colors relative ${filterStatus === ''
-                            ? 'text-indigo-600 border-b-2 border-indigo-600'
-                            : 'text-gray-500 hover:text-gray-700'
-                            }`}
-                    >
-                        All Statuses
-                    </button>
-                    {statuses.map(s => (
+                {!searchTerm && (
+                    <div className="flex flex-wrap gap-2 border-b border-gray-200">
                         <button
-                            key={s}
-                            onClick={() => updateFilter(s)}
-                            className={`px-4 py-2 text-sm font-medium transition-colors relative ${filterStatus === s
+                            onClick={() => updateFilter('')}
+                            className={`px-4 py-2 text-sm font-medium transition-colors relative ${filterStatus === ''
                                 ? 'text-indigo-600 border-b-2 border-indigo-600'
                                 : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
-                            {s}
+                            All Statuses
                         </button>
-                    ))}
-                </div>
+                        {statuses.map(s => (
+                            <button
+                                key={s}
+                                onClick={() => updateFilter(s)}
+                                className={`px-4 py-2 text-sm font-medium transition-colors relative ${filterStatus === s
+                                    ? 'text-indigo-600 border-b-2 border-indigo-600'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                {s}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {isLoading ? (

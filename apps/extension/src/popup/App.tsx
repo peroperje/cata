@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StatusBanner } from './components/StatusBanner';
-import { CvSection, AutofillSection, ApplicationCard, ConfirmModal } from '@cata/shared-ui';
+import { CvSection, AutofillSection } from '@cata/shared-ui';
 import { CollapsibleSection } from './components/CollapsibleSection';
 import { ScraperSection } from './components/ScraperSection';
 import { JobsApplyTracker } from './components/JobsApplyTracker';
@@ -70,6 +70,10 @@ const App: React.FC = () => {
 
     const {
         applications,
+        searchTerm,
+        setSearchTerm,
+        filterStatus,
+        setFilterStatus,
         currentJob,
         isExtracting,
         isSaving,
@@ -132,6 +136,10 @@ const App: React.FC = () => {
             >
                 <JobsApplyTracker
                     applications={applications}
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    filterStatus={filterStatus}
+                    onStatusFilterChange={setFilterStatus}
                     currentJob={currentJob}
                     isExtracting={isExtracting}
                     isSaving={isSaving}

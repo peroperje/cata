@@ -93,10 +93,19 @@ def get_job_applications(
     company: Optional[str] = None,
     job_title: Optional[str] = None,
     url: Optional[str] = None,
+    search: Optional[str] = None,
     is_favorite: Optional[bool] = None,
     is_irrelevant: Optional[bool] = None
 ):
     query = db.query(models.JobApplication)
+    
+    if search:
+        query = query.filter(
+            or_(
+                models.JobApplication.title.ilike(f"%{search}%"),
+                models.JobApplication.company.ilike(f"%{search}%")
+            )
+        )
     
     if status:
         query = query.filter(models.JobApplication.status == status)

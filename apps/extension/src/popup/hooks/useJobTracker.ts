@@ -10,6 +10,8 @@ interface Status {
 
 export const useJobTracker = (setStatus: (status: Status) => void, isExpanded: boolean, selectedModelId: number | null) => {
     const [applications, setApplications] = useState<JobApplication[]>([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('Interested');
     const [currentJob, setCurrentJob] = useState<{ title: string; company: string; url: string; pageText?: string }>({
         title: '',
         company: '',
@@ -21,7 +23,14 @@ export const useJobTracker = (setStatus: (status: Status) => void, isExpanded: b
 
     const fetchApplications = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/job-applications`);
+            let url = `${API_BASE_URL}/job-applications?limit=100`;
+            if (searchTerm) {
+                url += `&search=${encodeURIComponent(searchTerm)}`;
+            } else if (filterStatus) {
+                url += `&status=${encodeURIComponent(filterStatus)}`;
+            }
+
+            const res = await fetch(url);
             if (!res.ok) throw new Error('Failed to fetch job applications');
             const data = await res.json();
             setApplications(data);
@@ -78,9 +87,8 @@ export const useJobTracker = (setStatus: (status: Status) => void, isExpanded: b
     useEffect(() => {
         if (isExpanded) {
             fetchApplications();
-            // Don't auto-fetch metadata on expand, let user click the button if they want
         }
-    }, [isExpanded]);
+    }, [isExpanded, searchTerm, filterStatus]);
 
     const addApplication = async (data: { title: string; company: string; notes: string }, force = false) => {
         if (isSaving) return;
@@ -113,7 +121,7 @@ export const useJobTracker = (setStatus: (status: Status) => void, isExpanded: b
                         message: detail.message,
                         errorType: detail.type 
                     });
-                    return; // Don't throw, we handled it via setStatus
+                    return;
                 }
                 
                 throw new Error(detail || 'Failed to save application');
@@ -123,8 +131,9 @@ export const useJobTracker = (setStatus: (status: Status) => void, isExpanded: b
             await fetchApplications();
             // Clear current job after success
             setCurrentJob(prev => ({ ...prev, title: '', company: '' }));
-        } catch (err: any) {
-            setStatus({ type: 'error', message: err.message });
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Unknown error';
+            setStatus({ type: 'error', message });
         } finally {
             setIsSaving(false);
         }
@@ -139,8 +148,9 @@ export const useJobTracker = (setStatus: (status: Status) => void, isExpanded: b
             });
             if (!res.ok) throw new Error('Failed to update notes');
             fetchApplications();
-        } catch (err: any) {
-            setStatus({ type: 'error', message: err.message });
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Unknown error';
+            setStatus({ type: 'error', message });
         }
     };
 
@@ -153,8 +163,9 @@ export const useJobTracker = (setStatus: (status: Status) => void, isExpanded: b
             });
             if (!res.ok) throw new Error('Failed to update status');
             fetchApplications();
-        } catch (err: any) {
-            setStatus({ type: 'error', message: err.message });
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Unknown error';
+            setStatus({ type: 'error', message });
         }
     };
 
@@ -165,13 +176,18 @@ export const useJobTracker = (setStatus: (status: Status) => void, isExpanded: b
             });
             if (!res.ok) throw new Error('Failed to delete application');
             fetchApplications();
-        } catch (err: any) {
-            setStatus({ type: 'error', message: err.message });
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Unknown error';
+            setStatus({ type: 'error', message });
         }
     };
 
     return {
         applications,
+        searchTerm,
+        setSearchTerm,
+        filterStatus,
+        setFilterStatus,
         currentJob,
         isExtracting,
         isSaving,
