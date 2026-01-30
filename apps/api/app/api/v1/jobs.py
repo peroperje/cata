@@ -4,6 +4,7 @@ from typing import List
 from app.core.database import get_db
 from app.models import models
 from app.schemas import schemas
+from app.core.utils import normalize_url
 from sentence_transformers import SentenceTransformer, util
 import logging
 
@@ -40,8 +41,17 @@ def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
         else:
             logger.warning("No CV text found for similarity calculation")
             
+    normalized_url = normalize_url(job.url)
+    
+    # Check if job already exists with this URL
+    existing_job = db.query(models.Job).filter(models.Job.url == normalized_url).first()
+    if existing_job:
+        logger.info(f"Job already exists: {normalized_url}")
+        return existing_job
+
     db_job = models.Job(
-        **job.dict(exclude={"similarity_score", "is_irrelevant"}),
+        **job.dict(exclude={"similarity_score", "is_irrelevant", "url"}),
+        url=normalized_url,
         similarity_score=similarity_score,
         is_irrelevant=is_irrelevant
     )

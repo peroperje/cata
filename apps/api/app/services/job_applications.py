@@ -4,6 +4,7 @@ from typing import List, Optional
 from datetime import datetime
 from app.models import models
 from app.schemas import schemas
+from app.core.utils import normalize_url
 
 from app.services.ai.factory import AIProviderFactory
 
@@ -42,7 +43,8 @@ async def create_job_application(db: Session, application: schemas.JobApplicatio
 
     title = app_dict['title']
     company = app_dict['company']
-    url = app_dict['url']
+    url = normalize_url(app_dict['url'])
+    app_dict['url'] = url
 
     # 1. Check for strict duplicate (title, company, url)
     strict_duplicate = db.query(models.JobApplication).filter(
