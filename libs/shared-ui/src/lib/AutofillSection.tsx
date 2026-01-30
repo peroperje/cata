@@ -214,15 +214,16 @@ export const AutofillSection: React.FC<AutofillSectionProps> = ({
                             style={{ 
                                 fontSize: '0.8rem', 
                                 padding: '6px 10px',
-                                backgroundColor: 'rgba(0,0,0,0.2)',
+                                backgroundColor: '#0f172a',
                                 border: '1px solid rgba(255,255,255,0.1)',
                                 borderRadius: '4px',
-                                color: '#f8fafc'
+                                color: '#f8fafc',
+                                cursor: 'pointer'
                             }}
                         >
-                            <option value="gemini">Gemini</option>
-                            <option value="huggingface">HuggingFace</option>
-                            <option value="openai">OpenAI</option>
+                            <option value="gemini" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>Gemini</option>
+                            <option value="huggingface" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>HuggingFace</option>
+                            <option value="openai" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>OpenAI</option>
                         </select>
                         <input
                             type="text"
