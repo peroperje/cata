@@ -94,6 +94,7 @@ class JobApplicationCreate(BaseModel):
     notes: Optional[str] = None
     pageText: Optional[str] = None
     modelId: Optional[int] = None
+    force: bool = False
 
 class JobApplicationUpdate(BaseModel):
     title: Optional[str] = None

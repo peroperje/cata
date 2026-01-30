@@ -7,8 +7,10 @@ from app.schemas import schemas
 
 from app.services.ai.factory import AIProviderFactory
 
+from fastapi import HTTPException
+
 async def create_job_application(db: Session, application: schemas.JobApplicationCreate):
-    app_dict = application.dict(exclude={'pageText', 'modelId'})
+    app_dict = application.dict(exclude={'pageText', 'modelId', 'force'})
     
     # If title or company is missing, try AI extraction
     if application.pageText and application.modelId and (not application.title or not application.company):
@@ -37,6 +39,42 @@ async def create_job_application(db: Session, application: schemas.JobApplicatio
         app_dict['title'] = 'Unknown Title'
     if not app_dict.get('company'):
         app_dict['company'] = 'Unknown Company'
+
+    title = app_dict['title']
+    company = app_dict['company']
+    url = app_dict['url']
+
+    # 1. Check for strict duplicate (title, company, url)
+    strict_duplicate = db.query(models.JobApplication).filter(
+        models.JobApplication.title == title,
+        models.JobApplication.company == company,
+        models.JobApplication.url == url
+    ).first()
+
+    if strict_duplicate:
+        raise HTTPException(
+            status_code=409, 
+            detail={
+                "type": "STRICT_DUPLICATE",
+                "message": f"You already applied for '{title}' at '{company}' with this URL."
+            }
+        )
+
+    # 2. Check for potential duplicate (title, company)
+    if not application.force:
+        potential_duplicate = db.query(models.JobApplication).filter(
+            models.JobApplication.title == title,
+            models.JobApplication.company == company
+        ).first()
+
+        if potential_duplicate:
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "type": "POTENTIAL_DUPLICATE",
+                    "message": f"You already have an application for '{title}' at '{company}', but with a different URL. Do you want to save it anyway?"
+                }
+            )
 
     db_application = models.JobApplication(**app_dict)
     db.add(db_application)
