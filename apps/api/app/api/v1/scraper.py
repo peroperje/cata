@@ -79,7 +79,7 @@ def get_scraped_jobs(
         if url:
             query = query.filter(models.Job.url.ilike(f"%{url}%"))
             
-        jobs = query.order_by(models.Job.created_at.desc()).offset(skip).limit(limit).all()
+        jobs = query.order_by(models.Job.similarity_score.desc(), models.Job.created_at.desc()).offset(skip).limit(limit).all()
         return jobs
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -55,7 +55,7 @@ def get_jobs(include_irrelevant: bool = False, db: Session = Depends(get_db)):
     query = db.query(models.Job)
     if not include_irrelevant:
         query = query.filter(models.Job.is_irrelevant == False)
-    return query.order_by(models.Job.created_at.desc()).all()
+    return query.order_by(models.Job.similarity_score.desc(), models.Job.created_at.desc()).all()
 
 @router.patch("/jobs/{job_id}/irrelevant", response_model=schemas.Job)
 def toggle_job_irrelevant(job_id: int, db: Session = Depends(get_db)):
