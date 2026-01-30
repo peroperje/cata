@@ -8,6 +8,7 @@ import { useCvs } from './hooks/useCvs';
 import { useModels } from './hooks/useModels';
 import { useScraper } from './hooks/useScraper';
 import { useAutofill } from './hooks/useAutofill';
+import { APP_VERSION } from '@cata/shared-types';
 import { useJobTracker } from './hooks/useJobTracker';
 
 const App: React.FC = () => {
@@ -79,6 +80,7 @@ const App: React.FC = () => {
         <div className="container">
             <header>
                 <h1>CATA - AI Job Suite</h1>
+                <p className="version">v{APP_VERSION}</p>
             </header>
 
             <StatusBanner status={status} />

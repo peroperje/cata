@@ -43,6 +43,13 @@ h1 {
   -webkit-text-fill-color: transparent;
 }
 
+.version {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin: -0.1rem 0 0.5rem 0.1rem;
+  font-weight: 500;
+}
+
 h2 {
   font-size: 0.75rem;
   font-weight: 600;

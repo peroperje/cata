@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { APP_VERSION } from '@cata/shared-types';
 import { Briefcase, Database, LayoutDashboard, Settings } from 'lucide-react';
 
 const navItems = [
@@ -20,7 +21,10 @@ export const Sidebar = () => {
                     <div className="bg-indigo-600 p-2 rounded-lg">
                         <LayoutDashboard size={24} />
                     </div>
-                    <span className="text-xl font-bold tracking-tight">CATA Dashboard</span>
+                    <div className="flex flex-col">
+                        <span className="text-xl font-bold tracking-tight">CATA Dashboard</span>
+                        <span className="text-xs text-slate-500 font-medium">v{APP_VERSION}</span>
+                    </div>
                 </div>
 
                 <nav className="space-y-2">
