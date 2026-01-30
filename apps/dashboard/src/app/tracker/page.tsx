@@ -83,10 +83,10 @@ function TrackerContent() {
     return (
         <div className="p-6 max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Job Applications Tracker</h1>
+                <h1 className="text-3xl font-bold text-white">Job Applications Tracker</h1>
                 <Link
                     href="/tracker/add"
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition"
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition shadow-sm"
                 >
                     <Plus size={20} />
                     Add Application
@@ -99,7 +99,7 @@ function TrackerContent() {
                     <input
                         type="text"
                         placeholder="Search by title, company..."
-                        className="w-full pl-10 pr-10 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                        className="w-full pl-10 pr-10 py-2.5 bg-transparent border border-[#334155] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-white transition-all placeholder-gray-500 shadow-sm"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -107,7 +107,7 @@ function TrackerContent() {
                             <button
                                 onClick={() => setSearchTerm('')}
                                 style={{ right: '1.25rem' }}
-                                className="absolute top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                                className="absolute top-1/2 -translate-y-1/2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors p-1"
                                 title="Clear search"
                             >
                                 <X size={18} />
@@ -116,12 +116,12 @@ function TrackerContent() {
                 </div>
 
                 {!searchTerm && (
-                    <div className="flex flex-wrap gap-2 border-b border-gray-200">
+                    <div className="flex flex-wrap gap-2 border-b border-[#334155]">
                         <button
                             onClick={() => updateFilter('')}
-                            className={`px-4 py-2 text-sm font-medium transition-colors relative ${filterStatus === ''
-                                ? 'text-indigo-600 border-b-2 border-indigo-600'
-                                : 'text-gray-500 hover:text-gray-700'
+                            className={`px-4 py-3 text-sm font-semibold transition-colors relative ${filterStatus === ''
+                                ? 'text-indigo-400 border-b-2 border-indigo-400'
+                                : 'text-gray-400 hover:text-gray-200'
                                 }`}
                         >
                             All Statuses
@@ -130,9 +130,9 @@ function TrackerContent() {
                             <button
                                 key={s}
                                 onClick={() => updateFilter(s)}
-                                className={`px-4 py-2 text-sm font-medium transition-colors relative ${filterStatus === s
-                                    ? 'text-indigo-600 border-b-2 border-indigo-600'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                className={`px-4 py-3 text-sm font-semibold transition-colors relative ${filterStatus === s
+                                    ? 'text-indigo-400 border-b-2 border-indigo-400'
+                                    : 'text-gray-400 hover:text-gray-200'
                                     }`}
                             >
                                 {s}
@@ -166,7 +166,7 @@ function TrackerContent() {
                         />
                     ))}
                     {applications.length === 0 && (
-                        <div className="col-span-full text-center py-12 text-gray-500 bg-gray-50 rounded-xl border-2 border-dashed">
+                        <div className="col-span-full text-center py-12 text-gray-400 bg-[#1e293b]/50 rounded-xl border-2 border-dashed border-[#334155]">
                             No applications found matching your criteria.
                         </div>
                     )}

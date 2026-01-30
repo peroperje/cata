@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models import models
 import redis
+from datetime import datetime
 import os
 import json
 from pydantic import BaseModel
@@ -79,5 +80,22 @@ def get_scraped_jobs(
         jobs = query.order_by(models.Job.created_at.desc()).offset(skip).limit(limit).all()
         return jobs
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/scraper/jobs")
+def delete_scraped_jobs(
+    before_date: Optional[datetime] = None,
+    db: Session = Depends(get_db)
+):
+    try:
+        query = db.query(models.Job)
+        if before_date:
+            query = query.filter(models.Job.created_at <= before_date)
+        
+        count = query.delete(synchronize_session=False)
+        db.commit()
+        return {"status": "success", "count": count}
+    except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 

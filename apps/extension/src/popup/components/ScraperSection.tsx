@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Search, Database, StopCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Database, StopCircle } from 'lucide-react';
 import { ScrapedJob } from '@cata/shared-types';
-import { JobCard } from '@cata/shared-ui';
+import { JobCard, Pagination } from '@cata/shared-ui';
 
 interface ScraperSectionProps {
     isScraping: boolean;
@@ -29,17 +29,13 @@ export const ScraperSection: React.FC<ScraperSectionProps> = ({
     isLoading
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    const itemsPerPage = 3;
 
     const visibleJobs = scrapedJobs.filter(job => !job.is_irrelevant);
     const totalPages = Math.ceil(visibleJobs.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentJobs = visibleJobs.slice(indexOfFirstItem, indexOfLastItem);
-
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
-    };
 
     return (
         <>
@@ -106,44 +102,13 @@ export const ScraperSection: React.FC<ScraperSectionProps> = ({
                         ))}
                     </div>
 
-                    {totalPages > 1 && (
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '0.5rem',
-                            marginTop: '1rem',
-                            padding: '0.5rem',
-                            borderTop: '1px solid var(--border)'
-                        }}>
-                            <button
-                                className="button-icon"
-                                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                                disabled={currentPage === 1}
-                                style={{ padding: '4px' }}
-                            >
-                                <ChevronLeft size={16} />
-                            </button>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                    Page {currentPage} of {totalPages}
-                                </span>
-                                <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', opacity: 0.7 }}>
-                                    Showing {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, visibleJobs.length)} of {visibleJobs.length}
-                                </span>
-                            </div>
-
-                            <button
-                                className="button-icon"
-                                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                                disabled={currentPage === totalPages}
-                                style={{ padding: '4px' }}
-                            >
-                                <ChevronRight size={16} />
-                            </button>
-                        </div>
-                    )}
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        itemsPerPage={itemsPerPage}
+                        totalItems={visibleJobs.length}
+                    />
                 </div>
             )}
         </>

@@ -4,3 +4,4 @@ export * from './lib/Modal';
 export * from './lib/ConfirmModal';
 export * from './lib/CvSection';
 export * from './lib/AutofillSection';
+export * from './lib/Pagination';
