@@ -9,8 +9,8 @@ interface AutofillSectionProps {
     onModelChange: (id: number | null) => void;
     onApiKeyChange: (value: string) => void;
     onSaveApiKey: () => void;
-    onFill: () => void;
-    onAddModel: (name: string, provider: string, modelName: string) => void;
+    onFill: (instruction: string) => void;
+    onAddModel: (name: string, provider: string, model_name: string) => void;
     onDeleteModel: (id: number) => void;
     isLoading: boolean;
     renderAutofillButton?: boolean;
@@ -33,6 +33,7 @@ export const AutofillSection: React.FC<AutofillSectionProps> = ({
     const [newName, setNewName] = React.useState('');
     const [newProvider, setNewProvider] = React.useState('gemini');
     const [newModelName, setNewModelName] = React.useState('gemini-1.5-flash');
+    const [instruction, setInstruction] = React.useState('');
 
     const handleAdd = () => {
         if (newName && newProvider && newModelName) {
@@ -45,15 +46,34 @@ export const AutofillSection: React.FC<AutofillSectionProps> = ({
     return (
         <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {renderAutofillButton && (
-                <button
-                    className="button"
-                    onClick={onFill}
-                    disabled={isLoading || !selectedModelId}
-                    style={{ width: '100%' }}
-                >
-                    <Zap size={18} fill="currentColor" />
-                    Autofill Form
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#94a3b8', marginBottom: '-0.25rem' }}>AI Instructions:</div>
+                    <textarea
+                        placeholder="Additional instructions for AI (e.g. 'Only fill missed fields', 'Write a joke in the cover letter field')"
+                        value={instruction}
+                        onChange={(e) => setInstruction(e.target.value)}
+                        style={{
+                            width: '100%',
+                            minHeight: '80px',
+                            padding: '0.5rem',
+                            fontSize: '0.8rem',
+                            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            borderRadius: '8px',
+                            color: '#e2e8f0',
+                            resize: 'vertical'
+                        }}
+                    />
+                    <button
+                        className="button"
+                        onClick={() => onFill(instruction)}
+                        disabled={isLoading || !selectedModelId}
+                        style={{ width: '100%' }}
+                    >
+                        <Zap size={18} fill="currentColor" />
+                        Autofill Form
+                    </button>
+                </div>
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

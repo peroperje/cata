@@ -79,6 +79,7 @@ function scrapeFormFields(root: Document | ShadowRoot | Element = document): For
                     label: labelText.replace(/[*:]/g, '').trim().substring(0, 200),
                     type: type || role || element.tagName.toLowerCase(),
                     placeholder: (element as any).placeholder || element.getAttribute('placeholder') || '',
+                    value: (element as any).value || element.innerText || '',
                 });
             } catch (err) {
                 console.warn('[CATA] Error scraping element:', el, err);

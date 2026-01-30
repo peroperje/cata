@@ -149,7 +149,7 @@ export default function SettingsPage() {
                             onModelChange={setSelectedModelId}
                             onApiKeyChange={setApiKey}
                             onSaveApiKey={handleSaveApiKey}
-                            onFill={() => {
+                            onFill={(instruction) => {
                                 alert("Autofill is only available within the browser extension on job application pages.");
                             }}
                             onAddModel={handleAddModel}

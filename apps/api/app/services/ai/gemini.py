@@ -4,9 +4,19 @@ from google import genai
 from app.services.ai.base import AIBaseProvider
 
 class GeminiProvider(AIBaseProvider):
-    async def process(self, cv_text: str, form_data: List[dict], api_key: str, model_name: str) -> dict:
+    async def process(self, cv_text: str, form_data: List[dict], api_key: str, model_name: str, instruction: str = None) -> dict:
         print(f"DEBUG: Processing with model {model_name}")
         client = genai.Client(api_key=api_key)
+
+        instruction_prompt = ""
+        if instruction:
+            instruction_prompt = f"""
+        ADDITIONAL INSTRUCTIONS FROM USER:
+        \"\"\"
+        {instruction}
+        \"\"\"
+        Please prioritize these instructions above general guidelines.
+        """
 
         prompt = f"""
         You are an expert AI assistant helping a candidate fill out a job application form based on their CV.
@@ -21,6 +31,9 @@ class GeminiProvider(AIBaseProvider):
         \"\"\"
         {json.dumps(form_data, indent=2)}
         \"\"\"
+        (Note: the "value" field in the JSON above represents the current content of the field on the page.)
+
+        {instruction_prompt}
 
         INSTRUCTIONS:
         1. **Factual Fields** (Name, Email, Phone, etc.): Extract the data exactly as it appears in the CV.

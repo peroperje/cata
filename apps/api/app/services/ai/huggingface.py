@@ -4,11 +4,21 @@ from huggingface_hub import InferenceClient
 from app.services.ai.base import AIBaseProvider
 
 class HuggingFaceProvider(AIBaseProvider):
-    async def process(self, cv_text: str, form_data: List[dict], api_key: str, model_name: str) -> dict:
+    async def process(self, cv_text: str, form_data: List[dict], api_key: str, model_name: str, instruction: str = None) -> dict:
         print(f"DEBUG: Processing with Hugging Face model {model_name}")
         
         # Use InferenceClient with the new router endpoint
         client = InferenceClient(api_key=api_key, base_url="https://router.huggingface.co")
+
+        instruction_prompt = ""
+        if instruction:
+            instruction_prompt = f"""
+        ADDITIONAL INSTRUCTIONS FROM USER:
+        \"\"\"
+        {instruction}
+        \"\"\"
+        Please prioritize these instructions above general guidelines.
+        """
 
         prompt = f"""
         You are an expert AI assistant helping a candidate fill out a job application form based on their CV.
@@ -23,6 +33,9 @@ class HuggingFaceProvider(AIBaseProvider):
         \"\"\"
         {json.dumps(form_data, indent=2)}
         \"\"\"
+        (Note: the "value" field in the JSON above represents the current content of the field on the page.)
+
+        {instruction_prompt}
 
         INSTRUCTIONS:
         1. **Factual Fields** (Name, Email, Phone, etc.): Extract the data exactly as it appears in the CV.

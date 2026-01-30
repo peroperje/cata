@@ -40,6 +40,7 @@ class ProcessRequest(BaseModel):
     cvText: str
     formData: List[dict]
     modelId: int
+    instruction: Optional[str] = None
 
 class ProcessResponse(BaseModel):
     mappings: List[Mapping]

@@ -31,7 +31,8 @@ async def process_form(request: schemas.ProcessRequest, db: Session = Depends(ge
             cv_text=request.cvText,
             form_data=request.formData,
             api_key=user_key.api_key,
-            model_name=model.model_name
+            model_name=model.model_name,
+            instruction=request.instruction
         )
         return result
     except Exception as e:

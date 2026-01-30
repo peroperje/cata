@@ -25,7 +25,7 @@ export const useAutofill = (
         }
     };
 
-    const handleFill = async () => {
+    const handleFill = async (instruction: string) => {
         if (!pdfText) {
             setStatus({ type: 'error', message: 'Select a CV first.' });
             return;
@@ -51,7 +51,8 @@ export const useAutofill = (
                 body: JSON.stringify({
                     cvText: pdfText,
                     formData: fields,
-                    modelId: selectedModelId
+                    modelId: selectedModelId,
+                    instruction: instruction
                 })
             });
 
