@@ -104,13 +104,14 @@ function TrackerContent() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                     {searchTerm && (
-                        <button
-                            onClick={() => setSearchTerm('')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-                            title="Clear search"
-                        >
-                            <X size={18} />
-                        </button>
+                            <button
+                                onClick={() => setSearchTerm('')}
+                                style={{ right: '1.25rem' }}
+                                className="absolute top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                                title="Clear search"
+                            >
+                                <X size={18} />
+                            </button>
                     )}
                 </div>
 
