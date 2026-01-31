@@ -6,13 +6,42 @@ interface JobCardProps {
     job: ScrapedJob;
     onToggleFavorite: (id: number) => void;
     onToggleIrrelevant: (id: number) => void;
+    isSelected?: boolean;
+    onSelect?: (id: number) => void;
 }
 
-export const JobCard: React.FC<JobCardProps> = ({ job, onToggleFavorite, onToggleIrrelevant }) => {
+export const JobCard: React.FC<JobCardProps> = ({ 
+    job, 
+    onToggleFavorite, 
+    onToggleIrrelevant,
+    isSelected,
+    onSelect
+}) => {
     const isIrrelevant = !!job.is_irrelevant;
 
+    const handleSelect = () => {
+        if (onSelect) {
+            onSelect(job.id);
+        }
+    };
+
     return (
-        <div className={`card job-card ${isIrrelevant ? 'opacity-50 grayscale' : ''}`} style={{ padding: '0.75rem', fontSize: '0.85rem', transition: 'transform 0.2s', cursor: 'pointer', position: 'relative' }}>
+        <div 
+            className={`card job-card ${isIrrelevant ? 'opacity-50 grayscale' : ''} ${isSelected ? 'selected' : ''}`} 
+            onClick={handleSelect}
+            style={{ 
+                padding: '0.75rem', 
+                fontSize: '0.85rem', 
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)', 
+                cursor: 'pointer', 
+                position: 'relative',
+                border: isSelected ? '2px solid var(--primary, #6366f1)' : '1px solid var(--border, rgba(255, 255, 255, 0.1))',
+                boxShadow: isSelected ? '0 0 20px rgba(99, 102, 241, 0.4), 0 0 0 1px rgba(99, 102, 241, 0.1)' : 'none',
+                transform: isSelected ? 'translateY(-4px) scale(1.02)' : 'translateY(0) scale(1)',
+                zIndex: isSelected ? 10 : 1,
+                background: isSelected ? 'rgba(99, 102, 241, 0.05)' : 'var(--card-bg, #1e293b)'
+            }}
+        >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
                 <span style={{
                     backgroundColor: isIrrelevant ? 'rgba(239, 68, 68, 0.15)' : 'rgba(34, 197, 94, 0.15)',
@@ -30,7 +59,13 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onToggleFavorite, onToggl
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
                 <h3 style={{ fontSize: '0.95rem', margin: 0, paddingRight: '2rem' }}>
-                    <a href={job.url} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+                    <a 
+                        href={job.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        style={{ color: 'inherit', textDecoration: 'none' }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         {job.title}
                     </a>
                 </h3>

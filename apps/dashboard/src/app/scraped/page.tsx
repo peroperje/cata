@@ -17,6 +17,7 @@ export default function ScrapedPage() {
     const [onlyIrrelevant, setOnlyIrrelevant] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [deleteBeforeDate, setDeleteBeforeDate] = useState('');
+    const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
     const itemsPerPage = 20;
 
     const totalPages = Math.ceil(jobs.length / itemsPerPage);
@@ -129,6 +130,10 @@ export default function ScrapedPage() {
         } catch (error) {
             console.error('Failed to delete jobs:', error);
         }
+    };
+
+    const handleSelectJob = (id: number) => {
+        setSelectedJobId(prevId => prevId === id ? null : id);
     };
 
     return (
@@ -287,6 +292,8 @@ export default function ScrapedPage() {
                                 job={job}
                                 onToggleFavorite={handleToggleFavorite}
                                 onToggleIrrelevant={handleToggleIrrelevant}
+                                isSelected={selectedJobId === job.id}
+                                onSelect={handleSelectJob}
                             />
                         ))}
                         {jobs.length === 0 && (
