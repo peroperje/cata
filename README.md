@@ -40,16 +40,16 @@ cata-chrome-extension/
 - **Modular Extension UI**: Reorganized into four focused sections:
   - **CV Section**: Manage and select your professional profiles.
   - **Autofill Section**: Intelligent form filling with framework-specific value setters (React/Angular/Vue).
-    - **Granular Control**: Provide custom **AI Instructions** for specific form-filling behavior (e.g., "Only fill contact info", "Be professional in cover letter").
+    - **Granular Control**: Provide custom **AI Instructions** for specific form-filling behavior.
   - **Scraper Section**: Discover new job opportunities matching your profile with **pagination** and **real-time results**.
   - **Jobs Tracker Dashboard**: A dedicated **Next.js web application** for managing your job search pipeline.
-    - **Edit/Add Applications**: Manually create or update job application details.
-    - **Tabbed Navigation**: Effortlessly filter jobs by status (Applied, Interview, Rejected, etc.) via a URL-synced tab system.
-    - **Favorite & Archive**: Mark key opportunities and archive irrelevant ones.
-  - **Server-side AI Metadata**: Automatic extraction of job title and company from page context during tracking.
-- **Production-Ready Scraper**: A Scrapy CrawlSpider service that uses NLP similarity to find jobs, now with a scrollable results UI and pagination in the extension.
-- **Real-time Status Updates**: Improved feedback with a status banner and dynamic UI updates in the extension.
-- **Reusable Component Suite**: Implementation of a modern UI library including **custom modals**, **loaders**, and **paginators**.
+    - **Job-Application Linking**: Link discovered jobs directly to your application tracking entries.
+    - **Tabbed Navigation**: Effortlessly filter jobs by status via a URL-synced tab system.
+    - **Favorite & Archive**: Mark key opportunities as "Used" and archive irrelevant ones.
+    - **Bulk Management**: Delete scraped jobs by date or in bulk to keep your workspace clean.
+- **Intelligent Scraper Service**: A Scrapy CrawlSpider service that uses **NLP (Cosine Similarity)** to rank jobs against your CV, marking low-match entries as irrelevant automatically.
+- **Real-time Status Updates**: Improved feedback with a status banner and dynamic UI updates across both extension and dashboard.
+- **Reusable Component Suite**: Shared UI library including **custom modals**, **loaders**, **paginators**, and **job cards** used across the monorepo.
 - **Nx Monorepo**: Scalable workspace architecture for extension, API, and scraper.
 
 ## 🚀 Getting Started
@@ -269,15 +269,18 @@ This command will:
     - (Optional) Enter specific **AI Instructions** for the current page.
     - Navigate to a job application page and click **"Auto-Fill Page"**.
 6.  **Scraper Section**:
-    - Enter a job search URL.
+    - Enter a job search URL or select from predefined targets.
     - Click **"Start Scraping"** to discover jobs matching your profile.
-    - View discovered jobs and their similarity scores in the scrollable list with **pagination**.
+    - View discovered jobs and their **Similarity Scores** calculated against your selected CV.
+    - Filter results by "Used", "Irrelevant", or search by title.
 7.  **Jobs Tracker Section**:
     - Click **"Add to Tracker"** on any job page to automatically capture job details.
-    - **Next.js Dashboard**: Visit the dashboard to see a comprehensive view of your applications.
-    - **Advanced Editing**: Use the "Edit" feature to manually adjust job titles, companies, or add detailed notes.
-    - **Filtering**: Use the top tabs to filter your applications by their current stage in the hiring process.
-    - **Clickable Links**: Clickable job titles lead directly back to the original application page.
+    - **Link Applications**: In the Scraped Jobs dashboard, connect discovered jobs to entries in your application tracker.
+    - **Next.js Dashboard**: Visit the dashboard for a comprehensive view of your pipeline.
+    - **Advanced Editing**: Manually adjust job titles, companies, or add detailed notes.
+    - **Bulk Actions**: Clean up old scraped results using the delete by date feature.
+    - **Filtering**: Use the top tabs to filter your applications by their current stage.
+    - **Clickable Links**: Direct access back to the original application page.
 
 ## 💡 MCP Integration (Experimental)
 

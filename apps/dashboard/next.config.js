@@ -33,10 +33,16 @@ const configFn = composePlugins(...plugins)(nextConfig);
  * Next.js 16 no longer supports 'eslint' and 'typescript' keys in next.config.js.
  * We wrap the configuration function to remove these keys before Next.js processes them.
  */
+/**
+ * @param {any} phase
+ * @param {any} context
+ */
 export default async (phase, context) => {
-  const config = await (typeof configFn === 'function'
+  const fullConfig = await (typeof configFn === 'function'
     ? configFn(phase, context)
     : configFn);
+
+  const config = /** @type {any} */ (fullConfig);
 
   if (config.eslint) {
     delete config.eslint;
