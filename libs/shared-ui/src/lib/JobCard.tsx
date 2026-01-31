@@ -36,10 +36,10 @@ export const JobCard: React.FC<JobCardProps> = ({
                 cursor: 'pointer', 
                 position: 'relative',
                 border: isSelected ? '2px solid var(--primary, #6366f1)' : '1px solid var(--border, rgba(255, 255, 255, 0.1))',
-                boxShadow: isSelected ? '0 0 20px rgba(99, 102, 241, 0.4), 0 0 0 1px rgba(99, 102, 241, 0.1)' : 'none',
-                transform: isSelected ? 'translateY(-4px) scale(1.02)' : 'translateY(0) scale(1)',
+                boxShadow: isSelected ? '0 4px 12px rgba(99, 102, 241, 0.3)' : 'none',
+                transform: isSelected ? 'translateY(-2px) scale(1.01)' : 'translateY(0) scale(1)',
                 zIndex: isSelected ? 10 : 1,
-                background: isSelected ? 'rgba(99, 102, 241, 0.05)' : 'var(--card-bg, #1e293b)'
+                background: isSelected ? 'rgba(99, 102, 241, 0.08)' : 'var(--card-bg, #1e293b)'
             }}
         >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>

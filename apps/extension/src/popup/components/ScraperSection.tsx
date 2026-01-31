@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Database, StopCircle } from 'lucide-react';
 import { ScrapedJob } from '@cata/shared-types';
-import { JobCard, Pagination } from '@cata/shared-ui';
+import { JobCard, Pagination, useJobSelection } from '@cata/shared-ui';
 
 interface ScraperSectionProps {
     isScraping: boolean;
@@ -29,6 +29,7 @@ export const ScraperSection: React.FC<ScraperSectionProps> = ({
     isLoading
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
+    const { selectedJobId, handleSelectJob } = useJobSelection();
     const itemsPerPage = 3;
 
     const visibleJobs = scrapedJobs.filter(job => !job.is_irrelevant);
@@ -88,8 +89,9 @@ export const ScraperSection: React.FC<ScraperSectionProps> = ({
                             overflowY: 'auto',
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: '0.5rem',
-                            paddingRight: '6px'
+                            gap: '0.75rem',
+                            padding: '12px 8px',
+                            margin: '0'
                         }}
                     >
                         {currentJobs.map((job) => (
@@ -98,6 +100,8 @@ export const ScraperSection: React.FC<ScraperSectionProps> = ({
                                 job={job}
                                 onToggleFavorite={onToggleFavorite}
                                 onToggleIrrelevant={onToggleIrrelevant}
+                                isSelected={selectedJobId === job.id}
+                                onSelect={handleSelectJob}
                             />
                         ))}
                     </div>

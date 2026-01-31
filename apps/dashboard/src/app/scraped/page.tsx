@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { JobCard, Pagination } from '@cata/shared-ui';
+import { JobCard, Pagination, useJobSelection } from '@cata/shared-ui';
 import { ScrapedJob } from '@cata/shared-types';
 import { Search, Database, StopCircle, Play, Trash2, Calendar } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -17,7 +17,7 @@ export default function ScrapedPage() {
     const [onlyIrrelevant, setOnlyIrrelevant] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [deleteBeforeDate, setDeleteBeforeDate] = useState('');
-    const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
+    const { selectedJobId, handleSelectJob } = useJobSelection();
     const itemsPerPage = 20;
 
     const totalPages = Math.ceil(jobs.length / itemsPerPage);
@@ -132,9 +132,6 @@ export default function ScrapedPage() {
         }
     };
 
-    const handleSelectJob = (id: number) => {
-        setSelectedJobId(prevId => prevId === id ? null : id);
-    };
 
     return (
         <div className="p-6 max-w-7xl mx-auto">
