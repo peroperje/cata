@@ -107,6 +107,7 @@ class JobApplicationUpdate(BaseModel):
 
 class JobApplication(JobApplicationBase):
     id: int
+    warning: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

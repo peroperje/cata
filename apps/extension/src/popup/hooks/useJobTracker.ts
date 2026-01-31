@@ -41,46 +41,72 @@ export const useJobTracker = (setStatus: (status: Status) => void, isExpanded: b
 
     const fetchPageMetadata = () => {
         setIsExtracting(true);
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            if (tabs[0]?.id) {
-                chrome.tabs.sendMessage(tabs[0].id, { type: 'GET_JOB_METADATA' }, async (response: MetadataResponse) => {
-                    if (response) {
-                        setCurrentJob({
-                            title: response.title,
-                            company: response.company,
-                            url: response.url,
-                            pageText: response.pageText
-                        });
+        setStatus({ type: 'loading', message: 'Detecting job details...' });
 
-                        // If AI model is selected and we have page text, try to improve extraction
-                        if (selectedModelId && response.pageText && (!response.title || !response.company)) {
-                            try {
-                                const aiRes = await fetch(`${API_BASE_URL}/job-applications/extract-metadata`, {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        pageText: response.pageText,
-                                        modelId: selectedModelId
-                                    })
-                                });
-                                if (aiRes.ok) {
-                                    const aiData = await aiRes.json();
-                                    setCurrentJob(prev => ({
-                                        ...prev,
-                                        title: aiData.title || prev.title,
-                                        company: aiData.company || prev.company
-                                    }));
-                                }
-                            } catch (err) {
-                                console.error('AI Metadata extraction failed', err);
-                            }
-                        }
-                    }
-                    setIsExtracting(false);
-                });
-            } else {
+        // Use lastFocusedWindow: true which is more reliable from side panel/popup
+        chrome.tabs.query({ active: true, lastFocusedWindow: true }, (tabs) => {
+            const activeTab = tabs[0];
+            if (!activeTab?.id) {
+                setStatus({ type: 'error', message: 'No active tab found' });
                 setIsExtracting(false);
+                return;
             }
+
+            chrome.tabs.sendMessage(activeTab.id, { type: 'GET_JOB_METADATA' }, async (response: MetadataResponse) => {
+                // Check for extension errors (e.g. content script not loaded)
+                if (chrome.runtime.lastError) {
+                    console.error('Metadata extraction error:', chrome.runtime.lastError);
+                    setStatus({ 
+                        type: 'error', 
+                        message: 'Could not connect to page. Please refresh the page and try again.' 
+                    });
+                    setIsExtracting(false);
+                    return;
+                }
+
+                if (response) {
+                    setCurrentJob({
+                        title: response.title || '',
+                        company: response.company || '',
+                        url: response.url || '',
+                        pageText: response.pageText
+                    });
+
+                    // If AI model is selected and we have page text, try to improve extraction
+                    if (selectedModelId && response.pageText && (!response.title || !response.company)) {
+                        try {
+                            setStatus({ type: 'loading', message: 'Enhancing with AI...' });
+                            const aiRes = await fetch(`${API_BASE_URL}/job-applications/extract-metadata`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    pageText: response.pageText,
+                                    modelId: selectedModelId
+                                })
+                            });
+                            if (aiRes.ok) {
+                                const aiData = await aiRes.json();
+                                setCurrentJob(prev => ({
+                                    ...prev,
+                                    title: aiData.title || prev.title,
+                                    company: aiData.company || prev.company
+                                }));
+                                setStatus({ type: 'success', message: 'Details extracted!' });
+                            } else {
+                                setStatus({ type: 'success', message: 'Extracted (basic)' });
+                            }
+                        } catch (err) {
+                            console.error('AI Metadata extraction failed', err);
+                            setStatus({ type: 'success', message: 'Extracted (basic)' });
+                        }
+                    } else {
+                        setStatus({ type: 'success', message: 'Details extracted!' });
+                    }
+                } else {
+                    setStatus({ type: 'error', message: 'Failed to extract details' });
+                }
+                setIsExtracting(false);
+            });
         });
     };
 

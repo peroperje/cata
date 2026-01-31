@@ -78,10 +78,31 @@ async def create_job_application(db: Session, application: schemas.JobApplicatio
                 }
             )
 
+    # 3. Check for same company but different position
+    # (company == company, url != url, title != title)
+    warning = None
+    other_position = db.query(models.JobApplication).filter(
+        models.JobApplication.company == company,
+        models.JobApplication.title != title,
+        models.JobApplication.url != url
+    ).first()
+
+    if other_position:
+        warning = f"Warning: You have already applied to '{company}' for a different position ('{other_position.title}')."
+        if app_dict.get('notes'):
+            app_dict['notes'] = f"{app_dict['notes']}\n\n{warning}"
+        else:
+            app_dict['notes'] = warning
+
     db_application = models.JobApplication(**app_dict)
     db.add(db_application)
     db.commit()
     db.refresh(db_application)
+    
+    if warning:
+        # Attach warning to the object so it's included in the response schema
+        setattr(db_application, 'warning', warning)
+        
     return db_application
 
 def get_job_application(db: Session, application_id: int):

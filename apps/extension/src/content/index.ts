@@ -275,12 +275,22 @@ function getJobMetadata() {
     let company = '';
 
     // LinkedIn Specific
-    if (url.includes('linkedin.com/jobs/view') || url.includes('linkedin.com/jobs/search')) {
+    if (url.includes('linkedin.com')) {
+        // Try various LinkedIn selectors as they change often
         title = document.querySelector('.job-details-jobs-unified-top-card__job-title')?.textContent?.trim() ||
-            document.querySelector('.t-24.t-bold')?.textContent?.trim() || '';
+            document.querySelector('.jobs-unified-top-card__job-title')?.textContent?.trim() ||
+            document.querySelector('.t-24.t-bold')?.textContent?.trim() ||
+            document.querySelector('h1')?.textContent?.trim() || '';
 
         company = document.querySelector('.job-details-jobs-unified-top-card__company-name')?.textContent?.trim() ||
-            document.querySelector('.jobs-unified-top-card__company-name')?.textContent?.trim() || '';
+            document.querySelector('.jobs-unified-top-card__company-name')?.textContent?.trim() ||
+            document.querySelector('.jobs-unified-top-card__company-name a')?.textContent?.trim() ||
+            document.querySelector('.app-indicator__company-name')?.textContent?.trim() || '';
+            
+        // Clean up LinkedIn company name (sometimes contains " · " or similar)
+        if (company.includes(' · ')) {
+            company = company.split(' · ')[0].trim();
+        }
     }
 
     // Glassdoor Specific
@@ -289,15 +299,36 @@ function getJobMetadata() {
             document.querySelector('.job-title')?.textContent?.trim() || '';
 
         company = document.querySelector('[data-test="employerName"]')?.textContent?.trim() ||
-            document.querySelector('.employer-name')?.textContent?.trim() || '';
+            document.querySelector('.employer-name')?.textContent?.trim() ||
+            document.querySelector('.employerName')?.textContent?.trim() || '';
+            
+        // Glassdoor often includes rating in employer name
+        company = company.replace(/\d\.\d$/, '').trim();
+    }
+    
+    // Indeed Specific
+    else if (url.includes('indeed.com')) {
+        title = document.querySelector('h1.jobsearch-JobInfoHeader-title')?.textContent?.trim() ||
+            document.querySelector('[data-testid="jobsearch-JobInfoHeader-title"]')?.textContent?.trim() || '';
+        company = document.querySelector('[data-testid="inlineHeader-companyName"]')?.textContent?.trim() ||
+            document.querySelector('.jobsearch-CompanyReview--subtle')?.textContent?.trim() || '';
     }
 
-    // Generic fallback (OpenGraph)
+    // Generic fallbacks
     if (!title) {
-        title = document.querySelector('meta[property="og:title"]')?.getAttribute('content') || document.title;
+        title = document.querySelector('meta[property="og:title"]')?.getAttribute('content') || 
+                document.querySelector('h1')?.textContent?.trim() || 
+                document.title;
     }
 
-    return { title, company, url, pageText: document.body.innerText };
+    if (!company) {
+        // Look for common company name patterns
+        company = document.querySelector('[class*="companyName"]')?.textContent?.trim() ||
+                  document.querySelector('[class*="employer"]')?.textContent?.trim() ||
+                  document.querySelector('[class*="brand"]')?.textContent?.trim() || '';
+    }
+
+    return { title, company, url: url.split('?')[0], pageText: document.body.innerText.substring(0, 50000) };
 }
 
 // Message Listener
