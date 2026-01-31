@@ -73,7 +73,7 @@ export const JobCard: React.FC<JobCardProps> = ({
                     <button
                         onClick={(e) => { e.stopPropagation(); onToggleFavorite(job.id); }}
                         style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: job.is_favorite ? '#fbbf24' : 'var(--text-muted)', opacity: job.is_favorite ? 1 : 0.4 }}
-                        title={job.is_favorite ? "Remove from favorites" : "Mark as favorite"}
+                        title={job.is_favorite ? "Remove from used" : "Mark as used"}
                     >
                         <Star size={16} fill={job.is_favorite ? "#fbbf24" : "none"} />
                     </button>
