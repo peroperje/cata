@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { JobCard, Pagination, useJobSelection } from '@cata/shared-ui';
 import { ScrapedJob } from '@cata/shared-types';
-import { Search, Database, StopCircle, Play, Trash2, Calendar } from 'lucide-react';
+import { Search, Database, StopCircle, Play, Trash2, Calendar, Star } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export default function ScrapedPage() {
@@ -15,13 +15,15 @@ export default function ScrapedPage() {
     const [isScraping, setIsScraping] = useState(false);
     const [includeIrrelevant, setIncludeIrrelevant] = useState(false);
     const [onlyIrrelevant, setOnlyIrrelevant] = useState(false);
+    const [includeUsed, setIncludeUsed] = useState(false);
+    const [onlyUsed, setOnlyUsed] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [deleteBeforeDate, setDeleteBeforeDate] = useState('');
     const { selectedJobId, handleSelectJob } = useJobSelection();
     const itemsPerPage = 20;
 
-    const totalPages = Math.ceil(jobs.length / itemsPerPage);
-    const currentJobs = jobs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    const totalPages = Math.ceil((jobs?.length || 0) / itemsPerPage);
+    const currentJobs = Array.isArray(jobs) ? jobs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage) : [];
 
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 
@@ -36,11 +38,23 @@ export default function ScrapedPage() {
                 url += `&include_irrelevant=true`;
             }
 
+            if (onlyUsed) {
+                url += `&is_used=true`;
+            } else if (!includeUsed) {
+                url += `&is_used=false`;
+            }
+
             const res = await fetch(url);
             const data = await res.json();
-            setJobs(data);
+            if (Array.isArray(data)) {
+                setJobs(data);
+            } else {
+                console.error('API returned non-array data:', data);
+                setJobs([]);
+            }
         } catch (error) {
             console.error('Failed to fetch jobs:', error);
+            setJobs([]);
         } finally {
             setIsLoading(false);
         }
@@ -62,7 +76,7 @@ export default function ScrapedPage() {
         fetchStatus();
         const interval = setInterval(fetchStatus, 5000);
         return () => clearInterval(interval);
-    }, [searchTerm, includeIrrelevant, onlyIrrelevant]);
+    }, [searchTerm, includeIrrelevant, onlyIrrelevant, includeUsed, onlyUsed]);
 
     const handleStartScraper = async () => {
         if (!scraperUrl) return;
@@ -89,12 +103,12 @@ export default function ScrapedPage() {
         }
     };
 
-    const handleToggleFavorite = async (id: number) => {
+    const handleToggleUsed = async (id: number) => {
         try {
-            await fetch(`${API_BASE_URL}/jobs/${id}/favorite`, { method: 'PATCH' });
+            await fetch(`${API_BASE_URL}/jobs/${id}/used`, { method: 'PATCH' });
             fetchJobs();
         } catch (error) {
-            console.error('Failed to toggle favorite:', error);
+            console.error('Failed to toggle used:', error);
         }
     };
 
@@ -142,7 +156,7 @@ export default function ScrapedPage() {
                         <Database size={16} className="text-indigo-400" />
                         <span className="text-sm font-semibold text-indigo-400">{status.job_count} Total</span>
                     </div>
-                    {!onlyIrrelevant && (
+                    {!onlyIrrelevant && !onlyUsed && (
                         <label className={cn(
                             "flex items-center gap-2 px-3 py-1 rounded-lg border cursor-pointer transition",
                             {
@@ -155,6 +169,7 @@ export default function ScrapedPage() {
                                 checked={includeIrrelevant} 
                                 onChange={(e) => {
                                     setIncludeIrrelevant(e.target.checked);
+                                    if (e.target.checked) setOnlyIrrelevant(false);
                                     setCurrentPage(1);
                                 }}
                                 className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
@@ -162,9 +177,54 @@ export default function ScrapedPage() {
                             <span className="text-sm font-semibold">Show Irrelevant</span>
                         </label>
                     )}
+                    {!onlyIrrelevant && !onlyUsed && (
+                        <label className={cn(
+                            "flex items-center gap-2 px-3 py-1 rounded-lg border cursor-pointer transition",
+                            {
+                                "bg-amber-500/20 border-amber-500 text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.2)]": includeUsed,
+                                "bg-transparent border-amber-900/30 text-amber-400 hover:bg-amber-900/10": !includeUsed
+                            }
+                        )}>
+                            <input 
+                                type="checkbox" 
+                                checked={includeUsed} 
+                                onChange={(e) => {
+                                    setIncludeUsed(e.target.checked);
+                                    if (e.target.checked) setOnlyUsed(false);
+                                    setCurrentPage(1);
+                                }}
+                                className="w-4 h-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                            />
+                            <span className="text-sm font-semibold">Show In Use</span>
+                        </label>
+                    )}
+                    <button 
+                        onClick={() => {
+                            setOnlyUsed(!onlyUsed);
+                            if (!onlyUsed) {
+                                setOnlyIrrelevant(false);
+                                setIncludeUsed(true);
+                            }
+                            setCurrentPage(1);
+                        }}
+                        className={cn(
+                            "flex items-center gap-2 px-3 py-1 rounded-lg border transition",
+                            {
+                                "bg-amber-500/20 border-amber-500 text-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.2)]": onlyUsed,
+                                "bg-transparent border-amber-900/30 text-amber-400 hover:bg-amber-900/10": !onlyUsed
+                            }
+                        )}
+                    >
+                        <Star size={16} className={cn(onlyUsed ? "text-amber-500" : "text-amber-400")} />
+                        <span className="text-sm font-semibold">In Use</span>
+                    </button>
                     <button 
                         onClick={() => {
                             setOnlyIrrelevant(!onlyIrrelevant);
+                            if (!onlyIrrelevant) {
+                                setOnlyUsed(false);
+                                setIncludeIrrelevant(true);
+                            }
                             setCurrentPage(1);
                         }}
                         className={cn(
@@ -287,14 +347,14 @@ export default function ScrapedPage() {
                             <JobCard
                                 key={job.id}
                                 job={job}
-                                onToggleFavorite={handleToggleFavorite}
+                                onToggleUsed={handleToggleUsed}
                                 onToggleIrrelevant={handleToggleIrrelevant}
                                 isSelected={selectedJobId === job.id}
                                 onSelect={handleSelectJob}
                             />
                         ))}
                         {jobs.length === 0 && (
-                            <div className="col-span-full text-center py-12 text-gray-500 bg-gray-50 rounded-xl border-2 border-dashed">
+                            <div className="col-span-full text-center py-12 text-gray-500 rounded-xl border-2 border-dashed">
                                 No jobs found. Start a scraper or check your search terms.
                             </div>
                         )}

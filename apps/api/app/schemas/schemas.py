@@ -65,7 +65,7 @@ class JobBase(BaseModel):
     content: Optional[str] = None
     similarity_score: Optional[float] = 0.0
     is_irrelevant: bool = False
-    is_favorite: bool = False
+    is_used: bool = False
 
 class JobCreate(JobBase):
     pass

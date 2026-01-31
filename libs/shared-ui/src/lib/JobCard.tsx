@@ -4,7 +4,7 @@ import { ScrapedJob } from '@cata/shared-types';
 
 interface JobCardProps {
     job: ScrapedJob;
-    onToggleFavorite: (id: number) => void;
+    onToggleUsed: (id: number) => void;
     onToggleIrrelevant: (id: number) => void;
     isSelected?: boolean;
     onSelect?: (id: number) => void;
@@ -12,7 +12,7 @@ interface JobCardProps {
 
 export const JobCard: React.FC<JobCardProps> = ({ 
     job, 
-    onToggleFavorite, 
+    onToggleUsed, 
     onToggleIrrelevant,
     isSelected,
     onSelect
@@ -71,11 +71,11 @@ export const JobCard: React.FC<JobCardProps> = ({
                 </h3>
                 <div style={{ display: 'flex', gap: '0.4rem', position: 'absolute', right: '0.75rem', top: '0.75rem' }}>
                     <button
-                        onClick={(e) => { e.stopPropagation(); onToggleFavorite(job.id); }}
-                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: job.is_favorite ? '#fbbf24' : 'var(--text-muted)', opacity: job.is_favorite ? 1 : 0.4 }}
-                        title={job.is_favorite ? "Remove from used" : "Mark as used"}
+                        onClick={(e) => { e.stopPropagation(); onToggleUsed(job.id); }}
+                        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: job.is_used ? '#fbbf24' : 'var(--text-muted)', opacity: job.is_used ? 1 : 0.4 }}
+                        title={job.is_used ? "Remove from used" : "Mark as used"}
                     >
-                        <Star size={16} fill={job.is_favorite ? "#fbbf24" : "none"} />
+                        <Star size={16} fill={job.is_used ? "#fbbf24" : "none"} />
                     </button>
                     <button
                         onClick={(e) => { e.stopPropagation(); onToggleIrrelevant(job.id); }}

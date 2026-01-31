@@ -64,7 +64,7 @@ def get_scraped_jobs(
     limit: int = 100, 
     include_irrelevant: bool = False, 
     only_irrelevant: bool = False,
-    is_favorite: Optional[bool] = None,
+    is_used: Optional[bool] = None,
     title: Optional[str] = None,
     url: Optional[str] = None,
     db: Session = Depends(get_db)
@@ -77,8 +77,8 @@ def get_scraped_jobs(
         elif not include_irrelevant:
             query = query.filter(models.Job.is_irrelevant == False)
             
-        if is_favorite is not None:
-            query = query.filter(models.Job.is_favorite == is_favorite)
+        if is_used is not None:
+            query = query.filter(models.Job.is_used == is_used)
         if title:
             query = query.filter(models.Job.title.ilike(f"%{title}%"))
         if url:

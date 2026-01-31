@@ -41,7 +41,7 @@ class Job(Base):
     similarity_score = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
     is_irrelevant = Column(Boolean, default=False)
-    is_favorite = Column(Boolean, default=False)
+    is_used = Column(Boolean, default=False)
 
 class JobApplication(Base):
     __tablename__ = "job_applications"

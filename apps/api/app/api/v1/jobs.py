@@ -77,12 +77,12 @@ def toggle_job_irrelevant(job_id: int, db: Session = Depends(get_db)):
     db.refresh(db_job)
     return db_job
 
-@router.patch("/jobs/{job_id}/favorite", response_model=schemas.Job)
-def toggle_job_favorite(job_id: int, db: Session = Depends(get_db)):
+@router.patch("/jobs/{job_id}/used", response_model=schemas.Job)
+def toggle_job_used(job_id: int, db: Session = Depends(get_db)):
     db_job = db.query(models.Job).filter(models.Job.id == job_id).first()
     if not db_job:
         raise HTTPException(status_code=404, detail="Job not found")
-    db_job.is_favorite = not db_job.is_favorite
+    db_job.is_used = not db_job.is_used
     db.commit()
     db.refresh(db_job)
     return db_job

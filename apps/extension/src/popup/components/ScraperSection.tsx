@@ -12,7 +12,7 @@ interface ScraperSectionProps {
     onStartScraping: () => void;
     onStopScraping: () => void;
     onToggleIrrelevant: (id: number) => void;
-    onToggleFavorite: (id: number) => void;
+    onToggleUsed: (id: number) => void;
     isLoading: boolean;
 }
 
@@ -25,14 +25,14 @@ export const ScraperSection: React.FC<ScraperSectionProps> = ({
     onStartScraping,
     onStopScraping,
     onToggleIrrelevant,
-    onToggleFavorite,
+    onToggleUsed,
     isLoading
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const { selectedJobId, handleSelectJob } = useJobSelection();
     const itemsPerPage = 3;
 
-    const visibleJobs = scrapedJobs.filter(job => !job.is_irrelevant);
+    const visibleJobs = scrapedJobs.filter(job => !job.is_irrelevant && !job.is_used);
     const totalPages = Math.ceil(visibleJobs.length / itemsPerPage);
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -98,7 +98,7 @@ export const ScraperSection: React.FC<ScraperSectionProps> = ({
                             <JobCard
                                 key={job.id}
                                 job={job}
-                                onToggleFavorite={onToggleFavorite}
+                                onToggleUsed={onToggleUsed}
                                 onToggleIrrelevant={onToggleIrrelevant}
                                 isSelected={selectedJobId === job.id}
                                 onSelect={handleSelectJob}

@@ -99,9 +99,9 @@ export const useScraper = (setStatus: (status: any) => void, isExpanded: boolean
         }
     };
 
-    const toggleFavorite = async (jobId: number) => {
+    const toggleUsed = async (jobId: number) => {
         try {
-            const res = await fetch(`${API_BASE_URL}/jobs/${jobId}/favorite`, {
+            const res = await fetch(`${API_BASE_URL}/jobs/${jobId}/used`, {
                 method: 'PATCH',
             });
             if (!res.ok) throw new Error('Failed to update job');
@@ -120,6 +120,6 @@ export const useScraper = (setStatus: (status: any) => void, isExpanded: boolean
         handleStartScraping,
         handleStopScraping,
         toggleIrrelevant,
-        toggleFavorite
+        toggleUsed
     };
 };
