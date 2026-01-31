@@ -134,7 +134,7 @@ export default function ScrapedPage() {
     return (
         <div className="p-6 max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold text-indigo-400">Scraped Jobs</h1>
+                <h1 className="text-3xl font-bold text-white">Scraped Jobs</h1>
                 <div className="flex items-center gap-4 bg-transparent p-2 rounded-xl border border-[#334155] shadow-sm">
                     <div className="flex items-center gap-2 px-3 py-1 bg-transparent rounded-lg border border-[#334155]">
                         <Database size={16} className="text-indigo-400" />
