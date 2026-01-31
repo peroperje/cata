@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { JobApplication } from '@cata/shared-types';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
 
 interface JobApplicationFormProps {
@@ -74,18 +74,18 @@ export function JobApplicationForm({ initialData, isEditing = false }: JobApplic
     return (
         <div className="max-w-2xl mx-auto p-6">
             <div className="flex items-center gap-4 mb-8">
-                <Link href="/tracker" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <Link href="/tracker" className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-colors">
                     <ArrowLeft size={24} />
                 </Link>
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-3xl font-bold text-white">
                     {isEditing ? 'Edit Application' : 'Add New Application'}
                 </h1>
             </div>
 
-            <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 space-y-6">
+            <form onSubmit={handleSubmit} className="bg-[#1e293b]/50 rounded-xl shadow-sm border border-[#334155] p-8 space-y-6">
                 <div className="space-y-4">
                     <div>
-                        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="title" className="block text-sm font-medium text-gray-400 mb-1">
                             Job Title
                         </label>
                         <input
@@ -93,7 +93,7 @@ export function JobApplicationForm({ initialData, isEditing = false }: JobApplic
                             id="title"
                             name="title"
                             required
-                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                            className="w-full px-4 py-2 bg-transparent border border-[#334155] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-indigo-400 transition-all placeholder-gray-500"
                             placeholder="e.g. Senior Frontend Engineer"
                             value={formData.title}
                             onChange={handleChange}
@@ -101,7 +101,7 @@ export function JobApplicationForm({ initialData, isEditing = false }: JobApplic
                     </div>
 
                     <div>
-                        <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="company" className="block text-sm font-medium text-gray-400 mb-1">
                             Company
                         </label>
                         <input
@@ -109,7 +109,7 @@ export function JobApplicationForm({ initialData, isEditing = false }: JobApplic
                             id="company"
                             name="company"
                             required
-                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                            className="w-full px-4 py-2 bg-transparent border border-[#334155] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-indigo-400 transition-all placeholder-gray-500"
                             placeholder="e.g. Acme Corp"
                             value={formData.company}
                             onChange={handleChange}
@@ -117,7 +117,7 @@ export function JobApplicationForm({ initialData, isEditing = false }: JobApplic
                     </div>
 
                     <div>
-                        <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="url" className="block text-sm font-medium text-gray-400 mb-1">
                             Job Posting URL
                         </label>
                         <input
@@ -125,7 +125,7 @@ export function JobApplicationForm({ initialData, isEditing = false }: JobApplic
                             id="url"
                             name="url"
                             required
-                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                            className="w-full px-4 py-2 bg-transparent border border-[#334155] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-indigo-400 transition-all placeholder-gray-500"
                             placeholder="https://linkedin.com/jobs/..."
                             value={formData.url}
                             onChange={handleChange}
@@ -133,31 +133,31 @@ export function JobApplicationForm({ initialData, isEditing = false }: JobApplic
                     </div>
 
                     <div>
-                        <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="status" className="block text-sm font-medium text-gray-400 mb-1">
                             Status
                         </label>
                         <select
                             id="status"
                             name="status"
-                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white"
+                            className="w-full px-4 py-2 bg-transparent border border-[#334155] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-indigo-400 transition-all"
                             value={formData.status}
                             onChange={handleChange}
                         >
                             {statuses.map(s => (
-                                <option key={s} value={s}>{s}</option>
+                                <option key={s} value={s} className="bg-[#1e293b] text-white">{s}</option>
                             ))}
                         </select>
                     </div>
 
                     <div>
-                        <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="notes" className="block text-sm font-medium text-gray-400 mb-1">
                             Notes
                         </label>
                         <textarea
                             id="notes"
                             name="notes"
                             rows={4}
-                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none"
+                            className="w-full px-4 py-2 bg-transparent border border-[#334155] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-indigo-400 transition-all placeholder-gray-500 resize-none"
                             placeholder="Add your thoughts or application details here..."
                             value={formData.notes}
                             onChange={handleChange}
@@ -169,37 +169,37 @@ export function JobApplicationForm({ initialData, isEditing = false }: JobApplic
                             <input
                                 type="checkbox"
                                 name="is_favorite"
-                                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-gray-300 transition-colors"
+                                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-[#334155] bg-transparent transition-colors"
                                 checked={formData.is_favorite}
                                 onChange={handleChange}
                             />
-                            <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">Favorite</span>
+                            <span className="text-sm font-medium text-gray-400 group-hover:text-gray-200 transition-colors">Favorite</span>
                         </label>
 
                         <label className="flex items-center gap-2 cursor-pointer group">
                             <input
                                 type="checkbox"
                                 name="is_irrelevant"
-                                className="w-4 h-4 rounded text-red-600 focus:ring-red-500 border-gray-300 transition-colors"
+                                className="w-4 h-4 rounded text-red-600 focus:ring-red-500 border-[#334155] bg-transparent transition-colors"
                                 checked={formData.is_irrelevant}
                                 onChange={handleChange}
                             />
-                            <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">Irrelevant</span>
+                            <span className="text-sm font-medium text-gray-400 group-hover:text-gray-200 transition-colors">Irrelevant</span>
                         </label>
                     </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
+                <div className="flex justify-end gap-3 pt-6 border-t border-[#334155]">
                     <Link
                         href="/tracker"
-                        className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="px-6 py-2 border border-[#334155] rounded-lg text-gray-400 hover:bg-white/5 transition-colors"
                     >
                         Cancel
                     </Link>
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className={`inline-flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`inline-flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                     >
                         <Save size={18} />
                         {isLoading ? 'Saving...' : (isEditing ? 'Update Application' : 'Save Application')}

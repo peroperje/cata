@@ -44,10 +44,10 @@ export default function EditApplicationPage() {
     if (!application) {
         return (
             <div className="flex flex-col items-center justify-center h-screen gap-4">
-                <h2 className="text-2xl font-bold text-gray-900">Application not found</h2>
+                <h2 className="text-2xl font-bold text-white">Application not found</h2>
                 <button
                     onClick={() => window.location.href = '/tracker'}
-                    className="text-indigo-600 hover:text-indigo-800"
+                    className="text-indigo-400 hover:text-indigo-300"
                 >
                     Back to Tracker
                 </button>
