@@ -13,6 +13,9 @@ interface ScraperSectionProps {
     onStopScraping: () => void;
     onToggleIrrelevant: (id: number) => void;
     onToggleUsed: (id: number) => void;
+    onLinkApplication?: (jobId: number, application_id: number) => Promise<void>;
+    onUnlinkApplication?: (jobId: number) => Promise<void>;
+    onSearchApplications?: (query: string) => Promise<any[]>;
     isLoading: boolean;
 }
 
@@ -26,6 +29,9 @@ export const ScraperSection: React.FC<ScraperSectionProps> = ({
     onStopScraping,
     onToggleIrrelevant,
     onToggleUsed,
+    onLinkApplication,
+    onUnlinkApplication,
+    onSearchApplications,
     isLoading
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
@@ -100,6 +106,9 @@ export const ScraperSection: React.FC<ScraperSectionProps> = ({
                                 job={job}
                                 onToggleUsed={onToggleUsed}
                                 onToggleIrrelevant={onToggleIrrelevant}
+                                onLinkApplication={onLinkApplication}
+                                onUnlinkApplication={onUnlinkApplication}
+                                onSearchApplications={onSearchApplications}
                                 isSelected={selectedJobId === job.id}
                                 onSelect={handleSelectJob}
                             />

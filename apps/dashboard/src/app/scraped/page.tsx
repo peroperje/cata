@@ -146,6 +146,35 @@ export default function ScrapedPage() {
         }
     };
 
+    const handleLinkApplication = async (jobId: number, application_id: number) => {
+        try {
+            await fetch(`${API_BASE_URL}/jobs/${jobId}/link/${application_id}`, { method: 'POST' });
+            fetchJobs();
+        } catch (error) {
+            console.error('Failed to link application:', error);
+        }
+    };
+
+    const handleUnlinkApplication = async (jobId: number) => {
+        try {
+            await fetch(`${API_BASE_URL}/jobs/${jobId}/unlink`, { method: 'POST' });
+            fetchJobs();
+        } catch (error) {
+            console.error('Failed to unlink application:', error);
+        }
+    };
+
+    const handleSearchApplications = async (query: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/job-applications?search=${encodeURIComponent(query)}&limit=5`);
+            const data = await res.json();
+            return Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error('Failed to search applications:', error);
+            return [];
+        }
+    };
+
 
     return (
         <div className="p-6 max-w-7xl mx-auto">
@@ -349,6 +378,9 @@ export default function ScrapedPage() {
                                 job={job}
                                 onToggleUsed={handleToggleUsed}
                                 onToggleIrrelevant={handleToggleIrrelevant}
+                                onLinkApplication={handleLinkApplication}
+                                onUnlinkApplication={handleUnlinkApplication}
+                                onSearchApplications={handleSearchApplications}
                                 isSelected={selectedJobId === job.id}
                                 onSelect={handleSelectJob}
                             />

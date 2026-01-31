@@ -66,6 +66,7 @@ class JobBase(BaseModel):
     similarity_score: Optional[float] = 0.0
     is_irrelevant: bool = False
     is_used: bool = False
+    job_application_id: Optional[int] = None
 
 class JobCreate(JobBase):
     pass
@@ -73,6 +74,7 @@ class JobCreate(JobBase):
 class Job(JobBase):
     id: int
     created_at: datetime
+    job_application: Optional["JobApplication"] = None
 
     class Config:
         from_attributes = True

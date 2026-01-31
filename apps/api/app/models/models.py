@@ -43,6 +43,9 @@ class Job(Base):
     is_irrelevant = Column(Boolean, default=False)
     is_used = Column(Boolean, default=False)
 
+    job_application_id = Column(Integer, ForeignKey("job_applications.id", ondelete="SET NULL"), nullable=True)
+    job_application = relationship("JobApplication", back_populates="jobs")
+
 class JobApplication(Base):
     __tablename__ = "job_applications"
 
@@ -56,6 +59,8 @@ class JobApplication(Base):
     is_irrelevant = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    jobs = relationship("Job", back_populates="job_application")
 
     __table_args__ = (
         Index("ix_job_applications_title_company_url", "title", "company", "url"),

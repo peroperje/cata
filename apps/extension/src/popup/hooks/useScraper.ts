@@ -111,6 +111,37 @@ export const useScraper = (setStatus: (status: any) => void, isExpanded: boolean
         }
     };
 
+    const linkApplication = async (jobId: number, application_id: number) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/jobs/${jobId}/link/${application_id}`, { method: 'POST' });
+            if (!res.ok) throw new Error('Failed to link application');
+            await fetchScrapedJobs();
+        } catch (err: any) {
+            setStatus({ type: 'error', message: err.message });
+        }
+    };
+
+    const unlinkApplication = async (jobId: number) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/jobs/${jobId}/unlink`, { method: 'POST' });
+            if (!res.ok) throw new Error('Failed to unlink application');
+            await fetchScrapedJobs();
+        } catch (err: any) {
+            setStatus({ type: 'error', message: err.message });
+        }
+    };
+
+    const searchApplications = async (query: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/job-applications?search=${encodeURIComponent(query)}&limit=5`);
+            const data = await res.json();
+            return Array.isArray(data) ? data : [];
+        } catch (err: any) {
+            console.error('Failed to search applications:', err);
+            return [];
+        }
+    };
+
     return {
         scraperUrl,
         setScraperUrl,
@@ -120,6 +151,9 @@ export const useScraper = (setStatus: (status: any) => void, isExpanded: boolean
         handleStartScraping,
         handleStopScraping,
         toggleIrrelevant,
-        toggleUsed
+        toggleUsed,
+        linkApplication,
+        unlinkApplication,
+        searchApplications
     };
 };

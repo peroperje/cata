@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 from app.core.database import get_db
 from app.models import models
@@ -62,10 +62,37 @@ def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
 
 @router.get("/jobs", response_model=List[schemas.Job])
 def get_jobs(include_irrelevant: bool = False, db: Session = Depends(get_db)):
-    query = db.query(models.Job)
+    query = db.query(models.Job).options(joinedload(models.Job.job_application))
     if not include_irrelevant:
         query = query.filter(models.Job.is_irrelevant == False)
     return query.order_by(models.Job.similarity_score.desc(), models.Job.created_at.desc()).all()
+
+@router.post("/jobs/{job_id}/link/{application_id}", response_model=schemas.Job)
+def link_job_to_application(job_id: int, application_id: int, db: Session = Depends(get_db)):
+    db_job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not db_job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    db_application = db.query(models.JobApplication).filter(models.JobApplication.id == application_id).first()
+    if not db_application:
+        raise HTTPException(status_code=404, detail="Job application not found")
+    
+    db_job.job_application_id = application_id
+    db_job.is_used = True
+    db.commit()
+    db.refresh(db_job)
+    return db_job
+
+@router.post("/jobs/{job_id}/unlink", response_model=schemas.Job)
+def unlink_job_from_application(job_id: int, db: Session = Depends(get_db)):
+    db_job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not db_job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    db_job.job_application_id = None
+    db.commit()
+    db.refresh(db_job)
+    return db_job
 
 @router.patch("/jobs/{job_id}/irrelevant", response_model=schemas.Job)
 def toggle_job_irrelevant(job_id: int, db: Session = Depends(get_db)):

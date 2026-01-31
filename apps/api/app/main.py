@@ -45,7 +45,29 @@ def seed_data():
     finally:
         db.close()
 
+def run_migrations():
+    from sqlalchemy import text
+    db = SessionLocal()
+    try:
+        # Check if job_application_id exists
+        print("Running manual migrations...")
+        # PostgreSQL syntax to add column if not exists is a bit involved, 
+        # but we can just check if it exists first or use a try-except.
+        # Since we are in python, we'll check it.
+        result = db.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='jobs' AND column_name='job_application_id'"))
+        if not result.fetchone():
+            print("Adding job_application_id column to jobs table...")
+            db.execute(text("ALTER TABLE jobs ADD COLUMN job_application_id INTEGER REFERENCES job_applications(id) ON DELETE SET NULL"))
+            db.commit()
+            print("Column added successfully.")
+    except Exception as e:
+        print(f"Migration error: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
 seed_data()
+run_migrations()
 
 app = FastAPI(
     title="CATA API",

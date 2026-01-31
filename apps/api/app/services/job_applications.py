@@ -126,7 +126,8 @@ def get_job_applications(
         query = query.filter(
             or_(
                 models.JobApplication.title.ilike(f"%{search}%"),
-                models.JobApplication.company.ilike(f"%{search}%")
+                models.JobApplication.company.ilike(f"%{search}%"),
+                models.JobApplication.url.ilike(f"%{search}%")
             )
         )
     

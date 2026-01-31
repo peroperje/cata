@@ -46,6 +46,8 @@ export interface ScrapedJob {
   created_at: string;
   is_irrelevant?: boolean;
   is_used?: boolean;
+  job_application_id?: number;
+  job_application?: JobApplication;
 }
 
 export interface JobApplication {
