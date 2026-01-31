@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { JobCard, Pagination, useJobSelection } from '@cata/shared-ui';
 import { ScrapedJob } from '@cata/shared-types';
-import { Search, Database, StopCircle, Play, Trash2, Calendar, Star } from 'lucide-react';
+import { Search, Database, StopCircle, Play, Trash2, Calendar, Star, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export default function ScrapedPage() {
@@ -319,13 +319,27 @@ export default function ScrapedPage() {
                         <input
                             type="text"
                             placeholder="Search scraped jobs..."
-                            className="w-full pl-10 pr-4 py-2.5 bg-transparent border border-[#334155] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-indigo-400 placeholder-gray-500"
+                            className="w-full pl-10 pr-10 py-2.5 bg-transparent border border-[#334155] rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-indigo-400 placeholder-gray-500"
                             value={searchTerm}
                             onChange={(e) => {
                                 setSearchTerm(e.target.value);
                                 setCurrentPage(1);
                             }}
                         />
+                        {searchTerm && (
+                            <button
+                                onClick={() => {
+                                    setSearchTerm('');
+                                    setCurrentPage(1);
+                                }}
+                                style={{
+                                    right:'1rem'
+                                }}
+                                className="absolute top-1/2 -translate-y-1/2 text-gray-500 hover:text-indigo-400 transition-colors"
+                            >
+                                <X size={18} />
+                            </button>
+                        )}
                     </div>
                 </div>
                 
