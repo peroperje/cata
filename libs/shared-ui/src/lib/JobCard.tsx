@@ -58,10 +58,15 @@ export const JobCard: React.FC<JobCardProps> = ({
         setIsManageOpen(nextOpen);
         
         if (nextOpen && onSearchApplications) {
-            // Default search based on job info
-            const defaultQuery = `${job.title} ${job.url}`.substring(0, 50);
-            setSearchQuery(defaultQuery);
-            handleSearch(defaultQuery);
+            if (!job.job_application_id) {
+                // Default search based on job info
+                const defaultQuery = `${job.title}`.substring(0, 50);
+                setSearchQuery(defaultQuery);
+                handleSearch(defaultQuery);
+            } else {
+                setSearchQuery('');
+                setApplications([]);
+            }
         }
     };
 
