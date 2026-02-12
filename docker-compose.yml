@@ -75,6 +75,25 @@ services:
           cpus: '0.1'
           memory: 100M
 
+  # Gmail API Integration Service
+  gmail-api:
+    build:
+      context: ./apps/gmail-api
+      dockerfile: Dockerfile
+    container_name: cata-gmail-api
+    depends_on:
+      - api
+    environment:
+      - API_URL=http://api:8000/api/v1
+      - GMAIL_CLIENT_ID=${GMAIL_CLIENT_ID}
+      - GMAIL_CLIENT_SECRET=${GMAIL_CLIENT_SECRET}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./apps/gmail-api:/app
+    networks:
+      - cata-network
+
 volumes:
   cata_postgres_data:
 

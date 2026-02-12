@@ -53,3 +53,8 @@ Thumbs.db
 # Next.js
 .next
 out
+
+# Gmail API
+apps/gmail-api/credentials.json
+apps/gmail-api/token.json
+apps/gmail-api/.venv/

@@ -77,3 +77,27 @@ export type MetadataResponse = {
   url: string;
   pageText?: string;
 };
+
+export interface GmailJob {
+  id: number;
+  title: string;
+  company: string;
+  url: string;
+  created_at: string;
+  is_irrelevant: boolean;
+  is_used: boolean;
+  job_application_id?: number;
+  job_application?: JobApplication;
+}
+
+export interface GmailSettings {
+  id: number;
+  fetch_interval_minutes: number;
+  last_sync_at?: string;
+  is_active: boolean;
+}
+
+export interface GmailFilter {
+  id: number;
+  email_sender: string;
+}

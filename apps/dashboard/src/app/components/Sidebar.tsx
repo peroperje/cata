@@ -4,11 +4,12 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { APP_VERSION } from '@cata/shared-types';
-import { Briefcase, Database, LayoutDashboard, Settings } from 'lucide-react';
+import { Briefcase, Database, Mail, LayoutDashboard, Settings } from 'lucide-react';
 
 const navItems = [
     { name: 'Job Tracker', href: '/tracker', icon: Briefcase },
     { name: 'Scraped Jobs', href: '/scraped', icon: Database },
+    { name: 'Gmail Jobs', href: '/gmail-jobs', icon: Mail },
 ];
 
 export const Sidebar = () => {
