@@ -58,3 +58,7 @@ out
 apps/gmail-api/credentials.json
 apps/gmail-api/token.json
 apps/gmail-api/.venv/
+
+apps/gmail-api/.env
+apps/gmail-api/credentials*.json
+apps/gmail-api/token*.json
