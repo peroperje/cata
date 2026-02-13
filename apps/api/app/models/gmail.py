@@ -9,8 +9,9 @@ class GmailJob(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
     company = Column(String)
-    url = Column(String)
+    url = Column(String, unique=True, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    sent_at = Column(DateTime, nullable=True)
     is_irrelevant = Column(Boolean, default=False)
     is_used = Column(Boolean, default=False)
 

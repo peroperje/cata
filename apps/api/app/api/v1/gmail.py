@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from app.core.database import get_db
 from app.models import gmail as models
 from app.schemas import gmail as schemas
@@ -30,12 +30,40 @@ def create_gmail_job(job: schemas.GmailJobCreate, db: Session = Depends(get_db))
     db.refresh(db_job)
     return db_job
 
-@router.get("/gmail/jobs", response_model=List[schemas.GmailJob])
-def get_gmail_jobs(include_irrelevant: bool = False, db: Session = Depends(get_db)):
+@router.get("/gmail/jobs", response_model=schemas.GmailJobPagination)
+def get_gmail_jobs(
+    page: int = 1,
+    size: int = 20,
+    search: Optional[str] = None,
+    is_used: Optional[bool] = None,
+    is_irrelevant: Optional[bool] = None,
+    db: Session = Depends(get_db)
+):
     query = db.query(models.GmailJob)
-    if not include_irrelevant:
-        query = query.filter(models.GmailJob.is_irrelevant == False)
-    return query.order_by(models.GmailJob.created_at.desc()).all()
+    
+    if search:
+        search_filter = f"%{search}%"
+        query = query.filter(
+            (models.GmailJob.title.ilike(search_filter)) |
+            (models.GmailJob.company.ilike(search_filter)) |
+            (models.GmailJob.url.ilike(search_filter))
+        )
+    else:
+        if is_used is not None:
+            query = query.filter(models.GmailJob.is_used == is_used)
+        if is_irrelevant is not None:
+            query = query.filter(models.GmailJob.is_irrelevant == is_irrelevant)
+    
+    total = query.count()
+    items = query.order_by(models.GmailJob.sent_at.desc()).offset((page - 1) * size).limit(size).all()
+    
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "size": size,
+        "pages": (total + size - 1) // size
+    }
 
 @router.patch("/gmail/jobs/{job_id}/irrelevant", response_model=schemas.GmailJob)
 def toggle_gmail_job_irrelevant(job_id: int, db: Session = Depends(get_db)):

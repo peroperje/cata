@@ -84,10 +84,19 @@ export interface GmailJob {
   company: string;
   url: string;
   created_at: string;
+  sent_at?: string;
   is_irrelevant: boolean;
   is_used: boolean;
   job_application_id?: number;
   job_application?: JobApplication;
+}
+
+export interface GmailJobPagination {
+  items: GmailJob[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
 }
 
 export interface GmailSettings {

@@ -5,9 +5,10 @@ from datetime import datetime
 class GmailJobBase(BaseModel):
     title: str
     company: str
-    url: str
+    url: str  # Unique
     is_irrelevant: bool = False
     is_used: bool = False
+    sent_at: Optional[datetime] = None
     job_application_id: Optional[int] = None
 
 class GmailJobCreate(GmailJobBase):
@@ -27,6 +28,13 @@ class GmailJob(GmailJobBase):
 
     class Config:
         from_attributes = True
+
+class GmailJobPagination(BaseModel):
+    items: List[GmailJob]
+    total: int
+    page: int
+    size: int
+    pages: int
 
 class GmailSettingsBase(BaseModel):
     fetch_interval_minutes: int = 15

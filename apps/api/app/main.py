@@ -60,6 +60,16 @@ def run_migrations():
             db.execute(text("ALTER TABLE jobs ADD COLUMN job_application_id INTEGER REFERENCES job_applications(id) ON DELETE SET NULL"))
             db.commit()
             print("Column added successfully.")
+        
+        # Check if sent_at exists in gmail_jobs
+        result = db.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='gmail_jobs' AND column_name='sent_at'"))
+        if not result.fetchone():
+            print("Adding sent_at column to gmail_jobs table...")
+            db.execute(text("ALTER TABLE gmail_jobs ADD COLUMN sent_at TIMESTAMP WITHOUT TIME ZONE"))
+            print("Populating sent_at for existing records with 10 Feb 2026...")
+            db.execute(text("UPDATE gmail_jobs SET sent_at = '2026-02-10 00:00:00' WHERE sent_at IS NULL"))
+            db.commit()
+            print("Column added and populated successfully.")
     except Exception as e:
         print(f"Migration error: {e}")
         db.rollback()

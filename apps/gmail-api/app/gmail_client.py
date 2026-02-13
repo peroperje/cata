@@ -1,5 +1,6 @@
 import os.path
 import base64
+import email.utils
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -69,9 +70,19 @@ class GmailClient:
             headers = payload.get('headers')
             
             subject = ''
+            date_str = ''
             for header in headers:
                 if header.get('name') == 'Subject':
                     subject = header.get('value')
+                if header.get('name') == 'Date':
+                    date_str = header.get('value')
+            
+            sent_at = None
+            if date_str:
+                try:
+                    sent_at = email.utils.parsedate_to_datetime(date_str)
+                except Exception as e:
+                    print(f"Error parsing date {date_str}: {e}")
             
             content = ""
             if 'parts' in payload:
@@ -92,7 +103,8 @@ class GmailClient:
             
             return {
                 "subject": subject,
-                "content": content
+                "content": content,
+                "sent_at": sent_at.isoformat() if sent_at else None
             }
         except Exception as error:
             print(f'An error occurred: {error}')

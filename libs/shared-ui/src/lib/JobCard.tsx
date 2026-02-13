@@ -156,7 +156,7 @@ export const JobCard: React.FC<JobCardProps> = ({
                     </div>
                 )}
                 <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                    {new Date(job.created_at).toLocaleDateString()}
+                    {new Date((job as any).sent_at || job.created_at).toLocaleDateString()}
                 </span>
             </div>
 

@@ -59,6 +59,7 @@ def poll_gmail():
             extracted_jobs = extract_jobs_from_text(content_info['content'])
 
         for job in extracted_jobs:
+            job['sent_at'] = content_info.get('sent_at')
             logger.info(f"Posting job: {job['title']} at {job['company']}")
             api_client.post_job(job)
 
