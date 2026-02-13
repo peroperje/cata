@@ -160,9 +160,9 @@ export default function GmailJobsPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-8">
+            <div className="flex flex-col gap-8 mb-8">
                 {/* Filters Section */}
-                <div className="lg:col-span-1 border border-[#334155] rounded-2xl p-6 bg-[#1e293b]/50">
+                <div className="border border-[#334155] rounded-2xl p-6 bg-[#1e293b]/50">
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Settings size={20} className="text-indigo-400" />
                         Sender Filters
@@ -205,7 +205,7 @@ export default function GmailJobsPage() {
                 </div>
 
                 {/* Main Jobs Section */}
-                <div className="lg:col-span-3 space-y-6">
+                <div className="space-y-6">
                     <div className="bg-[#1e293b]/50 border border-[#334155] p-4 rounded-2xl flex items-center gap-4">
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
