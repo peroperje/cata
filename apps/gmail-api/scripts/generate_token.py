@@ -23,8 +23,14 @@ def main():
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+            except Exception as e:
+                print(f"Warning: Could not refresh token ({e}). Re-authenticating...")
+                creds = None
+        
+        # If refresh failed or there were no credentials, start the login flow
+        if not creds or not creds.valid:
             if not os.path.exists('credentials.json'):
                 print("Error: credentials.json not found in current directory.")
                 print("Please download it from Google Cloud Console and place it here.")
@@ -33,10 +39,11 @@ def main():
             flow = InstalledAppFlow.from_client_secrets_file(
                 'credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
+
         # Save the credentials for the next run
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
-            print("Successfully generated token.json")
+            print("Successfully generated/refreshed token.json")
 
 if __name__ == '__main__':
     main()
