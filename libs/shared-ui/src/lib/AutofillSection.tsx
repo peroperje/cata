@@ -222,6 +222,7 @@ export const AutofillSection: React.FC<AutofillSectionProps> = ({
                             }}
                         >
                             <option value="gemini" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>Gemini</option>
+                            <option value="groq" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>Groq</option>
                             <option value="huggingface" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>HuggingFace</option>
                             <option value="openai" style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}>OpenAI</option>
                         </select>

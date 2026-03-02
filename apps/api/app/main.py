@@ -18,25 +18,25 @@ Base.metadata.create_all(bind=engine)
 def seed_data():
     db = SessionLocal()
     try:
-        # Check if any models already exist
-        if db.query(models.AIModel).first() is not None:
-            return
-
         # Define the source of truth for initial seeding
         models_to_seed = [
             {"name": "Gemini 2.0 flash lite", "provider": "gemini", "model_name": "gemini-2.0-flash-lite"},
             {"name": "Gemini 2.0 flash", "provider": "gemini", "model_name": "gemini-2.0-flash"},
             {"name": "Hugging Face Llama 3", "provider": "huggingface", "model_name": "meta-llama/Meta-Llama-3-8B-Instruct"},
+            {"name": "Groq Llama 3.3 70B", "provider": "groq", "model_name": "llama-3.3-70b-versatile"},
+            {"name": "Groq Mixtral 8x7B", "provider": "groq", "model_name": "mixtral-8x7b-32768"},
         ]
-        
-        # Add models
+
+        # Add models if they don't exist
         for seed_item in models_to_seed:
-            new_model = models.AIModel(
-                name=seed_item["name"],
-                provider=seed_item["provider"],
-                model_name=seed_item["model_name"]
-            )
-            db.add(new_model)
+            existing = db.query(models.AIModel).filter_by(model_name=seed_item["model_name"]).first()
+            if not existing:
+                new_model = models.AIModel(
+                    name=seed_item["name"],
+                    provider=seed_item["provider"],
+                    model_name=seed_item["model_name"]
+                )
+                db.add(new_model)
         
         db.commit()
     except Exception as e:
