@@ -22,11 +22,18 @@ class ScraperStart(BaseModel):
 @router.post("/scraper/start")
 def start_scraper(data: ScraperStart):
     try:
-        # Push URL to scrapy-redis start_urls key
-        r.lpush('job_spider:start_urls', data.url)
+        # Clear any old data to avoid deprecation warnings from legacy string requests
+        r.delete('job_spider:start_urls')
+        
+        # Build JSON request
+        payload = json.dumps({"url": data.url})
+        print(f"Pushing to Redis: {payload}")
+        
+        # Push URL to scrapy-redis start_urls key as a JSON string
+        r.lpush('job_spider:start_urls', payload)
         # Set a flag that we are scraping
         r.set('scraper:status', 'running')
-        return {"status": "started", "url": data.url}
+        return {"status": "started", "url": data.url, "payload": payload}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -1,5 +1,5 @@
 scrapy
-scrapy-redis
+scrapy-redis>=0.7.0
 requests
 python-dotenv
 redis

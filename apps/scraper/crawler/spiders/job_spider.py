@@ -11,19 +11,25 @@ class JobSpider(RedisCrawlSpider):
     redis_key = 'job_spider:start_urls'
     
     # Dynamic domains will be handled in process_links or by allowed_domains setting
-    # For RedisCrawlSpider, we can still use rules
+    # Rules for crawling
     rules = (
-        Rule(LinkExtractor(), process_links='filter_links', callback='parse_item', follow=True),
+        # Job detail pages - these are the items we want
+        Rule(
+            LinkExtractor(allow=r'/posao/'),
+            callback='parse_item',
+            follow=False
+        ),
+        # Category/List pages - follow these to find jobs
+        Rule(
+            LinkExtractor(allow=r'/oglasi-za-posao/'),
+            follow=True,
+            process_links='filter_links'
+        ),
     )
 
     def __init__(self, *args, **kwargs):
-        # RedisCrawlSpider handles initialization differently
         super(JobSpider, self).__init__(*args, **kwargs)
         self.api_client = APIClient()
-
-
-    def parse_start_url(self, response):
-        return self.parse_item(response)
 
     def filter_links(self, links):
         # Check if we should stop
@@ -31,32 +37,16 @@ class JobSpider(RedisCrawlSpider):
         if status == b'stopped' or status == 'stopped':
             return []
 
-        filtered_links = []
-        # General job terms to prioritize/filter links
-        # Added more English terms for Glassdoor, LinkedIn, etc.
-        job_terms = [
-            'job', 'career', 'vacancy', 'position', 'oglasi', 'posao', 
-            'radno-mesto', 'konkurs', 'oglas/', 'listing', 'opening', 
-            'detail', 'description', 'apply', 'careers'
-        ]
-        
-        self.logger.info(f"Filtering {len(links)} links from {links[0].url if links else 'unknown'}")
-        
-        for link in links:
-            url_lower = link.url.lower()
-            text_lower = link.text.lower()
-            
-            # If standard job terms are in URL or link text, allow it
-            if any(term in url_lower or term in text_lower for term in job_terms):
-                filtered_links.append(link)
-        
-        self.logger.info(f"Kept {len(filtered_links)} links")
-        return filtered_links
+        # We allow all links that matched the rules (which already filtered for job/category patterns)
+        self.logger.info(f"Crawl Trace: Processing {len(links)} links from rules")
+        return links
 
     def parse_item(self, response):
+        self.logger.info(f'PARSING ITEM: {response.url}')
         # Check if we should stop
         status = self.server.get('scraper:status')
         if status == b'stopped' or status == 'stopped':
+            self.logger.info("Scraper stopped, skipping parse")
             return None
 
         if not hasattr(response, 'text'):

@@ -9,6 +9,7 @@ from sentence_transformers import SentenceTransformer, util
 import logging
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 # Load model once at startup
 try:
@@ -26,6 +27,8 @@ def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
     similarity_score = 0.0
     is_irrelevant = False
     
+    print(f"DEBUG: Receiving job for URL: {job.url}", flush=True)
+    
     if model and job.content:
         # Get latest CV
         cv = db.query(models.CV).order_by(models.CV.created_at.desc()).first()
@@ -35,30 +38,38 @@ def create_job(job: schemas.JobCreate, db: Session = Depends(get_db)):
                 job_embedding = model.encode(job.content, convert_to_tensor=True)
                 similarity_score = float(util.cos_sim(cv_embedding, job_embedding).item())
                 is_irrelevant = similarity_score < 0.10  # Mark as irrelevant if it's a poor match
-                logger.info(f"Calculated similarity score: {similarity_score:.4f} for job: {job.title}")
+                print(f"DEBUG: Similarity score: {similarity_score:.4f}, Is irrelevant: {is_irrelevant}", flush=True)
             except Exception as e:
-                logger.error(f"Error calculating similarity: {e}")
+                print(f"DEBUG: Error calculating similarity: {e}", flush=True)
         else:
-            logger.warning("No CV text found for similarity calculation")
+            logger.warning("DEBUG: No CV text found for similarity calculation")
             
     normalized_url = normalize_url(job.url)
+    print(f"DEBUG: Normalized URL: {normalized_url}", flush=True)
     
     # Check if job already exists with this URL
     existing_job = db.query(models.Job).filter(models.Job.url == normalized_url).first()
     if existing_job:
-        logger.info(f"Job already exists: {normalized_url}")
+        print(f"DEBUG: Job already exists in DB: {normalized_url} (ID: {existing_job.id})", flush=True)
         return existing_job
 
-    db_job = models.Job(
-        **job.dict(exclude={"similarity_score", "is_irrelevant", "url"}),
-        url=normalized_url,
-        similarity_score=similarity_score,
-        is_irrelevant=is_irrelevant
-    )
-    db.add(db_job)
-    db.commit()
-    db.refresh(db_job)
-    return db_job
+    print(f"DEBUG: Creating new job record for: {normalized_url}", flush=True)
+    try:
+        db_job = models.Job(
+            **job.dict(exclude={"similarity_score", "is_irrelevant", "url"}),
+            url=normalized_url,
+            similarity_score=similarity_score,
+            is_irrelevant=is_irrelevant
+        )
+        db.add(db_job)
+        db.commit()
+        db.refresh(db_job)
+        print(f"DEBUG: Successfully saved job with ID: {db_job.id}", flush=True)
+        return db_job
+    except Exception as e:
+        db.rollback()
+        print(f"DEBUG: Exception during job save: {e}", flush=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/jobs", response_model=List[schemas.Job])
 def get_jobs(include_irrelevant: bool = False, db: Session = Depends(get_db)):

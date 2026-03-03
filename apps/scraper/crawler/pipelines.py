@@ -29,8 +29,17 @@ class JobMatchPipeline:
         ]
         matches = [kw for kw in job_keywords if kw in text_lower]
         
+        # Log match details for debugging
+        if matches:
+            logging.info(f"DEBUG: Keywords found ({len(matches)}): {matches}")
+        else:
+            logging.debug("DEBUG: No job keywords found in content.")
+
         # If it has at least 2 job-related keywords, we consider it a lead
-        return len(matches) >= 2
+        is_job = len(matches) >= 2
+        if not is_job:
+             logging.info(f"DEBUG: Page rejected by pipeline (matches: {len(matches)})")
+        return is_job
 
 
 
@@ -46,6 +55,6 @@ class JobMatchPipeline:
             }
             self.api_client.post_job_found(job_payload)
         else:
-            spider.logger.debug(f"Skipping non-job page: {item['url']}")
+            spider.logger.info(f"DEBUG: Job rejected by content heuristic: {item['url']}")
         
         return item
