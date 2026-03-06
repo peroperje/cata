@@ -1,0 +1,27 @@
+{
+    "name": "cv-pdf-generator",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "apps/cv-pdf-generator",
+    "projectType": "application",
+    "targets": {
+        "install": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "python3 -m venv venv && . venv/bin/activate && pip install -r apps/cv-pdf-generator/requirements.txt",
+                "cwd": "."
+            }
+        },
+        "generate": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": ". venv/bin/activate && python apps/cv-pdf-generator/generator.py",
+                "cwd": "."
+            }
+        }
+    },
+    "tags": [
+        "type:app",
+        "platform:cli",
+        "language:python"
+    ]
+}
