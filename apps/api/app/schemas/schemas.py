@@ -85,6 +85,7 @@ class JobApplicationBase(BaseModel):
     company: str
     status: str = "Interested"
     notes: Optional[str] = None
+    full_text_description: Optional[str] = None
     is_favorite: bool = False
     is_irrelevant: bool = False
 
@@ -94,6 +95,7 @@ class JobApplicationCreate(BaseModel):
     company: Optional[str] = None
     status: Optional[str] = "Interested"
     notes: Optional[str] = None
+    full_text_description: Optional[str] = None
     pageText: Optional[str] = None
     modelId: Optional[int] = None
     force: bool = False

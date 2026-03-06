@@ -132,6 +132,7 @@ export const useJobTracker = (setStatus: (status: Status) => void, isExpanded: b
                     notes: data.notes,
                     status: 'Interested',
                     pageText: currentJob.pageText,
+                    full_text_description: currentJob.pageText,
                     modelId: selectedModelId,
                     force: force
                 }),

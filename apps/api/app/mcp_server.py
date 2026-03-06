@@ -237,5 +237,43 @@ async def add_to_tracker(title: str, company: str, url: str, notes: str = None):
     finally:
         db.close()
 
+@mcp.tool()
+async def get_job_evaluation_context(job_application_id: int):
+    """
+    Fetches the full text description of the specific job application from the DB, 
+    and simultaneously fetches the user's most recent CV data.
+    Returns a structured string containing both the CV and the complete job description.
+    Args:
+        job_application_id: The ID of the job application to evaluate.
+    """
+    db = SessionLocal()
+    try:
+        logger.info(f"Fetching evaluation context for job application ID: {job_application_id}")
+        
+        app = db.query(models.JobApplication).filter(models.JobApplication.id == job_application_id).first()
+        if not app:
+            return f"Error: Job application with ID {job_application_id} not found."
+            
+        cv = db.query(models.CV).order_by(models.CV.created_at.desc()).first()
+        if not cv:
+            return "Error: No CV found in the database. Please upload a CV first."
+            
+        context = (
+            f"--- JOB APPLICATION CONTEXT ---\n"
+            f"Title: {app.title}\n"
+            f"Company: {app.company}\n"
+            f"URL: {app.url}\n\n"
+            f"--- FULL JOB DESCRIPTION ---\n"
+            f"{app.full_text_description or 'No full text available.'}\n\n"
+            f"--- APPLICANT CV ({cv.filename}) ---\n"
+            f"{cv.text or 'No CV text available.'}\n"
+        )
+        return context
+    except Exception as e:
+        logger.error(f"Error fetching evaluation context: {e}")
+        return f"Error: {str(e)}"
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     mcp.run()

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LucideIcon, Trash2, Info, CheckCircle, Clock, Briefcase, XCircle, Edit2 } from 'lucide-react';
+import { LucideIcon, Trash2, Info, CheckCircle, Clock, Briefcase, XCircle, Edit2, Copy } from 'lucide-react';
 import { JobApplication } from '@cata/shared-types';
 
 interface ApplicationCardProps {
@@ -68,7 +68,19 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({ app, onUpdateS
                     </button>
                 </div>
             </div>
-            <div style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.5rem' }}>{app.company}</div>
+            <div style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>{app.company}</span>
+                <span style={{ borderLeft: '1px solid #334155', paddingLeft: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    ID: {app.id}
+                    <button 
+                        onClick={() => navigator.clipboard.writeText(app.id.toString())}
+                        title="Copy ID"
+                        style={{ background: 'none', border: 'none', color: '#6366f1', cursor: 'pointer', padding: '2px', display: 'flex' }}
+                    >
+                        <Copy size={12} />
+                    </button>
+                </span>
+            </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
                 <span style={{
