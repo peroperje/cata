@@ -60,7 +60,8 @@ def poll_gmail():
 
         for job in extracted_jobs:
             job['sent_at'] = content_info.get('sent_at')
-            logger.info(f"Posting job: {job['title']} at {job['company']}")
+            job['sender'] = content_info.get('sender', 'unknown@sources.com')
+            logger.info(f"Posting job: {job['title']} at {job['company']} from {job['sender']}")
             api_client.post_job(job)
 
     api_client.update_last_sync()

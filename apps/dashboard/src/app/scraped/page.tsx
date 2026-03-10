@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { JobCard, Pagination, useJobSelection } from '@cata/shared-ui';
+import { ScraperJobCard, Pagination, useJobSelection } from '@cata/shared-ui';
 import { ScrapedJob } from '@cata/shared-types';
 import { Search, Database, StopCircle, Play, Trash2, Calendar, Star, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -387,7 +387,7 @@ export default function ScrapedPage() {
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {currentJobs.map(job => (
-                            <JobCard
+                            <ScraperJobCard
                                 key={job.id}
                                 job={job}
                                 onToggleUsed={handleToggleUsed}

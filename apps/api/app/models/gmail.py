@@ -14,6 +14,8 @@ class GmailJob(Base):
     sent_at = Column(DateTime, nullable=True)
     is_irrelevant = Column(Boolean, default=False)
     is_used = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
+    sender = Column(String, nullable=False, default="unknown@sources.com")
 
     job_application_id = Column(Integer, ForeignKey("job_applications.id", ondelete="SET NULL"), nullable=True)
     job_application = relationship("JobApplication")
@@ -31,3 +33,4 @@ class GmailFilter(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     email_sender = Column(String, unique=True, index=True) # e.g., "jobs-noreply@linkedin.com"
+    is_active = Column(Boolean, default=True)

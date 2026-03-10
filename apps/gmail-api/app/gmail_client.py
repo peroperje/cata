@@ -71,11 +71,14 @@ class GmailClient:
             
             subject = ''
             date_str = ''
+            sender_email = ''
             for header in headers:
                 if header.get('name') == 'Subject':
                     subject = header.get('value')
                 if header.get('name') == 'Date':
                     date_str = header.get('value')
+                if header.get('name') == 'From':
+                    _, sender_email = email.utils.parseaddr(header.get('value'))
             
             sent_at = None
             if date_str:
@@ -104,6 +107,7 @@ class GmailClient:
             return {
                 "subject": subject,
                 "content": content,
+                "sender": sender_email or "unknown@sources.com",
                 "sent_at": sent_at.isoformat() if sent_at else None
             }
         except Exception as error:

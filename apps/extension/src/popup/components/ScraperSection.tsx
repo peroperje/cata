@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Database, StopCircle } from 'lucide-react';
 import { ScrapedJob } from '@cata/shared-types';
-import { JobCard, Pagination, useJobSelection } from '@cata/shared-ui';
+import { ScraperJobCard, Pagination, useJobSelection } from '@cata/shared-ui';
 
 interface ScraperSectionProps {
     isScraping: boolean;
@@ -101,7 +101,7 @@ export const ScraperSection: React.FC<ScraperSectionProps> = ({
                         }}
                     >
                         {currentJobs.map((job) => (
-                            <JobCard
+                            <ScraperJobCard
                                 key={job.id}
                                 job={job}
                                 onToggleUsed={onToggleUsed}

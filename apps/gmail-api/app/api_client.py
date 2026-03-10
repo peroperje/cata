@@ -14,7 +14,8 @@ class APIClient:
             with httpx.Client(base_url=self.base_url) as client:
                 settings = client.get("/gmail/settings").json()
                 filters = client.get("/gmail/filters").json()
-                return settings, filters
+                active_filters = [f for f in filters if f.get("is_active", True)]
+                return settings, active_filters
         except Exception as e:
             logger.error(f"Error fetching config: {e}")
             return None, None

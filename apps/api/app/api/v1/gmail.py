@@ -46,7 +46,8 @@ def get_gmail_jobs(
         query = query.filter(
             (models.GmailJob.title.ilike(search_filter)) |
             (models.GmailJob.company.ilike(search_filter)) |
-            (models.GmailJob.url.ilike(search_filter))
+            (models.GmailJob.url.ilike(search_filter)) |
+            (models.GmailJob.sender.ilike(search_filter))
         )
     else:
         if is_used is not None:
@@ -97,6 +98,17 @@ def link_gmail_job_to_application(job_id: int, application_id: int, db: Session 
     db.refresh(db_job)
     return db_job
 
+@router.post("/gmail/jobs/{job_id}/unlink", response_model=schemas.GmailJob)
+def unlink_gmail_job_from_application(job_id: int, db: Session = Depends(get_db)):
+    db_job = db.query(models.GmailJob).filter(models.GmailJob.id == job_id).first()
+    if not db_job:
+        raise HTTPException(status_code=404, detail="Gmail job not found")
+    
+    db_job.job_application_id = None
+    db.commit()
+    db.refresh(db_job)
+    return db_job
+
 # Gmail Settings
 @router.get("/gmail/settings", response_model=schemas.GmailSettings)
 def get_gmail_settings(db: Session = Depends(get_db)):
@@ -135,6 +147,16 @@ def create_gmail_filter(filter_in: schemas.GmailFilterCreate, db: Session = Depe
     
     db_filter = models.GmailFilter(**filter_in.dict())
     db.add(db_filter)
+    db.commit()
+    db.refresh(db_filter)
+    return db_filter
+
+@router.patch("/gmail/filters/{filter_id}/toggle", response_model=schemas.GmailFilter)
+def toggle_gmail_filter(filter_id: int, db: Session = Depends(get_db)):
+    db_filter = db.query(models.GmailFilter).filter(models.GmailFilter.id == filter_id).first()
+    if not db_filter:
+        raise HTTPException(status_code=404, detail="Filter not found")
+    db_filter.is_active = not db_filter.is_active
     db.commit()
     db.refresh(db_filter)
     return db_filter

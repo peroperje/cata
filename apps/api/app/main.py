@@ -70,6 +70,30 @@ def run_migrations():
             db.execute(text("UPDATE gmail_jobs SET sent_at = '2026-02-10 00:00:00' WHERE sent_at IS NULL"))
             db.commit()
             print("Column added and populated successfully.")
+
+        # Check if sender exists in gmail_jobs
+        result = db.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='gmail_jobs' AND column_name='sender'"))
+        if not result.fetchone():
+            print("Adding sender column to gmail_jobs table...")
+            db.execute(text("ALTER TABLE gmail_jobs ADD COLUMN sender VARCHAR NOT NULL DEFAULT 'unknown@sources.com'"))
+            db.commit()
+            print("Column 'sender' added successfully.")
+
+        # Check if is_active exists in gmail_jobs
+        result = db.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='gmail_jobs' AND column_name='is_active'"))
+        if not result.fetchone():
+            print("Adding is_active column to gmail_jobs table...")
+            db.execute(text("ALTER TABLE gmail_jobs ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE"))
+            db.commit()
+            print("Column 'is_active' added to gmail_jobs successfully.")
+
+        # Check if is_active exists in gmail_filters
+        result = db.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='gmail_filters' AND column_name='is_active'"))
+        if not result.fetchone():
+            print("Adding is_active column to gmail_filters table...")
+            db.execute(text("ALTER TABLE gmail_filters ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE"))
+            db.commit()
+            print("Column 'is_active' added to gmail_filters successfully.")
     except Exception as e:
         print(f"Migration error: {e}")
         db.rollback()

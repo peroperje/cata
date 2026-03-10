@@ -1,16 +1,17 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Settings, Plus, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Settings, Plus, Trash2, ChevronDown, ChevronUp, ToggleRight, ToggleLeft } from 'lucide-react';
 import { GmailFilter } from '@cata/shared-types';
 
 interface SenderFiltersProps {
     filters: GmailFilter[];
     onAddFilter: (email: string) => Promise<void>;
     onDeleteFilter: (id: number) => Promise<void>;
+    onToggleFilter: (id: number) => Promise<void>;
 }
 
-export const SenderFilters = ({ filters, onAddFilter, onDeleteFilter }: SenderFiltersProps) => {
+export const SenderFilters = ({ filters, onAddFilter, onDeleteFilter, onToggleFilter }: SenderFiltersProps) => {
     const [newFilter, setNewFilter] = useState('');
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -61,14 +62,24 @@ export const SenderFilters = ({ filters, onAddFilter, onDeleteFilter }: SenderFi
                     </div>
                     <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                         {filters.map(filter => (
-                            <div key={filter.id} className="flex justify-between items-center p-2 bg-[#1e293b] rounded-lg border border-[#334155] text-sm">
-                                <span className="truncate">{filter.email_sender}</span>
-                                <button 
-                                    onClick={() => onDeleteFilter(filter.id)}
-                                    className="text-gray-500 hover:text-red-400 transition"
-                                >
-                                    <Trash2 size={14} />
-                                </button>
+                            <div key={filter.id} className={`flex justify-between items-center p-2 rounded-lg border border-[#334155] text-sm transition ${filter.is_active ? 'bg-[#1e293b]' : 'bg-[#0f172a] opacity-50'}`}>
+                                <span className={`truncate ${filter.is_active ? 'text-white' : 'text-gray-500 line-through'}`}>{filter.email_sender}</span>
+                                <div className="flex items-center gap-2">
+                                    <button 
+                                        onClick={() => onToggleFilter(filter.id)}
+                                        className={filter.is_active ? "text-indigo-400 hover:text-indigo-300 transition" : "text-gray-500 hover:text-gray-400 transition"}
+                                        title={filter.is_active ? "Deactivate filter" : "Activate filter"}
+                                    >
+                                        {filter.is_active ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
+                                    </button>
+                                    <button 
+                                        onClick={() => onDeleteFilter(filter.id)}
+                                        className="text-gray-500 hover:text-red-400 transition"
+                                        title="Delete filter"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
                             </div>
                         ))}
                         {filters.length === 0 && (

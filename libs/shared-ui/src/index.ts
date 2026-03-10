@@ -1,4 +1,5 @@
-export * from './lib/JobCard';
+export * from './lib/ScraperJobCard';
+export * from './lib/GmailJobCard';
 export * from './lib/ApplicationCard';
 export * from './lib/Modal';
 export * from './lib/ConfirmModal';

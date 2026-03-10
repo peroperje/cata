@@ -83,10 +83,12 @@ export interface GmailJob {
   title: string;
   company: string;
   url: string;
+  sender: string;
   created_at: string;
   sent_at?: string;
   is_irrelevant: boolean;
   is_used: boolean;
+  is_active: boolean;
   job_application_id?: number;
   job_application?: JobApplication;
 }
@@ -109,4 +111,5 @@ export interface GmailSettings {
 export interface GmailFilter {
   id: number;
   email_sender: string;
+  is_active: boolean;
 }

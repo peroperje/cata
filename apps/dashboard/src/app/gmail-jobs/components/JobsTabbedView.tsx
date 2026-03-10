@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { JobCard, Pagination } from '@cata/shared-ui';
-import { GmailJobPagination } from '@cata/shared-types';
+import { GmailJobCard, Pagination } from '@cata/shared-ui';
+import { GmailJobPagination, JobApplication } from '@cata/shared-types';
 import { cn } from '../../../lib/utils';
 import { Loader2 } from 'lucide-react';
 
@@ -13,6 +13,9 @@ interface JobsTabbedViewProps {
     selectedJobId: number | null;
     onSelectJob: (id: number) => void;
     onTotalItemsChange?: (total: number) => void;
+    onLinkApplication?: (jobId: number, applicationId: number) => Promise<void>;
+    onUnlinkApplication?: (jobId: number) => Promise<void>;
+    onSearchApplications?: (query: string) => Promise<JobApplication[]>;
 }
 
 type TabType = 'new' | 'used' | 'irrelevant';
@@ -36,7 +39,10 @@ export const JobsTabbedView = ({
     onToggleIrrelevant,
     selectedJobId,
     onSelectJob,
-    onTotalItemsChange
+    onTotalItemsChange,
+    onLinkApplication,
+    onUnlinkApplication,
+    onSearchApplications
 }: JobsTabbedViewProps) => {
     const [activeTab, setActiveTab] = useState<TabType>('new');
     const [tabState, setTabState] = useState<Record<TabType, { page: number, data: GmailJobPagination | null }>>({
@@ -69,6 +75,10 @@ export const JobsTabbedView = ({
             }
 
             const res = await fetch(url);
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`Failed to fetch jobs: ${res.status} - ${errorText}`);
+            }
             const data: GmailJobPagination = await res.json();
 
             if (isSearch) {
@@ -138,20 +148,27 @@ export const JobsTabbedView = ({
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {currentData.items.map(job => (
-                        <JobCard 
+                        <GmailJobCard 
                             key={job.id} 
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            job={job as any} 
-                            onToggleUsed={async (id) => {
+                            job={job} 
+                            onToggleUsed={async (id: number) => {
                                 await onToggleUsed(id);
                                 // Refresh current view
                                 handlePageChange(currentPage);
                             }}
-                            onToggleIrrelevant={async (id) => {
+                            onToggleIrrelevant={async (id: number) => {
                                 await onToggleIrrelevant(id);
-                                // Refresh current view
                                 handlePageChange(currentPage);
                             }}
+                            onLinkApplication={async (jobId: number, appId: number) => {
+                                if (onLinkApplication) await onLinkApplication(jobId, appId);
+                                handlePageChange(currentPage);
+                            }}
+                            onUnlinkApplication={async (jobId: number) => {
+                                if (onUnlinkApplication) await onUnlinkApplication(jobId);
+                                handlePageChange(currentPage);
+                            }}
+                            onSearchApplications={onSearchApplications}
                             isSelected={selectedJobId === job.id}
                             onSelect={onSelectJob}
                         />

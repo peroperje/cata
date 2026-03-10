@@ -34,6 +34,8 @@ export const SyncSettings = ({ settings, onUpdateSettings }: SyncSettingsProps) 
                     onChange={(e) => onUpdateSettings({ fetch_interval_minutes: parseInt(e.target.value) })}
                     className="bg-transparent border-none text-sm text-indigo-400 font-bold focus:ring-0 cursor-pointer"
                 >
+                    <option value={1}>1m</option>
+                    <option value={5}>5m</option>
                     <option value={15}>15m</option>
                     <option value={30}>30m</option>
                     <option value={60}>1h</option>

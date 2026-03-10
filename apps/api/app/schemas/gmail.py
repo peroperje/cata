@@ -6,8 +6,10 @@ class GmailJobBase(BaseModel):
     title: str
     company: str
     url: str  # Unique
+    sender: str
     is_irrelevant: bool = False
     is_used: bool = False
+    is_active: bool = True
     sent_at: Optional[datetime] = None
     job_application_id: Optional[int] = None
 
@@ -18,8 +20,10 @@ class GmailJobUpdate(BaseModel):
     title: Optional[str] = None
     company: Optional[str] = None
     url: Optional[str] = None
+    sender: Optional[str] = None
     is_irrelevant: Optional[bool] = None
     is_used: Optional[bool] = None
+    is_active: Optional[bool] = None
     job_application_id: Optional[int] = None
 
 class GmailJob(GmailJobBase):
@@ -53,6 +57,10 @@ class GmailSettings(GmailSettingsBase):
 
 class GmailFilterBase(BaseModel):
     email_sender: str
+    is_active: bool = True
+
+class GmailFilterUpdate(BaseModel):
+    is_active: Optional[bool] = None
 
 class GmailFilterCreate(GmailFilterBase):
     pass

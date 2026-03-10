@@ -28,6 +28,13 @@ export default function GmailJobsPage() {
                 fetch(`${API_BASE_URL}/gmail/filters`)
             ]);
 
+            if (!settingsRes.ok || !filtersRes.ok) {
+                const settingsText = !settingsRes.ok ? await settingsRes.text() : '';
+                const filtersText = !filtersRes.ok ? await filtersRes.text() : '';
+                console.error('API Error details:', { settingsText, filtersText });
+                throw new Error(`Failed to fetch data: Settings: ${settingsRes.status}, Filters: ${filtersRes.status}`);
+            }
+
             const settingsData = await settingsRes.json();
             const filtersData = await filtersRes.json();
 
@@ -97,6 +104,42 @@ export default function GmailJobsPage() {
         }
     };
 
+    const handleToggleFilter = async (id: number) => {
+        try {
+            await fetch(`${API_BASE_URL}/gmail/filters/${id}/toggle`, { method: 'PATCH' });
+            setFilters(prev => prev.map(f => f.id === id ? { ...f, is_active: !f.is_active } : f));
+        } catch (error) {
+            console.error('Failed to toggle filter:', error);
+        }
+    };
+
+    const handleLinkApplication = async (jobId: number, application_id: number) => {
+        try {
+            await fetch(`${API_BASE_URL}/gmail/jobs/${jobId}/link/${application_id}`, { method: 'POST' });
+        } catch (error) {
+            console.error('Failed to link application:', error);
+        }
+    };
+
+    const handleUnlinkApplication = async (jobId: number) => {
+        try {
+            await fetch(`${API_BASE_URL}/gmail/jobs/${jobId}/unlink`, { method: 'POST' });
+        } catch (error) {
+            console.error('Failed to unlink application:', error);
+        }
+    };
+
+    const handleSearchApplications = async (query: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/job-applications?search=${encodeURIComponent(query)}&limit=5`);
+            const data = await res.json();
+            return Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error('Failed to search applications:', error);
+            return [];
+        }
+    };
+
     return (
         <div className="p-6 max-w-7xl mx-auto text-white">
             <div className="flex justify-between items-center mb-8">
@@ -125,6 +168,7 @@ export default function GmailJobsPage() {
                     filters={filters}
                     onAddFilter={handleAddFilter}
                     onDeleteFilter={handleDeleteFilter}
+                    onToggleFilter={handleToggleFilter}
                 />
 
                 {/* Main Jobs Section */}
@@ -142,6 +186,9 @@ export default function GmailJobsPage() {
                         selectedJobId={selectedJobId || null}
                         onSelectJob={handleSelectJob}
                         onTotalItemsChange={setTotalJobs}
+                        onLinkApplication={handleLinkApplication}
+                        onUnlinkApplication={handleUnlinkApplication}
+                        onSearchApplications={handleSearchApplications}
                     />
                 </div>
             </div>
