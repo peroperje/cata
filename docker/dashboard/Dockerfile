@@ -1,21 +1,27 @@
 # Base image
 FROM node:24-slim AS base
 
-# Set NX environment variables globally for all stages
+# Set environment variables
 ENV NX_DAEMON=false
 ENV NX_CACHE_DIRECTORY=/tmp/nx-cache
+ENV CI=true
 
-# Stage: Install dependencies
-FROM base AS deps
+# Install system dependencies needed for Nx and build
 RUN apt-get update && apt-get install -y \
     libc6 \
     python3 \
     make \
     g++ \
+    git \
+    procps \
+    ca-certificates \
+    curl \
+    openssl \
     && rm -rf /var/lib/apt/lists/*
-WORKDIR /app
 
-# Copy package management files ONLY to optimize caching
+# Stage: Install dependencies
+FROM base AS deps
+WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --legacy-peer-deps
 
@@ -26,30 +32,50 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Run build for the dashboard
-# The NX_DAEMON=false env var is already inherited from base
-RUN npx nx reset && npx nx build dashboard --prod --verbose
+# Pass build arguments for the Next.js build
+ARG API_URL
+ENV API_URL=$API_URL
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Stage: Runner
+# Run build for the dashboard
+RUN npx next build apps/dashboard
+
+# Stage: Runner (Production)
 FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN groupadd --system --gid 1001 nodejs
 RUN useradd --system --uid 1001 --gid nodejs nextjs
 
-# Copy built assets from builder
-COPY --from=builder /app/dist/apps/dashboard/public ./public
-# Note: In production builds with standalone, nextjs requires certain files to be present.
-# The standalone output includes its own node_modules if configured, but here we copy what's needed.
-COPY --from=builder --chown=nextjs:nodejs /app/dist/apps/dashboard/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/dist/apps/dashboard/.next/static ./.next/static
+# Copy built assets from builder (standard Next.js output locations)
+COPY --from=builder /app/apps/dashboard/public ./apps/dashboard/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/dashboard/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/dashboard/.next/static ./apps/dashboard/.next/static
 
 USER nextjs
 
 EXPOSE 3000
-
 ENV PORT 3000
 
-CMD ["node", "server.js"]
+CMD ["node", "apps/dashboard/server.js"]
+
+# Stage: Dev (Development)
+FROM base AS dev
+WORKDIR /app
+
+# In dev mode, we need all dependencies (including devDeps for Nx and Next.js dev server)
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Next.js dev server port
+EXPOSE 3000
+ENV PORT 3000
+
+# Enable polling for hot-reloading in some environments
+ENV WATCHPACK_POLLING=true
+
+CMD ["npm", "run", "dashboard:dev"]
+

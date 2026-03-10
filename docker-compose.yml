@@ -94,6 +94,26 @@ services:
     networks:
       - cata-network
 
+  # Dashboard (Next.js)
+  dashboard:
+    build:
+      context: .
+      dockerfile: docker/dashboard/Dockerfile
+      target: runner
+      args:
+        - API_URL=http://api:8000/api/v1
+    container_name: cata-dashboard
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=/api/v1
+      - API_URL=http://api:8000/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    networks:
+      - cata-network
+
 volumes:
   cata_postgres_data:
 

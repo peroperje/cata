@@ -23,7 +23,7 @@ export default function JobsPlatformsPage() {
     const [selectedPlatform, setSelectedPlatform] = useState<JobPlatform | null>(null);
     const [formData, setFormData] = useState({ name: '', url: '', description: '' });
 
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 
     const fetchPlatforms = async () => {
         setIsLoading(true);
