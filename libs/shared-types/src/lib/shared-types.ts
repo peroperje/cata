@@ -113,3 +113,16 @@ export interface GmailFilter {
   email_sender: string;
   is_active: boolean;
 }
+
+export interface AppStatus {
+  type: 'loading' | 'success' | 'error' | 'info' | 'idle';
+  message: string;
+  errorType?: string;
+}
+
+export interface ScraperStatus {
+  status: 'running' | 'stopped' | 'idle';
+  job_count: number;
+  irrelevant_count: number;
+}
+

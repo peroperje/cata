@@ -34,8 +34,14 @@ Cata is an AI-powered job application automation platform designed to streamline
 
 - **AI Factory:** All AI interactions must flow through the `app/services/ai/factory.py`. This ensures provider abstraction (Gemini, HuggingFace) and consistent prompting.
 - **Strict Typing:**
-  - Backend: Always use Pydantic schemas for data validation.
-  - Frontend: Maintain central interfaces in `libs/shared-types`.
+  - **Backend:** Always use Pydantic schemas for data validation.
+  - **Frontend:** Maintain central interfaces in `libs/shared-types`. 
+  - **No `any` Policy:** Use of `any` or `as any` is strictly prohibited. Use `unknown`, generics, or specific interface type guards.
+  - **UI State Consistency:** Use the `AppStatus` interface for all banner/UI feedback states across the extension and dashboard.
+  - **Safe DOM Operations:** Avoid non-null assertions (`!`). Use explicit checks or descriptive error throws for missing elements (e.g., `document.getElementById`).
+  - **Error Handling:** Use `unknown` for `catch` block variables and validate them (e.g., `instanceof Error`) before accessing properties like `.message`.
+  - **Compiler/Lint Standards:** Use `@ts-expect-error` instead of `@ts-ignore` for intentional type bypasses, and always include a brief explanation. Ensure all code passes `nx lint` and `tsc --noEmit`.
+
 - **API Communication:** Extension MUST use the background service worker as a proxy for backend calls to leverage centralized session management and avoid CORS overhead where possible.
 - **Database:** Use `SessionLocal` (async) for all CRUD operations. All models must inherit from `Base` in `app.core.database`.
 

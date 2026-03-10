@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../constants';
-import { AIModel } from '@cata/shared-types';
+import { AIModel, AppStatus } from '@cata/shared-types';
 
-export const useModels = (setStatus: (status: any) => void) => {
+export const useModels = (setStatus: (status: AppStatus) => void) => {
     const [models, setModels] = useState<AIModel[]>([]);
     const [selectedModelId, setSelectedModelId] = useState<number | null>(null);
     const [apiKey, setApiKey] = useState('');
@@ -10,7 +10,7 @@ export const useModels = (setStatus: (status: any) => void) => {
     const fetchModels = async () => {
         try {
             const res = await fetch(`${API_BASE_URL}/models`);
-            const data = await res.json();
+            const data: AIModel[] = await res.json();
             setModels(data);
             if (data.length > 0 && !selectedModelId) {
                 // Check storage first
@@ -39,8 +39,9 @@ export const useModels = (setStatus: (status: any) => void) => {
             if (!res.ok) throw new Error('Failed to save key');
             setStatus({ type: 'success', message: 'API Key saved!' });
             setApiKey('');
-        } catch (err: any) {
-            setStatus({ type: 'error', message: err.message });
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to save key';
+            setStatus({ type: 'error', message });
         }
     };
 
@@ -61,11 +62,12 @@ export const useModels = (setStatus: (status: any) => void) => {
                 body: JSON.stringify({ name, provider, model_name: modelName }),
             });
             if (!res.ok) throw new Error('Failed to add model');
-            const data = await res.json();
+            const data: AIModel = await res.json();
             setModels(prev => [...prev, data]);
             setStatus({ type: 'success', message: 'Model added!' });
-        } catch (err: any) {
-            setStatus({ type: 'error', message: err.message });
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to add model';
+            setStatus({ type: 'error', message });
         }
     };
 
@@ -81,8 +83,9 @@ export const useModels = (setStatus: (status: any) => void) => {
                 chrome.storage.local.remove('selected_model_id');
             }
             setStatus({ type: 'success', message: 'Model deleted!' });
-        } catch (err: any) {
-            setStatus({ type: 'error', message: err.message });
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to delete model';
+            setStatus({ type: 'error', message });
         }
     };
 

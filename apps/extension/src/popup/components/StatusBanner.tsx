@@ -1,12 +1,8 @@
-import React from 'react';
-import { CheckCircle, AlertCircle } from 'lucide-react';
+import { AppStatus } from '@cata/shared-types';
+import { CheckCircle, AlertCircle, Info } from 'lucide-react';
 
 interface StatusBannerProps {
-    status: {
-        type: 'idle' | 'loading' | 'success' | 'error';
-        message: string;
-        errorType?: string;
-    };
+    status: AppStatus;
 }
 
 export const StatusBanner: React.FC<StatusBannerProps> = ({ status }) => {
@@ -25,6 +21,7 @@ export const StatusBanner: React.FC<StatusBannerProps> = ({ status }) => {
         }}>
             {status.type === 'success' && <CheckCircle size={14} color="#10b981" />}
             {status.type === 'error' && <AlertCircle size={14} color="#ef4444" />}
+            {status.type === 'info' && <Info size={14} color="#3b82f6" />}
             {status.type === 'loading' && (
                 <div className="spinner" style={{
                     width: '14px',

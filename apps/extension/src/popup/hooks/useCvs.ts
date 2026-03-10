@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../constants';
-import { CV } from '@cata/shared-types';
+import { CV, AppStatus } from '@cata/shared-types';
 import { extractTextFromPDF } from '../../utils/pdf';
 
-export const useCvs = (setStatus: (status: any) => void) => {
+export const useCvs = (setStatus: (status: AppStatus) => void) => {
     const [cvs, setCvs] = useState<CV[]>([]);
     const [selectedCvId, setSelectedCvId] = useState<number | null>(null);
     const [pdfText, setPdfText] = useState('');
@@ -54,7 +54,8 @@ export const useCvs = (setStatus: (status: any) => void) => {
             setFileName(newCv.filename);
             setStatus({ type: 'success', message: `Saved: ${file.name}` });
         } catch (err) {
-            setStatus({ type: 'error', message: 'Failed to process PDF.' });
+            const message = err instanceof Error ? err.message : 'Failed to process PDF.';
+            setStatus({ type: 'error', message });
         }
     };
 
@@ -72,7 +73,8 @@ export const useCvs = (setStatus: (status: any) => void) => {
             }
             setStatus({ type: 'success', message: 'CV deleted' });
         } catch (err) {
-            setStatus({ type: 'error', message: 'Failed to delete CV.' });
+            const message = err instanceof Error ? err.message : 'Failed to delete CV.';
+            setStatus({ type: 'error', message });
         }
     };
 

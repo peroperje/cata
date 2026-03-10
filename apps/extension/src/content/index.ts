@@ -13,7 +13,7 @@ function scrapeFormFields(root: Document | ShadowRoot | Element = document): For
         elements.forEach((el) => {
             try {
                 const element = el as HTMLElement;
-                const type = (element as any).type || element.getAttribute('type') || '';
+                const type = (element as HTMLInputElement).type || element.getAttribute('type') || '';
                 const role = element.getAttribute('role') || '';
 
                 // Filtering: Skip buttons, hidden fields, and specific types we can't fill
@@ -57,7 +57,7 @@ function scrapeFormFields(root: Document | ShadowRoot | Element = document): For
 
                 // 5. Title/Placeholder
                 if (!labelText) {
-                    labelText = (element as any).placeholder || element.getAttribute('placeholder') || element.title || '';
+                    labelText = (element as HTMLInputElement).placeholder || element.getAttribute('placeholder') || element.title || '';
                 }
 
                 // 6. Nearby Text
@@ -70,16 +70,16 @@ function scrapeFormFields(root: Document | ShadowRoot | Element = document): For
 
                 // 7. Fallback to Name/ID
                 if (!labelText) {
-                    labelText = (element as any).name || element.getAttribute('name') || element.id || `Field ${fields.length + 1}`;
+                    labelText = (element as HTMLInputElement).name || element.getAttribute('name') || element.id || `Field ${fields.length + 1}`;
                 }
 
                 fields.push({
                     id: cataId,
-                    name: (element as any).name || element.getAttribute('name') || '',
+                    name: (element as HTMLInputElement).name || element.getAttribute('name') || '',
                     label: labelText.replace(/[*:]/g, '').trim().substring(0, 200),
                     type: type || role || element.tagName.toLowerCase(),
-                    placeholder: (element as any).placeholder || element.getAttribute('placeholder') || '',
-                    value: (element as any).value || element.innerText || '',
+                    placeholder: (element as HTMLInputElement).placeholder || element.getAttribute('placeholder') || '',
+                    value: (element as HTMLInputElement).value || element.innerText || '',
                 });
             } catch (err) {
                 console.warn('[CATA] Error scraping element:', el, err);
@@ -97,7 +97,9 @@ function scrapeFormFields(root: Document | ShadowRoot | Element = document): For
             document.querySelectorAll('iframe').forEach((iframe) => {
                 try {
                     if (iframe.contentDocument) collect(iframe.contentDocument);
-                } catch (e) { }
+                } catch {
+                    // Ignore cross-origin frame errors
+                }
             });
         }
     }
@@ -114,7 +116,7 @@ function scrapeFormFields(root: Document | ShadowRoot | Element = document): For
 function setFieldValue(element: HTMLElement, value: string) {
     if (!element || value === undefined || value === null) return;
 
-    console.log(`[CATA] Filling ${element.tagName} (${element.id || (element as any).name || 'unnamed'}) with: "${value}"`);
+    console.log(`[CATA] Filling ${element.tagName} (${element.id || (element as HTMLInputElement).name || 'unnamed'}) with: "${value}"`);
 
     // Helper to find the "real" input element if this is a custom element wrapper
     const getRealInput = (el: HTMLElement): HTMLElement | null => {
@@ -178,7 +180,7 @@ function setFieldValue(element: HTMLElement, value: string) {
     if (valueSetter) {
         valueSetter.call(target, value);
     } else {
-        (target as any).value = value;
+        (target as HTMLInputElement).value = value;
     }
 
     // Dispatch a comprehensive sequence of events
@@ -188,14 +190,14 @@ function setFieldValue(element: HTMLElement, value: string) {
     target.dispatchEvent(new Event('change', eventOptions));
 
     // Support for React value tracking
-    const tracker = (target as any)._valueTracker;
+    const tracker = (target as HTMLElement & { _valueTracker?: { setValue: (v: string) => void } })._valueTracker;
     if (tracker) tracker.setValue(value);
 
     target.dispatchEvent(new Event('blur', eventOptions));
 
     // Force sync for Custom Elements (some need the host element notified)
     if (target !== element) {
-        if ('value' in element) (element as any).value = value;
+        if ('value' in element) (element as HTMLInputElement).value = value;
         element.dispatchEvent(new Event('input', eventOptions));
         element.dispatchEvent(new Event('change', eventOptions));
     }
@@ -214,7 +216,9 @@ function findElement(mapping: { fieldId: string; fieldName: string }, root: Docu
         try {
             element = root.querySelector(`#${CSS.escape(mapping.fieldId)}`) as HTMLElement;
             if (element) return element;
-        } catch (e) { }
+        } catch {
+            // Invalid selector
+        }
     }
 
     // 3. Try by name
@@ -222,7 +226,9 @@ function findElement(mapping: { fieldId: string; fieldName: string }, root: Docu
         try {
             element = root.querySelector(`[name="${CSS.escape(mapping.fieldName)}"]`) as HTMLElement;
             if (element) return element;
-        } catch (e) { }
+        } catch {
+            // Invalid selector
+        }
     }
 
     // Recursive search in Shadow DOM
@@ -243,7 +249,9 @@ function findElement(mapping: { fieldId: string; fieldName: string }, root: Docu
                     const found = findElement(mapping, iframe.contentDocument);
                     if (found) return found;
                 }
-            } catch (e) { }
+            } catch {
+                // Ignore cross-origin frame errors
+            }
         }
     }
 

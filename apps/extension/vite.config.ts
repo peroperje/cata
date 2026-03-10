@@ -16,7 +16,7 @@ export default defineConfig({
             name: 'fix-server-watch',
             enforce: 'pre',
             configResolved(config) {
-                if (config.server && (config.server.watch as any) === false) {
+                if (config.server && (config.server.watch as unknown) === false) {
                     config.server.watch = {};
                 }
             },

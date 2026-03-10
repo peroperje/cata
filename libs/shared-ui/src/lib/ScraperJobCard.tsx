@@ -31,12 +31,14 @@ export const ScraperJobCard: React.FC<ScraperJobCardProps> = ({
 
     const isIrrelevant = !!job.is_irrelevant;
 
-    const handleSelect = (e: React.MouseEvent) => {
+    const handleSelect = () => {
         // Don't select if clicking on interactive elements
         if (onSelect) {
             onSelect(job.id);
         }
     };
+
+    const displayDate = (job as ScrapedJob & { sent_at?: string }).sent_at || job.created_at;
 
     const handleSearch = async (query: string) => {
         setSearchQuery(query);
@@ -157,7 +159,7 @@ export const ScraperJobCard: React.FC<ScraperJobCardProps> = ({
                     </div>
                 )}
                 <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.7)', whiteSpace: 'nowrap' }}>
-                    {formatDate((job as any).sent_at || job.created_at)}
+                    {formatDate(displayDate)}
                 </span>
             </div>
 

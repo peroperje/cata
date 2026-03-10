@@ -1,4 +1,5 @@
-const { join } = require('path');
+// No path required as it is not used in this config
+
 
 // Note: If you use library-specific PostCSS/Tailwind configuration then you should remove the `postcssConfig` build
 // option from your application's configuration (i.e. project.json).

@@ -3,6 +3,10 @@ node_modules
 dist
 dist-ssr
 *.local
+*.tsbuildinfo
+*.eslintcache
+.vite
+
 
 # Nx
 .nx/cache

@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../constants';
-import { ScrapedJob } from '@cata/shared-types';
+import { ScrapedJob, AppStatus, ScraperStatus, JobApplication } from '@cata/shared-types';
 
-export const useScraper = (setStatus: (status: any) => void, isExpanded: boolean) => {
+export const useScraper = (setStatus: (status: AppStatus) => void, isExpanded: boolean) => {
     const [scraperUrl, setScraperUrl] = useState('');
     const [isScraping, setIsScraping] = useState(false);
     const [jobCount, setJobCount] = useState<number | null>(null);
     const [initialJobCount, setInitialJobCount] = useState<number>(0);
     const [scrapedJobs, setScrapedJobs] = useState<ScrapedJob[]>([]);
 
-    const checkScraperStatus = async () => {
+    const checkScraperStatus = async (): Promise<ScraperStatus | null> => {
         try {
             const res = await fetch(`${API_BASE_URL}/scraper/status`);
-            const data = await res.json();
+            const data: ScraperStatus = await res.json();
             setIsScraping(data.status === 'running');
             setJobCount(data.job_count);
             return data;
@@ -25,7 +25,7 @@ export const useScraper = (setStatus: (status: any) => void, isExpanded: boolean
     const fetchScrapedJobs = async () => {
         try {
             const res = await fetch(`${API_BASE_URL}/scraper/jobs`);
-            const data = await res.json();
+            const data: ScrapedJob[] = await res.json();
             setScrapedJobs(data);
         } catch (err) {
             console.error('Failed to fetch scraped jobs', err);
@@ -45,8 +45,9 @@ export const useScraper = (setStatus: (status: any) => void, isExpanded: boolean
             if (!res.ok) throw new Error('Failed to start scraper');
             setIsScraping(true);
             setStatus({ type: 'success', message: 'Scraper started!' });
-        } catch (err: any) {
-            setStatus({ type: 'error', message: err.message });
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to start scraper';
+            setStatus({ type: 'error', message });
         }
     };
 
@@ -66,8 +67,9 @@ export const useScraper = (setStatus: (status: any) => void, isExpanded: boolean
                 const inserted = freshJobCount - initialJobCount;
                 setStatus({ type: 'success', message: `Stopped. Inserted ${inserted > 0 ? inserted : 0} records.` });
             }, 1000);
-        } catch (err: any) {
-            setStatus({ type: 'error', message: err.message });
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to stop scraper';
+            setStatus({ type: 'error', message });
         }
     };
 
@@ -94,8 +96,9 @@ export const useScraper = (setStatus: (status: any) => void, isExpanded: boolean
             });
             if (!res.ok) throw new Error('Failed to update job');
             await fetchScrapedJobs();
-        } catch (err: any) {
-            setStatus({ type: 'error', message: err.message });
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to update job';
+            setStatus({ type: 'error', message });
         }
     };
 
@@ -106,8 +109,9 @@ export const useScraper = (setStatus: (status: any) => void, isExpanded: boolean
             });
             if (!res.ok) throw new Error('Failed to update job');
             await fetchScrapedJobs();
-        } catch (err: any) {
-            setStatus({ type: 'error', message: err.message });
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to update job';
+            setStatus({ type: 'error', message });
         }
     };
 
@@ -116,8 +120,9 @@ export const useScraper = (setStatus: (status: any) => void, isExpanded: boolean
             const res = await fetch(`${API_BASE_URL}/jobs/${jobId}/link/${application_id}`, { method: 'POST' });
             if (!res.ok) throw new Error('Failed to link application');
             await fetchScrapedJobs();
-        } catch (err: any) {
-            setStatus({ type: 'error', message: err.message });
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to link application';
+            setStatus({ type: 'error', message });
         }
     };
 
@@ -126,17 +131,18 @@ export const useScraper = (setStatus: (status: any) => void, isExpanded: boolean
             const res = await fetch(`${API_BASE_URL}/jobs/${jobId}/unlink`, { method: 'POST' });
             if (!res.ok) throw new Error('Failed to unlink application');
             await fetchScrapedJobs();
-        } catch (err: any) {
-            setStatus({ type: 'error', message: err.message });
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to unlink application';
+            setStatus({ type: 'error', message });
         }
     };
 
-    const searchApplications = async (query: string) => {
+    const searchApplications = async (query: string): Promise<JobApplication[]> => {
         try {
             const res = await fetch(`${API_BASE_URL}/job-applications?search=${encodeURIComponent(query)}&limit=5`);
             const data = await res.json();
             return Array.isArray(data) ? data : [];
-        } catch (err: any) {
+        } catch (err) {
             console.error('Failed to search applications:', err);
             return [];
         }

@@ -8,15 +8,11 @@ import { useCvs } from './hooks/useCvs';
 import { useModels } from './hooks/useModels';
 import { useScraper } from './hooks/useScraper';
 import { useAutofill } from './hooks/useAutofill';
-import { APP_VERSION } from '@cata/shared-types';
+import { APP_VERSION, AppStatus } from '@cata/shared-types';
 import { useJobTracker } from './hooks/useJobTracker';
 
 const App: React.FC = () => {
-    const [status, setStatus] = useState<{ 
-        type: 'idle' | 'loading' | 'success' | 'error'; 
-        message: string;
-        errorType?: string;
-    }>({
+    const [status, setStatus] = useState<AppStatus>({
         type: 'idle',
         message: '',
     });
@@ -37,7 +33,6 @@ const App: React.FC = () => {
         cvs,
         selectedCvId,
         pdfText,
-        fileName,
         handleCvSelect,
         handleFileUpload,
         deleteCv

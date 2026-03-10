@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { ScraperJobCard, Pagination, useJobSelection } from '@cata/shared-ui';
-import { ScrapedJob } from '@cata/shared-types';
+import { ScrapedJob, ScraperStatus, JobApplication } from '@cata/shared-types';
 import { Search, Database, StopCircle, Play, Trash2, Calendar, Star, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 export default function ScrapedPage() {
     const [jobs, setJobs] = useState<ScrapedJob[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [status, setStatus] = useState({ status: 'stopped', job_count: 0, irrelevant_count: 0 });
+    const [status, setStatus] = useState<ScraperStatus>({ status: 'stopped', job_count: 0, irrelevant_count: 0 });
     const [scraperUrl, setScraperUrl] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [isScraping, setIsScraping] = useState(false);
@@ -45,7 +45,7 @@ export default function ScrapedPage() {
             }
 
             const res = await fetch(url);
-            const data = await res.json();
+            const data: ScrapedJob[] = await res.json();
             if (Array.isArray(data)) {
                 setJobs(data);
             } else {
@@ -63,7 +63,7 @@ export default function ScrapedPage() {
     const fetchStatus = async () => {
         try {
             const res = await fetch(`${API_BASE_URL}/scraper/status`);
-            const data = await res.json();
+            const data: ScraperStatus = await res.json();
             setStatus(data);
             setIsScraping(data.status === 'running');
         } catch (error) {
@@ -164,10 +164,10 @@ export default function ScrapedPage() {
         }
     };
 
-    const handleSearchApplications = async (query: string) => {
+    const handleSearchApplications = async (query: string): Promise<JobApplication[]> => {
         try {
             const res = await fetch(`${API_BASE_URL}/job-applications?search=${encodeURIComponent(query)}&limit=5`);
-            const data = await res.json();
+            const data: JobApplication[] = await res.json();
             return Array.isArray(data) ? data : [];
         } catch (error) {
             console.error('Failed to search applications:', error);

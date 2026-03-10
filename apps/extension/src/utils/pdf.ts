@@ -2,7 +2,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 
 // Configure the worker. Since we are in a Vite environment, 
 // we can use the bundled worker path.
-// @ts-ignore
+// @ts-expect-error - Vite specific worker import syntax
 import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -18,7 +18,7 @@ export async function extractTextFromPDF(file: File): Promise<string> {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
         const pageText = textContent.items
-            .map((item: any) => item.str)
+            .map((item: unknown) => (item as { str: string }).str)
             .join(' ');
         fullText += pageText + '\n';
     }

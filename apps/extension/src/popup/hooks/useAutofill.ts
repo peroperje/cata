@@ -1,12 +1,12 @@
 import { API_BASE_URL } from '../constants';
-import { FormField, AIResponse, MessageAction } from '@cata/shared-types';
+import { FormField, AIResponse, MessageAction, AppStatus } from '@cata/shared-types';
 
 export const useAutofill = (
     pdfText: string,
     selectedModelId: number | null,
-    setStatus: (status: any) => void
+    setStatus: (status: AppStatus) => void
 ) => {
-    const sendMessageToActiveTab = async (message: MessageAction): Promise<any> => {
+    const sendMessageToActiveTab = async <T>(message: MessageAction): Promise<T> => {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (!tab?.id) throw new Error('No active tab found.');
 
@@ -17,8 +17,9 @@ export const useAutofill = (
 
         try {
             return await chrome.tabs.sendMessage(tab.id, message);
-        } catch (err: any) {
-            if (err.message.includes('Could not establish connection')) {
+        } catch (err: unknown) {
+            const error = err as { message?: string };
+            if (error.message?.includes('Could not establish connection')) {
                 throw new Error('Extension connection lost. Please refresh the job application page and try again.');
             }
             throw err;
@@ -37,7 +38,7 @@ export const useAutofill = (
 
         setStatus({ type: 'loading', message: 'Scraping form fields...' });
         try {
-            const fields: FormField[] = await sendMessageToActiveTab({ type: 'SCRAPE_DOM' });
+            const fields = await sendMessageToActiveTab<FormField[]>({ type: 'SCRAPE_DOM' });
 
             if (!fields || fields.length === 0) {
                 setStatus({ type: 'error', message: 'No fields found on this page.' });
@@ -70,11 +71,13 @@ export const useAutofill = (
             });
 
             setStatus({ type: 'success', message: 'Form filled successfully!' });
-        } catch (err: any) {
+        } catch (err) {
             console.error('Autofill error:', err);
-            setStatus({ type: 'error', message: err.message || 'Workflow failed.' });
+            const message = err instanceof Error ? err.message : 'Workflow failed.';
+            setStatus({ type: 'error', message });
         }
     };
 
     return { handleFill };
 };
+

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, RefreshCw, Search, X } from 'lucide-react';
-import { JobApplication } from '@cata/shared-types';
+import { JobApplication, AppStatus } from '@cata/shared-types';
 import { ApplicationCard, ConfirmModal } from '@cata/shared-ui';
 
 interface JobsApplyTrackerProps {
@@ -12,7 +12,7 @@ interface JobsApplyTrackerProps {
     currentJob: { title: string; company: string; url: string };
     isExtracting: boolean;
     isSaving: boolean;
-    status: { type: 'idle' | 'loading' | 'success' | 'error'; message: string; errorType?: string };
+    status: AppStatus;
     onAdd: (data: { title: string; company: string; notes: string }, force?: boolean) => void;
     onUpdateStatus: (id: number, status: string) => void;
     onUpdateNotes: (id: number, notes: string) => void;

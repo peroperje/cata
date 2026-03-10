@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search, Database, StopCircle } from 'lucide-react';
-import { ScrapedJob } from '@cata/shared-types';
+import { ScrapedJob, JobApplication } from '@cata/shared-types';
 import { ScraperJobCard, Pagination, useJobSelection } from '@cata/shared-ui';
 
 interface ScraperSectionProps {
@@ -15,7 +15,7 @@ interface ScraperSectionProps {
     onToggleUsed: (id: number) => void;
     onLinkApplication?: (jobId: number, application_id: number) => Promise<void>;
     onUnlinkApplication?: (jobId: number) => Promise<void>;
-    onSearchApplications?: (query: string) => Promise<any[]>;
+    onSearchApplications?: (query: string) => Promise<JobApplication[]>;
     isLoading: boolean;
 }
 
