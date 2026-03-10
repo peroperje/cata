@@ -1,143 +1,158 @@
 # CATA: AI-Powered Job Application Automation
 
+<div align="center">
+  <img src="/home/petar/.gemini/antigravity/brain/8fa1ffaa-281f-4c94-a59c-a73e36fcb015/cata_project_mockup_1773171339762.png" alt="CATA Dashboard Preview" width="800">
+  <p><em>Turn your job search into a high-performance automated pipeline.</em></p>
+</div>
+
 [![Tech Stack](https://img.shields.io/badge/Stack-Nx_|_FastAPI_|_Next.js_|_React-blue.svg)](https://github.com/peroperje/cata)
 [![License](https://img.shields.io/badge/License-Private-red.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.12-green.svg)](https://www.python.org/)
+[![Node](https://img.shields.io/badge/Node-18+-green.svg)](https://nodejs.org/)
 
-CATA (Chrome Assistant for Tailored Applications) is an end-to-end platform designed to automate the heavy lifting of job searching. By combining a browser extension for intelligent form-filling with a centralized management dashboard and automated job discovery services, CATA turns a manual process into a streamlined pipeline.
+CATA (Chrome Assistant for Tailored Applications) is an end-to-end platform designed to automate the heavy lifting of job searching. By combining a browser extension for intelligent form-filling, a centralized Next.js management dashboard, and background discovery services, CATA streamlines your path to a new role.
+
+---
+
+## 📖 Table of Contents
+- [✨ Key Features](#-key-features)
+- [🏗️ Repository Structure](#️-repository-structure)
+- [🛠️ Tech Stack](#️-tech-stack)
+- [🚀 Quick Start](#-quick-start)
+- [⚙️ Configuration](#️-configuration)
+- [📁 Shared Resources](#-shared-resources)
+- [🚢 Deployment](#-deployment)
+- [🧪 Testing](#-testing)
 
 ---
 
 ## ✨ Key Features
 
-- **🤖 Intelligent Autofill**: Chrome Extension (Manifest V3) that uses AI (Gemini, OpenAI, Groq) to contextually fill application forms using your CV data.
-- **📊 Unified Dashboard**: A Next.js 15+ management interface for tracking applications, managing CVs, and filtering discovered jobs.
-- **📩 Gmail Extraction**: Background service that polls your inbox for job alerts from LinkedIn, Indeed, and glassdoor, extracting metadata automatically.
-- **🕷️ Smart Scraper**: Scrapy-based crawler that uses NLP (spaCy) to rank web-based job postings against your specific professional profile.
-- **📄 Pro CV Management**: Upload and parse multiple PDF CVs. Swap between different professional versions for specialized roles seamlessly.
-- **🏗️ Scalable Architecture**: Built as an Nx Monorepo for consistent development, testing, and deployment across all services.
+- **🤖 AI-Powered Autofill**: Chrome Extension (Manifest V3) using Gemini, OpenAI, or Groq via a unified **AI Factory** to contextually fill application forms.
+- **📊 Management Dashboard**: Next.js 15 interface for tracking application lifecycles, managing professional profiles, and searching through discovered jobs.
+- **📩 Automated Gmail Extraction**: Background service that periodically polls for job alerts (LinkedIn, Indeed, etc.) and extracts job metadata into the DB.
+- **🕷️ Smart Crawler**: Scrapy-based discovery engine using spaCy NLP for semantic ranking of jobs against your CV content.
+- **📄 CV Lifecycle Management**:
+  - **Upload & Parse**: Centralized database storage for multiple professional versions.
+  - **PDF Generator**: CLI tool built with `fpdf2` to render tailored CVs and cover letters from parsed data.
+- **🧬 Monorepo Excellence**: Powered by **Nx** for sub-millisecond build caching and consistent task orchestration.
+
+---
+
+## 🏗️ Repository Structure
+
+| Path | Purpose | Type |
+| :--- | :--- | :--- |
+| `apps/extension` | Browser extension for DOM-level form automation. | React/Vite |
+| `apps/dashboard` | Central management and analytics web app. | Next.js 15 |
+| `apps/api` | Principal FastAPI server for data persistence. | Python 3.12 |
+| `apps/gmail-api` | Background worker for email job polling. | Python |
+| `apps/scraper` | NLP-enhanced job crawling spiders. | Python/Scrapy |
+| `apps/cv-pdf-generator` | CLI tool for rendering ATS-friendly PDF CVs. | Python |
+| `libs/shared-ui` | Shared React components (JobCards, etc.). | TypeScript/React |
+| `libs/shared-types` | Unified interface definitions for all apps. | TypeScript |
 
 ---
 
 ## 🛠️ Tech Stack
 
-### Frontend & UI
-- **Extension**: React + Vite + TypeScript (CRXJS)
-- **Dashboard**: Next.js 15 (App Router) + Tailwind CSS + Lucide Icons
-- **Shared UI**: Centralized component library for design consistency
+### Frontend
+- **Frameworks**: Next.js (Dashboard), React (Extension).
+- **Styling**: Tailwind CSS + Shadcn UI patterns.
+- **State Management**: React Hooks + URL-synced tab logic.
 
 ### Backend & AI
-- **API**: FastAPI (Python 3.12) + SQLAlchemy + Pydantic
-- **Database**: PostgreSQL (Persistent storage)
-- **AI Engine**: Unified AI Factory supporting Google Gemini, OpenAI, and Hugging Face
-- **Automation**: Scrapy (Crawling) + Redis (Queue/Orchestration)
+- **API**: FastAPI + SQLAlchemy (PostgreSQL).
+- **AI Providers**: Gemini 2.0 (default), OpenAI, Groq, Hugging Face.
+- **Discovery**: Scrapy + Redis + spaCy.
+
+### Infrastructure
+- **Monorepo**: Nx.
+- **Containerization**: Docker & Docker Compose.
+- **Orchestration**: Kubernetes (K8s) for production-grade scaling.
 
 ---
 
 ## 🚀 Quick Start
 
 ### 1. Prerequisites
-- **Node.js**: 18.x or higher
-- **Python**: 3.11+ (with `venv` support)
-- **Docker**: For full-stack orchestration (Recommended)
-- **API Keys**: Google Gemini or OpenAI key
+- **Node.js**: 18.x+
+- **Python**: 3.12+
+- **Docker**: For full-stack execution.
 
-### 2. Initial Setup
+### 2. Installation
 ```bash
-# Clone the repository
 git clone git@github.com:peroperje/cata.git
 cd cata
-
-# Install workspace dependencies
 npm install
-
-# Setup local environment
-cp .env.example .env
+npm run api:install  # Setup Python environment
 ```
 
-### 3. Service Commands
-Use Nx to run individual services or Docker for the full stack:
-
-| Task | Command | Environment |
+### 3. Execution Commands
+| Service | Command | Target |
 | :--- | :--- | :--- |
 | **Full Stack** | `docker compose up --build` | Docker |
-| **Dashboard** | `npx nx run dashboard:dev` | Local |
-| **API** | `npx nx run api:serve` | Local |
-| **Extension** | `npx nx run extension:dev` | Local |
-
-### 4. Gmail API Authentication
-1. Place your `credentials.json` from Google Cloud Console in `apps/gmail-api/`.
-2. Run the `gmail-api` service; it will initiate an OAuth2 flow on the first run.
+| **Dashboard** | `npx nx run dashboard:dev` | `localhost:3000` |
+| **API** | `npx nx run api:serve` | `localhost:8000` |
+| **Extension** | `npx nx run extension:dev` | Browser Extension |
+| **CV Generator** | `npx nx run cv-pdf-generator:generate` | CLI |
 
 ---
 
-## 🏗️ Architecture Overview
+## ⚙️ Configuration
 
-Cata follows a distributed architecture coordinated by an Nx workspace:
-
-```mermaid
-graph TD
-    subgraph Browser
-        EXT[Chrome Extension]
-    end
-
-    subgraph Management
-        DBH[Next.js Dashboard]
-    end
-
-    subgraph Core Services
-        API[FastAPI Backend]
-        POSTGRES[(PostgreSQL)]
-    end
-
-    subgraph Discovery
-        GML[Gmail API Worker]
-        SCR[Scrapy Crawler]
-        REDIS[(Redis)]
-    end
-
-    EXT <--> API
-    DBH <--> API
-    API <--> POSTGRES
-    GML --> API
-    SCR --> API
-    SCR <--> REDIS
+### Secrets & Environment
+Copy `.env.example` to `.env` and configure:
+```bash
+GEMINI_API_KEY=your_key_here
+POSTGRES_PASSWORD=your_secure_password
+GMAIL_CLIENT_ID=your_id.apps.googleusercontent.com
 ```
 
-### Repository Structure
-- `apps/extension`: The browser-based interface for form filling.
-- `apps/dashboard`: The central command center for job tracking.
-- `apps/api`: Central FastAPI server handling CV parsing and data persistence.
-- `apps/gmail-api`: Polling service for email-based job extraction.
-- `apps/scraper`: Python-based web discovery engine.
-- `libs/`: Shared TypeScript models and React components.
+### Gmail API Setup
+1. Enable Gmail API in Google Cloud Console.
+2. Download `credentials.json` to `apps/gmail-api/`.
+3. The first run will trigger a local OAuth2 authentication flow.
 
 ---
 
-## 📡 Core API Reference
+## 📁 Shared Resources
 
-The backend provides a versioned REST API. Documentation is available at `/docs` when the API is running.
+Consistency is maintained via `libs/`:
+- **Centralized Types**: Edit `libs/shared-types/src/index.ts` to update data models across all apps.
+- **Shared Components**: Reusable UI elements like `JobCard` reside in `libs/shared-ui`.
 
-| Endpoint | Method | Description |
-| :--- | :--- | :--- |
-| `/api/v1/cvs` | `GET/POST` | Manage professional CV metadata and files. |
-| `/api/v1/jobs` | `GET` | List all discovered jobs (Gmail + Scraper). |
-| `/api/v1/process` | `POST` | Trigger AI form-filling logic for a specific job. |
-| `/api/v1/status` | `GET` | Health check for all connected services. |
+---
+
+## 🚢 Deployment
+
+### Local Orchestration
+Use the optimized Docker configuration for development:
+```bash
+npm run docker:up
+```
+
+### Kubernetes (Production)
+CATA is production-ready with K8s manifests in `k8s/`:
+- `k8s/postgres.yaml`: Persistent storage volume and database service.
+- `k8s/api.yaml`: FastAPI deployment with horizontal scaling.
+- `k8s/dashboard.yaml`: High-availability Next.js service.
 
 ---
 
 ## 🧪 Testing
 
+We value stability. Run the full suite with Nx:
 ```bash
-# Run all workspace tests
+# Unit tests
 npx nx run-many -t test
 
-# Test specific project
-npx nx run api:test
+# End-to-End (Dashboard)
+npx nx run dashboard-e2e:e2e
 ```
 
 ---
 
 ## 📄 License
 
-This is a private project for personal use. All rights reserved.
+Private project for personal use. Built by **[Petar Borovcanin](https://github.com/peroperje)**.
