@@ -1,192 +1,143 @@
-# CATA - AI Job Auto-Filler (Nx Monorepo)
+# CATA: AI-Powered Job Application Automation
 
-A modern Chrome Extension (Manifest V3) with a Python FastAPI backend, built with Nx monorepo architecture. Uses Gemini AI to automatically fill job application forms using data extracted from your PDF CV, now with persistent database storage.
+[![Tech Stack](https://img.shields.io/badge/Stack-Nx_|_FastAPI_|_Next.js_|_React-blue.svg)](https://github.com/peroperje/cata)
+[![License](https://img.shields.io/badge/License-Private-red.svg)](LICENSE)
 
-## 🏗️ Project Structure
+CATA (Chrome Assistant for Tailored Applications) is an end-to-end platform designed to automate the heavy lifting of job searching. By combining a browser extension for intelligent form-filling with a centralized management dashboard and automated job discovery services, CATA turns a manual process into a streamlined pipeline.
 
-```text
-cata-chrome-extension/
-├── apps/
-│   ├── extension/         # React Chrome Extension (Vite + TypeScript)
-│   │   ├── src/          # Extension source code
-│   │   └── project.json  # Nx configuration
-│   ├── dashboard/         # Next.js Management Dashboard (React + TypeScript)
-│   │   ├── app/          # Next.js App Router source code
-│   │   └── project.json  # Nx configuration
-│   ├── api/              # Python FastAPI Backend
-│   │   ├── app/          # API source code
-│   │   └── project.json  # Nx configuration
-│   ├── gmail-api/        # Gmail Integration Service
-│   │   ├── app/          # Polling and extraction logic
-│   │   └── Dockerfile    # Background worker configuration
-│   └── scraper/          # Scrapy CrawlSpider Service
-│       ├── crawler/      # Scraper logic (spiders, pipelines, NLP)
-│       ├── Dockerfile
-│       └── requirements.txt
-├── docker/
-│   └── api/              # Docker configuration for API
-├── k8s/                  # Kubernetes manifests
-│   |── api.yaml
-│   └── postgres.yaml
-├── docker-compose.yml    # Full stack orchestration (PostgreSQL + API + Gmail + Scraper)
-├── nx.json              # Nx workspace configuration
-└── package.json         # Workspace dependencies
+---
+
+## ✨ Key Features
+
+- **🤖 Intelligent Autofill**: Chrome Extension (Manifest V3) that uses AI (Gemini, OpenAI, Groq) to contextually fill application forms using your CV data.
+- **📊 Unified Dashboard**: A Next.js 15+ management interface for tracking applications, managing CVs, and filtering discovered jobs.
+- **📩 Gmail Extraction**: Background service that polls your inbox for job alerts from LinkedIn, Indeed, and glassdoor, extracting metadata automatically.
+- **🕷️ Smart Scraper**: Scrapy-based crawler that uses NLP (spaCy) to rank web-based job postings against your specific professional profile.
+- **📄 Pro CV Management**: Upload and parse multiple PDF CVs. Swap between different professional versions for specialized roles seamlessly.
+- **🏗️ Scalable Architecture**: Built as an Nx Monorepo for consistent development, testing, and deployment across all services.
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend & UI
+- **Extension**: React + Vite + TypeScript (CRXJS)
+- **Dashboard**: Next.js 15 (App Router) + Tailwind CSS + Lucide Icons
+- **Shared UI**: Centralized component library for design consistency
+
+### Backend & AI
+- **API**: FastAPI (Python 3.12) + SQLAlchemy + Pydantic
+- **Database**: PostgreSQL (Persistent storage)
+- **AI Engine**: Unified AI Factory supporting Google Gemini, OpenAI, and Hugging Face
+- **Automation**: Scrapy (Crawling) + Redis (Queue/Orchestration)
+
+---
+
+## 🚀 Quick Start
+
+### 1. Prerequisites
+- **Node.js**: 18.x or higher
+- **Python**: 3.11+ (with `venv` support)
+- **Docker**: For full-stack orchestration (Recommended)
+- **API Keys**: Google Gemini or OpenAI key
+
+### 2. Initial Setup
+```bash
+# Clone the repository
+git clone git@github.com:peroperje/cata.git
+cd cata
+
+# Install workspace dependencies
+npm install
+
+# Setup local environment
+cp .env.example .env
 ```
 
-## ✨ Features
+### 3. Service Commands
+Use Nx to run individual services or Docker for the full stack:
 
-- **Multi-AI Provider Support**: Choose between Google Gemini (Pro, Flash, Flash Lite), OpenAI, and Hugging Face for form filling logic via a unified AI Factory.
-- **Advanced AI Model Management**: Full CRUD operations for AI models directly from the UI.
-- **Advanced CV Management**: Upload, extract, and store multiple CVs in PostgreSQL. Switch between different CVs for different applications seamlessly.
-- **Gmail Postings Extraction**:
-  - Automatically extracts job postings from Gmail alerts (LinkedIn, Indeed, etc.).
-  - Customizable **Sender Filters** to target specific job sources.
-  - Periodic background polling with configurable sync intervals.
-  - Secure credential management via Google OAuth2.
-- **Modular Extension UI**: Reorganized into focused sections:
-  - **CV Section**: Manage and select your professional profiles.
-  - **Autofill Section**: Intelligent form filling with framework-specific value setters.
-  - **Scraper Section**: Discover new job opportunities matching your profile with real-time results.
-- **Jobs Tracker Dashboard**: A dedicated Next.js application for pipeline management.
-  - **Scraped Jobs View**: Filter jobs by "Used" or "Irrelevant", search by title, and link to applications.
-  - **Gmail Jobs View**: Specialized interface for jobs extracted from emails.
-    - **Tabbed Filtering**: "New", "Used", and "Irrelevant" states for focused workflow.
-    - **Advanced Search**: Instant global search across job titles, companies, and URLs.
-    - **Collapsible Filters**: Manage email sender filters through a clean, collapsible interface.
-    - **Full Pagination**: High-performance scrolling and navigation for large job sets.
-  - **Job-Application Linking**: Connect discovered jobs to your application tracking entries.
-- **Intelligent Scraper Service**: Scrapy CrawlSpider using NLP (Cosine Similarity) to rank jobs against your CV.
-- **Nx Monorepo**: Scalable workspace architecture for all services and applications.
+| Task | Command | Environment |
+| :--- | :--- | :--- |
+| **Full Stack** | `docker compose up --build` | Docker |
+| **Dashboard** | `npx nx run dashboard:dev` | Local |
+| **API** | `npx nx run api:serve` | Local |
+| **Extension** | `npx nx run extension:dev` | Local |
 
-## 🚀 Getting Started
+### 4. Gmail API Authentication
+1. Place your `credentials.json` from Google Cloud Console in `apps/gmail-api/`.
+2. Run the `gmail-api` service; it will initiate an OAuth2 flow on the first run.
 
-### Prerequisites
+---
 
-- Node.js 18+ and npm/yarn
-- Python 3.11+
-- Docker and Docker Compose (recommended)
-- Google Cloud Console Project (for Gmail API access)
+## 🏗️ Architecture Overview
 
-### Installation
+Cata follows a distributed architecture coordinated by an Nx workspace:
 
-1.  **Clone the repository**:
+```mermaid
+graph TD
+    subgraph Browser
+        EXT[Chrome Extension]
+    end
 
-    ```bash
-    git clone git@github.com:peroperje/cata.git
-    ```
+    subgraph Management
+        DBH[Next.js Dashboard]
+    end
 
-2.  **Install dependencies**:
+    subgraph Core Services
+        API[FastAPI Backend]
+        POSTGRES[(PostgreSQL)]
+    end
 
-    ```bash
-    npm install
-    ```
+    subgraph Discovery
+        GML[Gmail API Worker]
+        SCR[Scrapy Crawler]
+        REDIS[(Redis)]
+    end
 
-3.  **Install Python dependencies**:
+    EXT <--> API
+    DBH <--> API
+    API <--> POSTGRES
+    GML --> API
+    SCR --> API
+    SCR <--> REDIS
+```
 
-    ```bash
-    npm run api:install
-    ```
+### Repository Structure
+- `apps/extension`: The browser-based interface for form filling.
+- `apps/dashboard`: The central command center for job tracking.
+- `apps/api`: Central FastAPI server handling CV parsing and data persistence.
+- `apps/gmail-api`: Polling service for email-based job extraction.
+- `apps/scraper`: Python-based web discovery engine.
+- `libs/`: Shared TypeScript models and React components.
 
-4.  **Set up environment variables**:
-    ```bash
-    cp .env.example .env
-    # Edit .env with your configuration
-    ```
+---
 
-### Gmail API Setup
+## 📡 Core API Reference
 
-1. Create a project in [Google Cloud Console](https://console.cloud.google.com/).
-2. Enable the **Gmail API**.
-3. Create OAuth 2.0 Credentials (Desktop Application).
-4. Download the `credentials.json` and place it in `apps/gmail-api/`.
-5. On the first run, the service will prompt for authentication.
+The backend provides a versioned REST API. Documentation is available at `/docs` when the API is running.
 
-## 🛠️ Development
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/api/v1/cvs` | `GET/POST` | Manage professional CV metadata and files. |
+| `/api/v1/jobs` | `GET` | List all discovered jobs (Gmail + Scraper). |
+| `/api/v1/process` | `POST` | Trigger AI form-filling logic for a specific job. |
+| `/api/v1/status` | `GET` | Health check for all connected services. |
 
-### Chrome Extension
+---
+
+## 🧪 Testing
 
 ```bash
-npm run dev # Development mode with hot reload
-npm run build # Build for production
+# Run all workspace tests
+npx nx run-many -t test
+
+# Test specific project
+npx nx run api:test
 ```
 
-### Management Dashboard
-
-```bash
-npm run dashboard:dev
-```
-
-Dashboard available at `http://localhost:3000`
-
-### Python API
-
-```bash
-npm run api:serve # Run locally
-```
-
-API available at `http://localhost:8000`
-
-### Gmail API Service
-
-```bash
-# Run in background via Docker
-docker compose up gmail-api --build
-```
-
-### Full Stack (Recommended)
-
-```bash
-npm run docker:up
-# Or
-docker compose up --build
-```
-
-## 🔧 Tech Stack
-
-### Frontend & Dashboard
-
-- **Extension**: Vite + TypeScript + React
-- **Dashboard**: Next.js 16 (App Router) + Tailwind CSS
-- **UI Components**: Lucide React + Shared Component Library (`shared-ui`)
-- **State**: React Hooks + URL-synced tab state
-
-### Backend & Services
-
-- **Framework**: FastAPI (API), apscheduler (Gmail sync)
-- **Database**: PostgreSQL with SQLAlchemy ORM
-- **AI Integration**: Gemini, OpenAI, Hugging Face via unified Factory
-- **Gmail Service**: Google API Client with background polling service
-- **Scraper**: Scrapy + Scrapy-Redis + NLP (spaCy)
-
-### Infrastructure
-
-- **Monorepo**: Nx
-- **Orchestration**: Docker Compose
-- **Deployment**: Kubernetes (K8s)
-
-## 📝 Usage
-
-1.  **AI Setup**: Configure models and keys in the extension popup.
-2.  **CV Upload**: PDF parsing moves your data into the central DB.
-3.  **Gmail Sync**:
-    - Go to **Gmail Jobs** in the dashboard.
-    - Set up **Sender Filters** (e.g., `jobalerts-noreply@linkedin.com`).
-    - Configure sync frequency in **Sync Settings**.
-    - The Gmail worker will periodically extract jobs into your dashboard.
-4.  **Job Search**:
-    - Use the **Scraper** for web-based discovery.
-    - Use **Gmail Jobs** for email-based discovery.
-    - Mark interesting jobs as "Used" to link them to applications.
-5.  **Tracker**: Manage the lifecycle of your applications from "Applied" to "Interview" and "Offer".
-
-## 💡 MCP Integration (Experimental)
-
-Connect AI clients like Claude or Cursor to your job data using the Model Context Protocol.
-
-```bash
-npx nx run api:mcp
-```
+---
 
 ## 📄 License
 
-Private project for personal use.
+This is a private project for personal use. All rights reserved.
