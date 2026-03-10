@@ -125,3 +125,30 @@ class MetadataExtractionRequest(BaseModel):
 class MetadataExtractionResponse(BaseModel):
     title: str
     company: str
+
+class JobPlatformBase(BaseModel):
+    name: str
+    url: str
+    description: Optional[str] = None
+    position: int = 0
+
+class JobPlatformCreate(JobPlatformBase):
+    pass
+
+class JobPlatformUpdate(BaseModel):
+    name: Optional[str] = None
+    url: Optional[str] = None
+    description: Optional[str] = None
+    position: Optional[int] = None
+
+class JobPlatform(JobPlatformBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class JobPlatformReorder(BaseModel):
+    id: int
+    position: int

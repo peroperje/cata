@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from app.core.database import engine, Base
-from app.api.v1 import models as models_router, process as process_router, cvs as cvs_router, jobs as jobs_router, scraper as scraper_router, job_applications as job_applications_router, gmail as gmail_router
+from app.api.v1 import models as models_router, process as process_router, cvs as cvs_router, jobs as jobs_router, scraper as scraper_router, job_applications as job_applications_router, gmail as gmail_router, platforms as platforms_router
 from app.models import models, gmail as gmail_models
 from sqlalchemy.orm import Session
 from app.core.database import SessionLocal
@@ -163,6 +163,7 @@ app.include_router(jobs_router.router, prefix="/api/v1", tags=["Jobs"])
 app.include_router(scraper_router.router, prefix="/api/v1", tags=["Scraper"])
 app.include_router(job_applications_router.router, prefix="/api/v1", tags=["Job Applications"])
 app.include_router(gmail_router.router, prefix="/api/v1", tags=["Gmail"])
+app.include_router(platforms_router.router, prefix="/api/v1", tags=["Platforms"])
 
 if __name__ == "__main__":
     import uvicorn

@@ -67,3 +67,14 @@ class JobApplication(Base):
         Index("ix_job_applications_title_company_url", "title", "company", "url"),
         Index("ix_job_applications_title_company", "title", "company"),
     )
+
+class JobPlatform(Base):
+    __tablename__ = "job_platforms"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+    url = Column(String)
+    description = Column(String, nullable=True)
+    position = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
