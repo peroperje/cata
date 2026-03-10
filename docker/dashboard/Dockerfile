@@ -41,7 +41,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN npx next build apps/dashboard
 
 # Stage: Runner (Production)
-FROM base AS runner
+FROM node:24-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV production

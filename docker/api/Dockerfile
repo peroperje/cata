@@ -14,6 +14,8 @@ RUN apt-get update && apt-get install -y \
 COPY apps/api/requirements.txt .
 
 # Install Python dependencies
+# First install CPU-only torch to avoid huge CUDA binaries
+RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Pre-download the sentence-transformer model
