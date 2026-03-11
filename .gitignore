@@ -69,3 +69,4 @@ apps/gmail-api/token*.json
 
 # Generated CVs
 /generated-CVs/
+.dev/
