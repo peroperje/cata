@@ -1,6 +1,9 @@
+import logging
 from bs4 import BeautifulSoup
 import re
 from typing import List, Dict, Optional
+
+logger = logging.getLogger(__name__)
 
 def extract_jobs_from_html(html_content: str) -> List[Dict[str, str]]:
     """
@@ -13,7 +16,16 @@ def extract_jobs_from_html(html_content: str) -> List[Dict[str, str]]:
     exclusion_patterns = [
         "unsubscribe", "settings", "privacy", "help", "logo", "search", 
         "alerts", "preferences", "support", "feedback", "notifications",
-        "comm/feed", "comm/messaging", "comm/mynetwork", "premium"
+        "comm/feed", "comm/messaging", "comm/mynetwork", "premium",
+        "manage email preferences", "here to unsubscribe",
+        "view in browser", "privacy policy", "contact form",
+        "show all recommendations"
+    ]
+
+    # Protecting legitimate job titles even if company looks suspicious
+    protected_keywords = [
+        "developer", "engineer", "fullstack", "frontend", "backend", 
+        "senior", "junior", "lead", "architect", "specialist", "intern", "software"
     ]
 
     # Helper to normalize URLs by removing common tracking parameters
@@ -30,10 +42,26 @@ def extract_jobs_from_html(html_content: str) -> List[Dict[str, str]]:
         norm_url = normalize_url(raw_url)
         text = link.get_text(strip=True)
         
-        if any(p in raw_url.lower() for p in exclusion_patterns) or not text or len(text) < 3:
+        lower_raw_url = raw_url.lower()
+        lower_text = text.lower()
+
+        if any(p in lower_raw_url for p in exclusion_patterns):
+            logger.info(f"Skipping link (url matches exclusion): {raw_url}")
+            continue
+
+        if any(p in lower_text for p in exclusion_patterns):
+            logger.info(f"Skipping link (text matches exclusion): {text}")
             continue
             
-        if len(text) > 150 or text.lower() in ["view job", "apply now", "click here", "show more", "see all", "jobs"]:
+        if not text or len(text) < 3:
+            continue
+            
+        if len(text) > 150:
+            logger.info(f"Skipping link (text too long): {text[:50]}...")
+            continue
+
+        if lower_text in ["view job", "apply now", "click here", "show more", "see all", "jobs"]:
+            logger.info(f"Skipping link (generic action): {text}")
             continue
 
         title = text
@@ -111,31 +139,49 @@ def extract_jobs_from_html(html_content: str) -> List[Dict[str, str]]:
             jobs_map[norm_url] = {"title": title, "company": company, "url": raw_url}
         else:
             # Overwrite if current one is better
-            # Better means: company is known, or title is cleaner
             if existing['company'] == "Unknown" and company != "Unknown":
-                # Special check: If the title was actually the company name, and now we found a real title, fix it.
                 if len(title) > len(existing['title']) and existing['title'].lower() in company.lower():
-                    # Likely the previous "title" was just the company name
                     jobs_map[norm_url] = {"title": title, "company": company, "url": raw_url}
                 else:
                     existing['company'] = company
             
-            # If current title looks merged (shorter is often better for cleaner titles)
             if len(title) < len(existing['title']) and title.lower() not in ["linkedin", "glassdoor", "indeed"]:
                 existing['title'] = title
 
     # Final pass: polish and filter
     final_jobs = []
     for job in jobs_map.values():
+        lower_title = job['title'].lower()
+        lower_company = job['company'].lower()
+
         # Clean up company: remove trailing metadata
         for meta in [" · ", " | ", " - ", " @ "]:
             if meta in job['company']:
                 job['company'] = job['company'].split(meta)[0].strip()
         
-        # Validation: if title is too short or generic, skip
-        if len(job['title']) < 5 or job['title'].lower() in ["linkedin", "glassdoor", "indeed", "jobs"]:
+        # Professional Title Protection: If it looks like a real job title, keep it
+        is_protected = any(kw in lower_title for kw in protected_keywords)
+        
+        if is_protected:
+            final_jobs.append(job)
+            continue
+
+        # Otherwise, check for noise
+        # 1. Skip if title is too short or generic
+        if len(job['title']) < 5 or lower_title in ["linkedin", "glassdoor", "indeed", "jobs", "hiring"]:
+            logger.info(f"Skipping job (short or generic title): {job['title']}")
             continue
             
+        # 2. Skip if company is misparsed marketing text from Xing, UNLESS protected above
+        if "earn up to" in lower_company and "more" in lower_company:
+            logger.info(f"Skipping job (noise company pattern): {job['title']} at {job['company']}")
+            continue
+
+        # 3. Skip if it matches any exclusion pattern in title or company
+        if any(p in lower_title or p in lower_company for p in exclusion_patterns):
+            logger.info(f"Skipping job (noise pattern in title/company): {job['title']} at {job['company']}")
+            continue
+
         final_jobs.append(job)
 
     return final_jobs
