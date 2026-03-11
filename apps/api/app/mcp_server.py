@@ -1,3 +1,7 @@
+"""
+MCP Server for CATA (Career Transformation Assistant).
+Provides tools for job searching, CV management, and application tracking via the Model Context Protocol.
+"""
 from mcp.server.fastmcp import FastMCP
 from app.core.database import SessionLocal
 from app.models import models
@@ -13,9 +17,11 @@ mcp = FastMCP("CATA")
 @mcp.tool()
 async def get_user_cvs():
     """
-    Lists all uploaded CVs.
+    Lists all uploaded CVs in the database, ordered by creation date (newest first).
+
     Returns:
-        List of CVs with their ID, filename, and creation date.
+        list[dict]: A list of dictionaries containing CV 'id', 'filename', and 'created_at' (ISO format).
+                   Returns an error message string if the operation fails.
     """
     db = SessionLocal()
     try:
@@ -37,9 +43,14 @@ async def get_user_cvs():
 @mcp.tool()
 async def get_cv_content(cv_id: int):
     """
-    Fetches the full text content of a specific CV.
+    Fetches the full text content of a specific CV by its ID.
+
     Args:
-        cv_id: The ID of the CV to fetch.
+        cv_id (int): The unique identifier of the CV to retrieve.
+
+    Returns:
+        str: The full text content of the CV if found.
+             Returns an error message string if the CV is not found or if an error occurs.
     """
     db = SessionLocal()
     try:
@@ -57,9 +68,16 @@ async def get_cv_content(cv_id: int):
 @mcp.tool()
 async def search_scraped_jobs(query: str):
     """
-    Search for jobs in the scraped listings by title or content.
+    Searches for jobs in the scraped listings by matching a query against titles and content.
+    Results are ordered by similarity score in descending order.
+
     Args:
-        query: Search term for job title or content.
+        query (str): The search term to look for in job titles or descriptions.
+
+    Returns:
+        list[dict]: A list of up to 10 matching jobs, each with 'id', 'title', 'url', 
+                    'similarity_score', and 'created_at'.
+                    Returns an error message string if the operation fails.
     """
     db = SessionLocal()
     try:
@@ -89,9 +107,15 @@ async def search_scraped_jobs(query: str):
 @mcp.tool()
 async def get_scraped_job_details(job_id: int):
     """
-    Fetches the full details and content of a scraped job.
+    Fetches the complete details and full content of a specific scraped job.
+
     Args:
-        job_id: The ID of the job to fetch.
+        job_id (int): The unique identifier of the job to retrieve.
+
+    Returns:
+        dict: A dictionary containing 'id', 'title', 'url', 'content', 'similarity_score', 
+              and 'created_at'.
+              Returns an error message string if the job is not found or if an error occurs.
     """
     db = SessionLocal()
     try:
@@ -115,9 +139,15 @@ async def get_scraped_job_details(job_id: int):
 @mcp.tool()
 async def get_latest_scraped_jobs(limit: int = 1):
     """
-    Fetches the most recently scraped jobs.
+    Retrieves the most recently added job listings from the database.
+
     Args:
-        limit: Number of jobs to fetch (default: 1).
+        limit (int, optional): The maximum number of jobs to return. Defaults to 1.
+
+    Returns:
+        list[dict]: A list of the latest jobs, each containing 'id', 'title', 'url', 
+                    'similarity_score', and 'created_at'.
+                    Returns an error message string if the operation fails.
     """
     db = SessionLocal()
     try:
@@ -142,9 +172,17 @@ async def get_latest_scraped_jobs(limit: int = 1):
 @mcp.tool()
 async def list_tracked_jobs(status: str = None):
     """
-    Lists job applications in your tracker.
+    Lists job applications currently being tracked, with an optional filter by status.
+    Ordered by the last update time (most recent first).
+
     Args:
-        status: Optional filter by status (Interested, Applied, Interview, Offer, Rejected).
+        status (str, optional): The status to filter by (e.g., 'Interested', 'Applied', 
+                                'Interview', 'Offer', 'Rejected'). Defaults to None.
+
+    Returns:
+        list[dict]: A list of job application summaries containing 'id', 'title', 'company', 
+                    'status', 'url', and 'updated_at'.
+                    Returns an error message string if the operation fails.
     """
     db = SessionLocal()
     try:
@@ -173,11 +211,17 @@ async def list_tracked_jobs(status: str = None):
 @mcp.tool()
 async def update_job_status(application_id: int, status: str, notes: str = None):
     """
-    Updates the status or notes of a tracked job application.
+    Updates the application status and/or personal notes for a specific tracked job.
+
     Args:
-        application_id: The ID of the application to update.
-        status: New status (Interested, Applied, Interview, Offer, Rejected).
-        notes: Optional new notes to replace existing ones.
+        application_id (int): The unique identifier of the job application.
+        status (str): The new status to set (e.g., 'Interested', 'Applied', 'Interview', 
+                      'Offer', 'Rejected').
+        notes (str, optional): New notes to replace existing ones. If None, notes are not updated.
+
+    Returns:
+        dict: A success message and status if updated successfully.
+              Returns an error message string if the application is not found or if an error occurs.
     """
     db = SessionLocal()
     try:
@@ -205,12 +249,17 @@ async def update_job_status(application_id: int, status: str, notes: str = None)
 @mcp.tool()
 async def add_to_tracker(title: str, company: str, url: str, notes: str = None):
     """
-    Add a new job application to the tracker.
+    Creates a new job application entry in the tracker.
+
     Args:
-        title: Job title.
-        company: Company name.
-        url: URL to the job posting.
-        notes: Optional personal notes.
+        title (str): The title of the job position.
+        company (str): The name of the hiring company.
+        url (str): The URL link to the job posting.
+        notes (str, optional): Any personal notes or context about the application.
+
+    Returns:
+        dict: A dictionary containing 'status', 'message', and 'application_id' of the new entry.
+              Returns an error message string if the operation fails.
     """
     db = SessionLocal()
     try:
@@ -240,11 +289,15 @@ async def add_to_tracker(title: str, company: str, url: str, notes: str = None):
 @mcp.tool()
 async def get_job_evaluation_context(job_application_id: int):
     """
-    Fetches the full text description of the specific job application from the DB, 
-    and simultaneously fetches the user's most recent CV data.
-    Returns a structured string containing both the CV and the complete job description.
+    Provides a comprehensive context for evaluating a job application.
+    Retrieves the job's full description and the user's most recent CV text.
+
     Args:
-        job_application_id: The ID of the job application to evaluate.
+        job_application_id (int): The unique identifier of the job application to evaluate.
+
+    Returns:
+        str: A formatted block of text containing job details, full description, and CV content.
+             Returns an error message string if the application or CV is not found.
     """
     db = SessionLocal()
     try:
