@@ -25,14 +25,22 @@ async def process_form(request: schemas.ProcessRequest, db: Session = Depends(ge
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    # 4. Call provider
+    # 4. Get job description if provided
+    job_description = None
+    if request.jobApplicationId:
+        job_app = db.query(models.JobApplication).filter(models.JobApplication.id == request.jobApplicationId).first()
+        if job_app:
+            job_description = job_app.full_text_description
+
+    # 5. Call provider
     try:
         result = await provider.process(
             cv_text=request.cvText,
             form_data=request.formData,
             api_key=user_key.api_key,
             model_name=model.model_name,
-            instruction=request.instruction
+            instruction=request.instruction,
+            job_description=job_description
         )
         return result
     except Exception as e:

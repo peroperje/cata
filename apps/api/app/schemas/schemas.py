@@ -41,6 +41,7 @@ class ProcessRequest(BaseModel):
     formData: List[dict]
     modelId: int
     instruction: Optional[str] = None
+    jobApplicationId: Optional[int] = None
 
 class ProcessResponse(BaseModel):
     mappings: List[Mapping]

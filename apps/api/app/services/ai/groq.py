@@ -5,18 +5,29 @@ from groq import AsyncGroq
 from app.services.ai.base import AIBaseProvider
 
 class GroqProvider(AIBaseProvider):
-    async def process(self, cv_text: str, form_data: List[dict], api_key: str, model_name: str, instruction: str = None) -> dict:
+    async def process(self, cv_text: str, form_data: List[dict], api_key: str, model_name: str, instruction: str = None, job_description: str = None) -> dict:
         print(f"DEBUG: Processing with Groq model {model_name}")
         client = AsyncGroq(api_key=api_key)
 
         instruction_prompt = ""
         if instruction:
             instruction_prompt = f"""
-        ADDITIONAL INSTRUCTIONS FROM USER:
+        INSTRUCTION:
         \"\"\"
         {instruction}
         \"\"\"
-        Please prioritize these instructions above general guidelines.
+        Strictly follow the above instruction when generating responses.
+        """
+
+        job_description_prompt = ""
+        if job_description:
+            job_description_prompt = f"""
+        JOB DESCRIPTION:
+        \"\"\"
+        {job_description}
+        \"\"\"
+        Use the Job Description to understand the role's requirements and company values. 
+        Tailor subjective answers to align with the job description while staying true to the CV.
         """
 
         prompt = f"""
@@ -33,6 +44,8 @@ class GroqProvider(AIBaseProvider):
         {json.dumps(form_data, indent=2)}
         \"\"\"
         (Note: the "value" field in the JSON above represents the current content of the field on the page.)
+
+        {job_description_prompt}
 
         {instruction_prompt}
 

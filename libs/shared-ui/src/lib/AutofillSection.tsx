@@ -9,7 +9,7 @@ interface AutofillSectionProps {
     onModelChange: (id: number | null) => void;
     onApiKeyChange: (value: string) => void;
     onSaveApiKey: () => void;
-    onFill: (instruction: string) => void;
+    onFill: (instruction: string, jobApplicationId?: number) => void;
     onAddModel: (name: string, provider: string, model_name: string) => void;
     onDeleteModel: (id: number) => void;
     isLoading: boolean;
@@ -34,6 +34,7 @@ export const AutofillSection: React.FC<AutofillSectionProps> = ({
     const [newProvider, setNewProvider] = React.useState('gemini');
     const [newModelName, setNewModelName] = React.useState('gemini-1.5-flash');
     const [instruction, setInstruction] = React.useState('');
+    const [jobApplicationId, setJobApplicationId] = React.useState<string>('');
 
     const handleAdd = () => {
         if (newName && newProvider && newModelName) {
@@ -47,9 +48,28 @@ export const AutofillSection: React.FC<AutofillSectionProps> = ({
         <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {renderAutofillButton && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#94a3b8', marginBottom: '-0.25rem' }}>AI Instructions:</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#94a3b8' }}>Job Application ID (Optional):</div>
+                        <input
+                            type="number"
+                            placeholder="e.g. 327"
+                            value={jobApplicationId}
+                            onChange={(e) => setJobApplicationId(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '0.5rem',
+                                fontSize: '0.8rem',
+                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                borderRadius: '8px',
+                                color: '#e2e8f0'
+                            }}
+                        />
+                    </div>
+                    
+                    <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#94a3b8', marginTop: '0.25rem' }}>AI Instructions:</div>
                     <textarea
-                        placeholder="Additional instructions for AI (e.g. 'Only fill missed fields', 'Write a joke in the cover letter field')"
+                        placeholder="Additional instructions for AI (e.g. 'Only fill missed fields')"
                         value={instruction}
                         onChange={(e) => setInstruction(e.target.value)}
                         style={{
@@ -66,7 +86,7 @@ export const AutofillSection: React.FC<AutofillSectionProps> = ({
                     />
                     <button
                         className="button"
-                        onClick={() => onFill(instruction)}
+                        onClick={() => onFill(instruction, jobApplicationId ? parseInt(jobApplicationId) : undefined)}
                         disabled={isLoading || !selectedModelId}
                         style={{ width: '100%' }}
                     >
