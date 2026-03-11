@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import { StatusBanner } from './components/StatusBanner';
 import { CvSection, AutofillSection } from '@cata/shared-ui';
 import { CollapsibleSection } from './components/CollapsibleSection';
-import { ScraperSection } from './components/ScraperSection';
 import { JobsApplyTracker } from './components/JobsApplyTracker';
 import { useCvs } from './hooks/useCvs';
 import { useModels } from './hooks/useModels';
-import { useScraper } from './hooks/useScraper';
 import { useAutofill } from './hooks/useAutofill';
 import { APP_VERSION, AppStatus } from '@cata/shared-types';
 import { useJobTracker } from './hooks/useJobTracker';
@@ -20,7 +18,6 @@ const App: React.FC = () => {
     const [expandedSections, setExpandedSections] = useState<{ [key: string]: boolean }>({
         cv: false,
         autofill: false,
-        scraper: false,
         jat: false
     });
 
@@ -48,21 +45,6 @@ const App: React.FC = () => {
         addModel,
         deleteModel
     } = useModels(setStatus);
-
-    const {
-        scraperUrl,
-        setScraperUrl,
-        isScraping,
-        jobCount,
-        scrapedJobs,
-        handleStartScraping,
-        handleStopScraping,
-        toggleIrrelevant,
-        toggleUsed,
-        linkApplication,
-        unlinkApplication,
-        searchApplications
-    } = useScraper(setStatus, expandedSections.scraper);
 
     const { handleFill } = useAutofill(pdfText, selectedModelId, setStatus);
 
@@ -92,16 +74,25 @@ const App: React.FC = () => {
             <StatusBanner status={status} />
 
             <CollapsibleSection
-                title={` Manage CV ${!selectedCvId ? '- (No CV selected)' : ''}`}
-                isExpanded={expandedSections.cv}
-                onToggle={() => toggleSection('cv')}
+                title={`Jobs Apply Tracker ${isExtracting ? '- (Extracting)' : ''} ${isSaving ? '- (Saving)' : ''}`}
+                isExpanded={expandedSections.jat}
+                onToggle={() => toggleSection('jat')}
             >
-                <CvSection
-                    cvs={cvs}
-                    selectedCvId={selectedCvId}
-                    onFileUpload={handleFileUpload}
-                    onCvSelect={handleCvSelect}
-                    onDeleteCv={deleteCv}
+                <JobsApplyTracker
+                    applications={applications}
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    filterStatus={filterStatus}
+                    onStatusFilterChange={setFilterStatus}
+                    currentJob={currentJob}
+                    isExtracting={isExtracting}
+                    isSaving={isSaving}
+                    status={status}
+                    onAdd={addApplication}
+                    onUpdateStatus={updateStatus}
+                    onUpdateNotes={updateNotes}
+                    onDelete={deleteApplication}
+                    onRefresh={refreshMetadata}
                 />
             </CollapsibleSection>
 
@@ -127,52 +118,20 @@ const App: React.FC = () => {
                     renderAutofillButton={true}
                 />
             </CollapsibleSection>
-            <CollapsibleSection
-                title={`Jobs Apply Tracker ${isExtracting ? '- (Extracting)' : ''} ${isSaving ? '- (Saving)' : ''}`}
-                isExpanded={expandedSections.jat}
-                onToggle={() => toggleSection('jat')}
-            >
-                <JobsApplyTracker
-                    applications={applications}
-                    searchTerm={searchTerm}
-                    onSearchChange={setSearchTerm}
-                    filterStatus={filterStatus}
-                    onStatusFilterChange={setFilterStatus}
-                    currentJob={currentJob}
-                    isExtracting={isExtracting}
-                    isSaving={isSaving}
-                    status={status}
-                    onAdd={addApplication}
-                    onUpdateStatus={updateStatus}
-                    onUpdateNotes={updateNotes}
-                    onDelete={deleteApplication}
-                    onRefresh={refreshMetadata}
-                />
-            </CollapsibleSection>
 
             <CollapsibleSection
-                title="Scraper"
-                isExpanded={expandedSections.scraper}
-                onToggle={() => toggleSection('scraper')}
+                title={` Manage CV ${!selectedCvId ? '- (No CV selected)' : ''}`}
+                isExpanded={expandedSections.cv}
+                onToggle={() => toggleSection('cv')}
             >
-                <ScraperSection
-                    isScraping={isScraping}
-                    scraperUrl={scraperUrl}
-                    jobCount={jobCount}
-                    scrapedJobs={scrapedJobs}
-                    onUrlChange={setScraperUrl}
-                    onStartScraping={handleStartScraping}
-                    onStopScraping={handleStopScraping}
-                    onToggleIrrelevant={toggleIrrelevant}
-                    onToggleUsed={toggleUsed}
-                    onLinkApplication={linkApplication}
-                    onUnlinkApplication={unlinkApplication}
-                    onSearchApplications={searchApplications}
-                    isLoading={status.type === 'loading'}
+                <CvSection
+                    cvs={cvs}
+                    selectedCvId={selectedCvId}
+                    onFileUpload={handleFileUpload}
+                    onCvSelect={handleCvSelect}
+                    onDeleteCv={deleteCv}
                 />
             </CollapsibleSection>
-
-
         </div >
     );
 };

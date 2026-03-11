@@ -1,7 +1,6 @@
 # CATA: AI-Powered Job Application Automation
 
 <div align="center">
-  <img src="/home/petar/.gemini/antigravity/brain/8fa1ffaa-281f-4c94-a59c-a73e36fcb015/cata_project_mockup_1773171339762.png" alt="CATA Dashboard Preview" width="800">
   <p><em>Turn your job search into a high-performance automated pipeline.</em></p>
 </div>
 
@@ -19,6 +18,7 @@ CATA (Chrome Assistant for Tailored Applications) is an end-to-end platform desi
 - [🏗️ Repository Structure](#️-repository-structure)
 - [🛠️ Tech Stack](#️-tech-stack)
 - [🚀 Quick Start](#-quick-start)
+- [🧩 Chrome Extension Setup](#-chrome-extension-setup)
 - [⚙️ Configuration](#️-configuration)
 - [📁 Shared Resources](#-shared-resources)
 - [🚢 Deployment](#-deployment)
@@ -96,6 +96,30 @@ npm run api:install  # Setup Python environment
 | **API** | `npx nx run api:serve` | `localhost:8000` |
 | **Extension** | `npx nx run extension:dev` | Browser Extension |
 | **CV Generator** | `npx nx run cv-pdf-generator:generate` | CLI |
+
+---
+
+## 🧩 Chrome Extension Setup
+
+Since the extension is in development mode and not yet published to the Chrome Web Store, follow these steps to load it:
+
+### 1. Build the Extension
+Run the following command to build the extension in development mode with HMR (Hot Module Replacement):
+```bash
+npx nx run extension:dev
+```
+This will generate the build files in the `dist/apps/extension` directory and watch for changes.
+
+### 2. Load into Chrome
+1. Open Google Chrome and navigate to `chrome://extensions/`.
+2. Enable **Developer mode** using the toggle in the top-right corner.
+3. Click the **Load unpacked** button.
+4. Navigate to your project directory and select the `dist/apps/extension` folder.
+
+### 3. Usage
+- Once loaded, you will see the CATA icon in your extension list.
+- Pin it for easy access.
+- Navigate to any job application page (e.g., LinkedIn, Greenhouse, Lever), and use the CATA popup to trigger the AI-powered autofill.
 
 ---
 
