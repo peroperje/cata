@@ -5,12 +5,18 @@ Provides tools for job searching, CV management, and application tracking via th
 from mcp.server.fastmcp import FastMCP
 from app.core.database import SessionLocal
 from app.models import models
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
+from datetime import datetime, timedelta
 import logging
+from typing import List, Dict, Optional # Import typing for better compatibility
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mcp-cata")
+
+# Import all models at top level to ensure relationships are resolved
+from app.models import models
+from app.models.gmail import GmailJob
 
 mcp = FastMCP("CATA")
 
@@ -324,6 +330,85 @@ async def get_job_evaluation_context(job_application_id: int):
         return context
     except Exception as e:
         logger.error(f"Error fetching evaluation context: {e}")
+        return f"Error: {str(e)}"
+@mcp.tool()
+async def get_recent_gmail_jobs(days: int = 3):
+    """
+    Fetches Gmail job records that are currently active and were created within the specified number of days.
+    Useful for identifying and filtering out "noise" records that were incorrectly extracted.
+
+    Args:
+        days (int, optional): The number of days to look back. Defaults to 3.
+
+    Returns:
+        list[dict]: A list of recent Gmail jobs with 'id', 'title', 'company', 'url', and 'created_at'.
+                   Returns an error message string if the operation fails.
+    """
+    db = SessionLocal()
+    try:
+        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        logger.info(f"Fetching active Gmail jobs since {cutoff_date}")
+        
+        jobs = db.query(GmailJob).filter(
+            and_(
+                GmailJob.is_used == False,
+                GmailJob.is_irrelevant == False,
+                GmailJob.job_application_id == None,
+                GmailJob.is_active == True,
+                GmailJob.created_at >= cutoff_date
+            )
+        ).order_by(GmailJob.created_at.desc()).all()
+        
+        return [
+            {
+                "id": job.id,
+                "title": job.title,
+                "company": job.company,
+                "url": job.url,
+                "created_at": job.created_at.isoformat() if job.created_at else None
+            } for job in jobs
+        ]
+    except Exception as e:
+        logger.error(f"Error fetching recent Gmail jobs: {e}")
+        return f"Error: {str(e)}"
+    finally:
+        db.close()
+
+@mcp.tool()
+async def set_gmail_jobs_active_status(job_ids: List[int], status: bool):
+    """
+    Updates the 'is_active' status for a list of Gmail job IDs.
+    Typically used to deactivate (is_active=False) irrelevant records in bulk.
+
+    Args:
+        job_ids (List[int]): A list of integer IDs for the Gmail jobs to update.
+        status (bool): The new active status to set (True for active, False for inactive).
+
+    Returns:
+        dict: A status report indicating how many records were updated.
+              Returns an error message string if the operation fails.
+    """
+    if not job_ids:
+        return {"status": "success", "message": "No job IDs provided.", "count": 0}
+        
+    db = SessionLocal()
+    try:
+        logger.info(f"Setting is_active={status} for {len(job_ids)} Gmail jobs")
+        
+        updated_count = db.query(GmailJob).filter(GmailJob.id.in_(job_ids)).update(
+            {GmailJob.is_active: status}, 
+            synchronize_session=False
+        )
+        db.commit()
+        
+        return {
+            "status": "success",
+            "message": f"Successfully updated active status to {status} for {updated_count} records.",
+            "count": updated_count
+        }
+    except Exception as e:
+        logger.error(f"Error updating Gmail jobs status: {e}")
+        db.rollback()
         return f"Error: {str(e)}"
     finally:
         db.close()

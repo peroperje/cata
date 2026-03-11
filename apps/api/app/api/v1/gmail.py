@@ -39,7 +39,7 @@ def get_gmail_jobs(
     is_irrelevant: Optional[bool] = None,
     db: Session = Depends(get_db)
 ):
-    query = db.query(models.GmailJob)
+    query = db.query(models.GmailJob).filter(models.GmailJob.is_active == True)
     
     if search:
         search_filter = f"%{search}%"
