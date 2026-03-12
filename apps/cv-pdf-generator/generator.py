@@ -5,7 +5,15 @@ from fpdf import FPDF
 from pathlib import Path
 
 class CVLetterPDF(FPDF):
+    """
+    Custom FPDF class for CV and Cover Letter generation.
+    
+    Provides specialized layout features such as a custom footer with page numbering.
+    """
     def footer(self):
+        """
+        Renders the common footer on every page.
+        """
         # Position at 1.5 cm from bottom
         self.set_y(-15)
         # Arial italic 8
@@ -13,9 +21,84 @@ class CVLetterPDF(FPDF):
         # Page number
         self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", align="C")
 
+class Block:
+    """
+    Represents a logical section of the document with specific styling rules.
+    
+    This class handles the mapping between markdown-like syntax (headers, bullets)
+    and PDF rendering logic (fonts, sizes, alignment).
+    """
+    def __init__(self, text: str, block_type: str = "paragraph"):
+        self.text = text.strip()
+        self.block_type = block_type
+
+    def render(self, pdf: FPDF):
+        """
+        Renders the block content to the provided PDF object.
+        
+        Args:
+            pdf (FPDF): The PDF object to render into.
+        """
+        if not self.text and self.block_type == "paragraph":
+            pdf.ln(6)
+            return
+
+        if self.block_type == "h1":
+            pdf.set_font("helvetica", "B", 16)
+            pdf.multi_cell(0, 10, align="L", text=self.text, new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("helvetica", size=11)
+        elif self.block_type == "h2":
+            pdf.set_font("helvetica", "B", 14)
+            pdf.multi_cell(0, 8, align="L", text=self.text, new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("helvetica", size=11)
+        elif self.block_type == "h3":
+            pdf.set_font("helvetica", "B", 12)
+            pdf.multi_cell(0, 6, align="L", text=self.text, new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("helvetica", size=11)
+        elif self.block_type == "bullet":
+            pdf.multi_cell(0, 6, align="L", text="* " + self.text, new_x="LMARGIN", new_y="NEXT")
+        else:
+            pdf.multi_cell(0, 6, align="L", text=self.text, new_x="LMARGIN", new_y="NEXT")
+
+def parse_blocks(content: str) -> list[Block]:
+    """
+    Parses raw text content into a list of styled Block objects.
+    
+    Args:
+        content (str): Raw string content with basic markdown markers.
+        
+    Returns:
+        list[Block]: A sequence of Block instances representing the document structure.
+    """
+    blocks = []
+    for line in content.split('\n'):
+        line = line.strip()
+        if not line:
+            blocks.append(Block("", "paragraph"))
+            continue
+            
+        if line.startswith('# '):
+            blocks.append(Block(line[2:], "h1"))
+        elif line.startswith('## '):
+            blocks.append(Block(line[3:], "h2"))
+        elif line.startswith('### '):
+            blocks.append(Block(line[4:], "h3"))
+        elif line.startswith('- '):
+            blocks.append(Block(line[2:], "bullet"))
+        else:
+            blocks.append(Block(line, "paragraph"))
+    return blocks
+
 def create_pdf(content: str, output_path: str):
     """
     Creates a clean, ATS-friendly PDF from text content.
+    
+    This function initializes the PDF document, cleans the content for 
+    encoding compatibility, and iterates through parsed blocks to render them.
+    
+    Args:
+        content (str): The raw text to render.
+        output_path (str): File path for the generated PDF.
     """
     pdf = CVLetterPDF()
     pdf.add_page()
@@ -27,32 +110,10 @@ def create_pdf(content: str, output_path: str):
     # Replace common unicode characters that helvetica cannot encode
     content = content.replace("–", "-").replace("—", "-").replace("’", "'").replace("‘", "'")
     
-    # Basic text parsing to handle bolding or headers if needed
-    # For now, we rely on standard multi_cell rendering of the raw text
-    for line in content.split('\n'):
-        line = line.strip()
-        if not line:
-            pdf.ln(6)
-            continue
-            
-        # Just simple text rendering for now
-        if line.startswith('# '):
-            pdf.set_font("helvetica", "B", 16)
-            pdf.multi_cell(0, 10, align="L", text=line[2:], new_x="LMARGIN", new_y="NEXT")
-            pdf.set_font("helvetica", size=11)
-        elif line.startswith('## '):
-            pdf.set_font("helvetica", "B", 14)
-            pdf.multi_cell(0, 8, align="L", text=line[3:], new_x="LMARGIN", new_y="NEXT")
-            pdf.set_font("helvetica", size=11)
-        elif line.startswith('### '):
-            pdf.set_font("helvetica", "B", 12)
-            pdf.multi_cell(0, 6, align="L", text=line[4:], new_x="LMARGIN", new_y="NEXT")
-            pdf.set_font("helvetica", size=11)
-        elif line.startswith('- '):
-            # simulate bullet points with ASCII to avoid font encoding issues
-            pdf.multi_cell(0, 6, align="L", text="* " + line[2:], new_x="LMARGIN", new_y="NEXT")
-        else:
-            pdf.multi_cell(0, 6, align="L", text=line, new_x="LMARGIN", new_y="NEXT")
+    # Parse and render blocks
+    blocks = parse_blocks(content)
+    for block in blocks:
+        block.render(pdf)
             
     # Save the pdf
     try:
@@ -63,6 +124,12 @@ def create_pdf(content: str, output_path: str):
         sys.exit(1)
 
 def main():
+    """
+    Main entry point for the CV PDF Generator CLI.
+    
+    Parses command-line arguments to determine the output path, document type,
+    and content source (file, argument, or stdin).
+    """
     parser = argparse.ArgumentParser(description="Generate ATS-friendly PDFs for CVs and Cover Letters.")
     parser.add_argument("--content", required=False, help="The text content for the PDF.")
     parser.add_argument("--content_file", required=False, help="Path to a text file containing the PDF content.")
