@@ -61,9 +61,9 @@ export const SenderFilters = ({ filters, onAddFilter, onDeleteFilter, onToggleFi
                         </button>
                     </div>
                     <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-                        {filters.map(filter => (
+                        {[...filters].sort((a, b) => (a.is_active === b.is_active ? 0 : a.is_active ? -1 : 1)).map(filter => (
                             <div key={filter.id} className={`flex justify-between items-center p-2 rounded-lg border border-[#334155] text-sm transition ${filter.is_active ? 'bg-[#1e293b]' : 'bg-[#0f172a] opacity-50'}`}>
-                                <span className={`truncate ${filter.is_active ? 'text-white' : 'text-gray-500 line-through'}`}>{filter.email_sender}</span>
+                                <span className={`truncate ${filter.is_active ? 'text-white' : 'text-white line-through'}`}>{filter.email_sender}</span>
                                 <div className="flex items-center gap-2">
                                     <button 
                                         onClick={() => onToggleFilter(filter.id)}
