@@ -134,7 +134,7 @@ def main():
     parser.add_argument("--content", required=False, help="The text content for the PDF.")
     parser.add_argument("--content_file", required=False, help="Path to a text file containing the PDF content.")
     parser.add_argument("--type", required=True, choices=["cv", "cover_letter"], help="Type of document to generate.")
-    parser.add_argument("--output_dir", default="../../generated-CVs", help="Base directory for generated files.")
+    parser.add_argument("--output_dir", default="./generated-CVs", help="Base directory for generated files.")
     parser.add_argument("--company", required=True, help="Company name.")
     parser.add_argument("--job_title", required=True, help="Job title.")
     parser.add_argument("--job_id", required=True, help="Target job ID constraint.")
