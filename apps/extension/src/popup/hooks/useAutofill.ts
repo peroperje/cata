@@ -79,6 +79,37 @@ export const useAutofill = (
         }
     };
 
-    return { handleFill };
+    const checkStoredResult = async (jobApplicationId: number): Promise<boolean> => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/autofill/${jobApplicationId}`);
+            return res.ok;
+        } catch {
+            return false;
+        }
+    };
+
+    const handleFillFromDatabase = async (jobApplicationId: number) => {
+        setStatus({ type: 'loading', message: 'Fetching stored mappings...' });
+        try {
+            const res = await fetch(`${API_BASE_URL}/autofill/${jobApplicationId}`);
+            if (!res.ok) throw new Error('Stored result not found');
+            
+            const data = await res.json();
+            
+            setStatus({ type: 'loading', message: 'Filling form...' });
+            await sendMessageToActiveTab({
+                type: 'FILL_FORM',
+                mappings: data.result
+            });
+
+            setStatus({ type: 'success', message: 'Form filled from database!' });
+        } catch (err) {
+            console.error('Database autofill error:', err);
+            const message = err instanceof Error ? err.message : 'Database fetch failed.';
+            setStatus({ type: 'error', message });
+        }
+    };
+
+    return { handleFill, handleFillFromDatabase, checkStoredResult };
 };
 

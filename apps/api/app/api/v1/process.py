@@ -42,6 +42,45 @@ async def process_form(request: schemas.ProcessRequest, db: Session = Depends(ge
             instruction=request.instruction,
             job_description=job_description
         )
+        
+        # 6. Save/Update AutofillResult if jobApplicationId is provided
+        if request.jobApplicationId:
+            autofill_entry = db.query(models.AutofillResult).filter(
+                models.AutofillResult.job_application_id == request.jobApplicationId
+            ).first()
+            
+            # Convert mappings to dicts for JSON storage
+            mappings_data = result.get("mappings", [])
+            
+            if autofill_entry:
+                autofill_entry.form_data = request.formData
+                autofill_entry.instruction = request.instruction
+                autofill_entry.model_name = model.model_name
+                autofill_entry.result = mappings_data
+            else:
+                new_autofill = models.AutofillResult(
+                    job_application_id=request.jobApplicationId,
+                    form_data=request.formData,
+                    instruction=request.instruction,
+                    model_name=model.model_name,
+                    result=mappings_data
+                )
+                db.add(new_autofill)
+            
+            db.commit()
+
         return result
     except Exception as e:
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/autofill/{job_application_id}", response_model=schemas.AutofillResult)
+async def get_autofill_result(job_application_id: int, db: Session = Depends(get_db)):
+    result = db.query(models.AutofillResult).filter(
+        models.AutofillResult.job_application_id == job_application_id
+    ).first()
+    
+    if not result:
+        raise HTTPException(status_code=404, detail="Autofill result not found")
+        
+    return result

@@ -46,7 +46,7 @@ const App: React.FC = () => {
         deleteModel
     } = useModels(setStatus);
 
-    const { handleFill } = useAutofill(pdfText, selectedModelId, setStatus);
+    const { handleFill, handleFillFromDatabase, checkStoredResult } = useAutofill(pdfText, selectedModelId, setStatus);
 
     const {
         applications,
@@ -112,6 +112,8 @@ const App: React.FC = () => {
                     onApiKeyChange={setApiKey}
                     onSaveApiKey={saveApiKey}
                     onFill={handleFill}
+                    onFillFromDatabase={handleFillFromDatabase}
+                    onCheckStoredResult={checkStoredResult}
                     onAddModel={addModel}
                     onDeleteModel={deleteModel}
                     isLoading={status.type === 'loading'}

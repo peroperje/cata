@@ -413,5 +413,77 @@ async def set_gmail_jobs_active_status(job_ids: List[int], status: bool):
     finally:
         db.close()
 
+@mcp.tool()
+async def get_autofill_result(job_application_id: int):
+    """
+    Provides the stored autofill record by jobApplicationId to an AI client.
+
+    Args:
+        job_application_id (int): The ID of the job application.
+
+    Returns:
+        dict: The stored autofill record or error message.
+    """
+    db = SessionLocal()
+    try:
+        logger.info(f"Fetching autofill result for job application ID: {job_application_id}")
+        result = db.query(models.AutofillResult).filter(
+            models.AutofillResult.job_application_id == job_application_id
+        ).first()
+        
+        if not result:
+            return f"Error: No stored autofill result found for job application ID {job_application_id}."
+            
+        return {
+            "id": result.id,
+            "job_application_id": result.job_application_id,
+            "form_data": result.form_data,
+            "instruction": result.instruction,
+            "model_name": result.model_name,
+            "result": result.result,
+            "updated_at": result.updated_at.isoformat() if result.updated_at else None
+        }
+    except Exception as e:
+        logger.error(f"Error fetching autofill result: {e}")
+        return f"Error: {str(e)}"
+    finally:
+        db.close()
+
+@mcp.tool()
+async def update_autofill_result(job_application_id: int, result: list):
+    """
+    Updates the result list (mappings) for a specific autofill record.
+    Only the 'result' field can be updated.
+
+    Args:
+        job_application_id (int): The ID of the job application.
+        result (list): The new list of mappings to store.
+
+    Returns:
+        dict: Success message and status.
+    """
+    db = SessionLocal()
+    try:
+        logger.info(f"Updating autofill result for job application ID: {job_application_id}")
+        entry = db.query(models.AutofillResult).filter(
+            models.AutofillResult.job_application_id == job_application_id
+        ).first()
+        
+        if not entry:
+            return f"Error: No autofill record found for ID {job_application_id} to update."
+            
+        entry.result = result
+        db.commit()
+        return {
+            "status": "success",
+            "message": f"Updated autofill result for job application ID {job_application_id}."
+        }
+    except Exception as e:
+        logger.error(f"Error updating autofill result: {e}")
+        db.rollback()
+        return f"Error: {str(e)}"
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     mcp.run()

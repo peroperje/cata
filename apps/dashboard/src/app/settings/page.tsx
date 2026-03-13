@@ -152,6 +152,10 @@ export default function SettingsPage() {
                             onFill={() => {
                                 alert("Autofill is only available within the browser extension on job application pages.");
                             }}
+                            onFillFromDatabase={() => {
+                                alert("Autofill is only available within the browser extension.");
+                            }}
+                            onCheckStoredResult={async () => false}
                             onAddModel={handleAddModel}
                             onDeleteModel={handleModelDelete}
                             isLoading={isLoading}

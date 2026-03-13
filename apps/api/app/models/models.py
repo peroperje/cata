@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Boolean, Index
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Boolean, Index, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.core.database import Base
@@ -62,6 +62,7 @@ class JobApplication(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     jobs = relationship("Job", back_populates="job_application")
+    autofill_result = relationship("AutofillResult", back_populates="job_application", uselist=False)
 
     __table_args__ = (
         Index("ix_job_applications_title_company_url", "title", "company", "url"),
@@ -78,3 +79,17 @@ class JobPlatform(Base):
     position = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class AutofillResult(Base):
+    __tablename__ = "autofill_results"
+
+    id = Column(Integer, primary_key=True, index=True)
+    job_application_id = Column(Integer, ForeignKey("job_applications.id", ondelete="CASCADE"), unique=True, index=True)
+    form_data = Column(JSON)
+    instruction = Column(String, nullable=True)
+    model_name = Column(String)
+    result = Column(JSON)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    job_application = relationship("JobApplication", back_populates="autofill_result")
+

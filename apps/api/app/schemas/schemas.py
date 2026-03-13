@@ -153,3 +153,20 @@ class JobPlatform(JobPlatformBase):
 class JobPlatformReorder(BaseModel):
     id: int
     position: int
+
+class AutofillResultBase(BaseModel):
+    job_application_id: int
+    form_data: List[dict]
+    instruction: Optional[str] = None
+    model_name: str
+    result: List[dict]
+
+class AutofillResultCreate(AutofillResultBase):
+    pass
+
+class AutofillResult(AutofillResultBase):
+    id: int
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
