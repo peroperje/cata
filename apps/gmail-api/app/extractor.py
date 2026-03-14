@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 def extract_jobs_from_html(html_content: str) -> List[Dict[str, str]]:
     """
     Parses email HTML to extract job Title, Company, and URL using generic heuristics.
-    Works across various platforms like LinkedIn, Glassdoor, Indeed, etc.
+    Works across various platforms like LinkedIn, Glassdoor, Indeed, Wellfound, SolidGigs, etc.
     """
     jobs_map = {} # Normalized URL -> Job object
     soup = BeautifulSoup(html_content, 'html.parser')
@@ -19,7 +19,12 @@ def extract_jobs_from_html(html_content: str) -> List[Dict[str, str]]:
         "comm/feed", "comm/messaging", "comm/mynetwork", "premium",
         "manage email preferences", "here to unsubscribe",
         "view in browser", "privacy policy", "contact form",
-        "show all recommendations"
+        "terms of service", "candidate profile",
+        "my applications", "google play store", "this message was sent to",
+        "you can add or edit new subscriptions here", "add widget",
+        "@gmail.com", "@xing.com", "@glassdoor.com", "@nofluffjobs.com",
+        "show all recommendations",
+        "ready to interview", "open to offers", "closed to offers"
     ]
 
     # Protecting legitimate job titles even if company looks suspicious
@@ -40,7 +45,7 @@ def extract_jobs_from_html(html_content: str) -> List[Dict[str, str]]:
     for link in potential_links:
         raw_url = link['href']
         norm_url = normalize_url(raw_url)
-        text = link.get_text(strip=True)
+        text = link.get_text(separator=" ", strip=True)
         
         lower_raw_url = raw_url.lower()
         lower_text = text.lower()
@@ -60,12 +65,10 @@ def extract_jobs_from_html(html_content: str) -> List[Dict[str, str]]:
             logger.info(f"Skipping link (text too long): {text[:50]}...")
             continue
 
-        if lower_text in ["view job", "apply now", "click here", "show more", "see all", "jobs"]:
-            logger.info(f"Skipping link (generic action): {text}")
-            continue
-
         title = text
         company = "Unknown"
+        
+        is_generic_link = lower_text in ["view job", "apply now", "click here", "show more", "see all", "jobs", "see job", "apply", "learn more", "read more", "see more jobs", "create"]
         
         # 1. Check for title/company combined in the link itself
         for sep in [" · ", " | ", " - ", " at "]:
@@ -77,23 +80,79 @@ def extract_jobs_from_html(html_content: str) -> List[Dict[str, str]]:
                     break
         
         # 2. Look in the surrounding container
+        # Dynamically discover container boundaries based on node types representing individual elements inside standard email templates
         container = link.parent
-        for _ in range(5):
-            if not container or container.name == 'body':
+        best_container = container
+        current = container
+        card_tags = ['table', 'article', 'li']
+        for _ in range(8):
+            if not current or current.name == 'body':
                 break
-            # If container has much more text than just the title link, it's a good candidate
-            cont_text = container.get_text(strip=True)
-            if len(cont_text) > len(text) + 10:
-                break
-            container = container.parent
+            cont_text = current.get_text(separator=" ", strip=True)
+            text_len = len(cont_text)
+            
+            # The container should have more text than the link, but not contain the whole email (cap at 1200)
+            if text_len > len(text) + 20 and text_len < 1200:
+                best_container = current
+                classes = current.get('class', [])
+                if isinstance(classes, list):
+                    classes = ' '.join(classes)
+                # Specific vendor classes
+                if 'freelance-job-tile' in classes:
+                    break
+                # Only break early on generic table if it has reasonable size for a single section
+                if current.name in card_tags and text_len > 100:
+                    break
+            current = current.parent
+        
+        container = best_container
         
         if container:
+            if is_generic_link and title == text:
+                # E.g. Wellfound has "Learn more" but the actual title is a bold sibling 
+                heading = container.find(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
+                if heading:
+                    title = heading.get_text(separator=" ", strip=True)
+                else:
+                    bolds = container.find_all(['strong', 'b'])
+                    if bolds:
+                        title = bolds[0].get_text(separator=" ", strip=True)
+                    else:
+                        for tg in container.find_all(['div', 'span', 'p']):
+                            style = tg.get('style', '')
+                            if 'font-weight: 700' in style or 'font-weight: bold' in style:
+                                cand = tg.get_text(separator=" ", strip=True)
+                                if len(cand) > 5 and len(cand) < 150 and not cand.startswith("Your job alerts for"):
+                                    title = cand
+                                    break
+
+            if company == "Unknown":
+                for p_tag in container.find_all(['p', 'div']):
+                    p_text = p_tag.get_text(separator=" ", strip=True)
+                    match = re.search(r'^(?:[^\w]*)([A-Z][a-zA-Z0-9\s\.\,&]+?)\s+(?:is seeking|is looking for|is hiring|needs|wants|is a)', p_text)
+                    if match:
+                        cand = match.group(1).strip()
+                        if len(cand) < 40:
+                            company = cand
+                            break
+
             # A. Priority 1: Image alt text in the same container
-            img = container.find('img', alt=True)
-            if img and img['alt']:
-                alt = img['alt'].strip()
-                if alt.lower() not in ["logo", "icon", "image", "link", "profile photo", "company logo"]:
-                    company = alt
+            if company == "Unknown":
+                img = container.find('img', alt=True)
+                if img and img['alt'].strip():
+                    alt = img['alt'].strip()
+                    if alt.lower() not in ["logo", "icon", "image", "link", "profile photo", "company logo"]:
+                        company = alt
+
+            # Try to find company looking for italics or specific span tags containing text (like Wellfound)
+            if company == "Unknown":
+                for tg in container.find_all(['span', 'div', 'p']):
+                    style = tg.get('style', '')
+                    if 'font-style: italic' in style:
+                        cand = tg.get_text(separator=" ", strip=True)
+                        if len(cand) > 1 and len(cand) < 40 and not any(meta in cand.lower() for meta in ["hybrid", "remote", "onsite"]):
+                            company = cand
+                            break
             
             # B. Priority 2: Text-based candidates if company still unknown or looks like meta
             if company == "Unknown" or any(meta in company.lower() for meta in ["hybrid", "remote", "onsite", "easy apply"]):
@@ -112,7 +171,8 @@ def extract_jobs_from_html(html_content: str) -> List[Dict[str, str]]:
                         "hybrid", "remote", "onsite", "on-site", "actively", "alum", "easy apply", 
                         "verified", "ago", "applicant", "israel", "germany", "brussels", "area",
                         "district", "london", "paris", "new york", "berlin", "metropolitan", "united states",
-                        "recruiting", "view job", "apply", "save", "posted", "connections"
+                        "recruiting", "view job", "apply", "save", "posted", "connections",
+                        "hourly", "annual salary", "contract", "full-time", "part-time", "per project", "no equity"
                     ]
                     
                     candidates = []
@@ -129,11 +189,11 @@ def extract_jobs_from_html(html_content: str) -> List[Dict[str, str]]:
                         if company == "Unknown" or any(meta in company.lower() for meta in ["hybrid", "remote"]):
                             company = candidates[0][1]
 
-        # Selection Logic: 
-        # - If new title matches company name, and we already have a title that doesn't, skip it.
-        # - If current title is "Unknown" company, and we find a better one, replace.
-        # - Generally prefer cleaner titles.
-        
+        # Ensure we skip if title still equals a generic term
+        if is_generic_link and title == text:
+            logger.info(f"Skipping link (unresolved generic action): {text}")
+            continue
+
         existing = jobs_map.get(norm_url)
         if not existing:
             jobs_map[norm_url] = {"title": title, "company": company, "url": raw_url}
@@ -159,22 +219,20 @@ def extract_jobs_from_html(html_content: str) -> List[Dict[str, str]]:
             if meta in job['company']:
                 job['company'] = job['company'].split(meta)[0].strip()
         
+        if len(job['title']) < 5 or lower_title in ["linkedin", "glassdoor", "indeed", "jobs", "hiring", "never", "weekly", "daily", "monthly", "create"] or job['title'].startswith('+'):
+            logger.info(f"Skipping job (short, generic or phone): {job['title']}")
+            continue
+            
+        # 2. Skip if company is misparsed marketing text from Xing
+        if "earn up to" in lower_company and "more" in lower_company:
+            logger.info(f"Skipping job (noise company pattern): {job['title']} at {job['company']}")
+            continue
+
         # Professional Title Protection: If it looks like a real job title, keep it
         is_protected = any(kw in lower_title for kw in protected_keywords)
         
         if is_protected:
             final_jobs.append(job)
-            continue
-
-        # Otherwise, check for noise
-        # 1. Skip if title is too short or generic
-        if len(job['title']) < 5 or lower_title in ["linkedin", "glassdoor", "indeed", "jobs", "hiring"]:
-            logger.info(f"Skipping job (short or generic title): {job['title']}")
-            continue
-            
-        # 2. Skip if company is misparsed marketing text from Xing, UNLESS protected above
-        if "earn up to" in lower_company and "more" in lower_company:
-            logger.info(f"Skipping job (noise company pattern): {job['title']} at {job['company']}")
             continue
 
         # 3. Skip if it matches any exclusion pattern in title or company
