@@ -70,6 +70,13 @@ function TrackerContent() {
         }
     };
 
+    const handleGetPrompt = async (id: number) => {
+        const res = await fetch(`${API_BASE_URL}/job-applications/${id}/evaluation-prompt`);
+        if (!res.ok) throw new Error('Failed to fetch prompt');
+        const data = await res.json();
+        return data.prompt;
+    };
+
     const updateFilter = (status: string) => {
         const params = new URLSearchParams(searchParams.toString());
         if (status) {
@@ -154,6 +161,7 @@ function TrackerContent() {
                             app={app}
                             onUpdateStatus={handleUpdateStatus}
                             onDeleteClick={setIdToDelete}
+                            onGetPrompt={handleGetPrompt}
                             editLink={
                                 <Link
                                     href={`/tracker/edit/${app.id}`}

@@ -87,3 +87,69 @@ async def extract_metadata(request: schemas.MetadataExtractionRequest, db: Sessi
         # Fallback to empty if AI fails
         print(f"ERROR: Metadata extraction failed: {str(e)}")
         return {"title": "", "company": ""}
+
+@router.get("/job-applications/{application_id}/evaluation-prompt")
+def get_evaluation_prompt(application_id: int, db: Session = Depends(get_db)):
+    db_application = service.get_job_application(db, application_id=application_id)
+    if db_application is None:
+        raise HTTPException(status_code=404, detail="Job application not found")
+        
+    cv = db.query(models.CV).order_by(models.CV.created_at.desc()).first()
+    if not cv:
+        raise HTTPException(status_code=404, detail="No CV found. Please upload a CV first.")
+        
+    context = (
+        f"--- JOB APPLICATION CONTEXT ---\n"
+        f"Title: {db_application.title}\n"
+        f"Company: {db_application.company}\n"
+        f"URL: {db_application.url}\n\n"
+        f"--- FULL JOB DESCRIPTION ---\n"
+        f"{db_application.full_text_description or 'No full text available.'}\n\n"
+        f"--- APPLICANT CV ({cv.filename}) ---\n"
+        f"{cv.text or 'No CV text available.'}\n"
+    )
+    
+    prompt = (
+    "\n\n--- ANALYST ROLE ---\n"
+    "You are a senior technical recruiter with 15 years of hiring engineers. "
+    "You are also a ruthlessly pragmatic career coach. "
+    "You have zero incentive to encourage applications — your only goal is accuracy. "
+    "Tone: cold, analytical, skeptical by default. No fluff, no hedging.\n\n"
+
+    "--- TASK ---\n"
+    "Using ONLY the job posting and CV above, produce a structured hiring-signal report. "
+    "Follow the OUTPUT FORMAT exactly. Do not add sections. Do not reorder sections.\n\n"
+
+    "--- OUTPUT FORMAT ---\n\n"
+
+    "## SKILLS MATCH\n"
+    "Confirmed matches: [comma-separated list]\n"
+    "Gaps:\n"
+    "- [Skill]: [CRITICAL or MINOR] — [weeks/months to close, or 'transferable']\n\n"
+
+    "## STACK COMPATIBILITY\n"
+    "[YES or NO]: [one sentence reason]\n\n"
+
+    "## REMOTE & LOCATION\n"
+    "- Remote explicitly offered: [YES or NO]\n"
+    "- Serbia hire viable: [YES or NO] — [one sentence reason]\n"
+    "- Disqualifier: [NONE or FLAG: reason]\n\n"
+
+    "## BLIND SPOTS\n"
+    "- [Specific rejection risk #1]\n"
+    "- [Specific rejection risk #2]\n"
+    "- [Specific rejection risk #3]\n"
+    "- Trajectory: [STEP FORWARD / LATERAL / STEP BACK] — [one sentence reason]\n\n"
+
+    "## SALARY\n"
+    "- Range: €X,XXX–€X,XXX/month (Serbia-based, remote, senior)\n"
+    "- Risk: [UNDERVALUE / OVERVALUE / NEUTRAL]\n"
+    "- Basis: [2–3 data points used to derive the range]\n\n"
+
+    "## VERDICT\n"
+    "Recommendation: YES / NO\n"
+    "Match Score: X/10\n"
+    "For: [One sentence — strongest argument to apply]\n"
+    "Against: [One sentence — strongest argument to skip or the deciding risk]\n"
+    )
+    return {"prompt": context + prompt}

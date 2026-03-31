@@ -209,6 +209,19 @@ export const useJobTracker = (setStatus: (status: Status) => void, isExpanded: b
         }
     };
 
+    const getEvaluationPrompt = async (id: number) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/job-applications/${id}/evaluation-prompt`);
+            if (!res.ok) throw new Error('Failed to fetch evaluation prompt');
+            const data = await res.json();
+            return data.prompt;
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Unknown error';
+            setStatus({ type: 'error', message });
+            throw err;
+        }
+    };
+
     return {
         applications,
         searchTerm,
@@ -222,6 +235,7 @@ export const useJobTracker = (setStatus: (status: Status) => void, isExpanded: b
         updateStatus,
         updateNotes,
         deleteApplication,
+        getEvaluationPrompt,
         refreshMetadata: fetchPageMetadata
     };
 };

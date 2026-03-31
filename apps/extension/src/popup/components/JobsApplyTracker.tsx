@@ -17,6 +17,7 @@ interface JobsApplyTrackerProps {
     onUpdateStatus: (id: number, status: string) => void;
     onUpdateNotes: (id: number, notes: string) => void;
     onDelete: (id: number) => void;
+    onGetPrompt: (id: number) => Promise<string>;
     onRefresh: () => void;
 }
 
@@ -34,6 +35,7 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
     onUpdateStatus,
     onUpdateNotes,
     onDelete,
+    onGetPrompt,
     onRefresh
 }) => {
     const [title, setTitle] = useState(currentJob.title);
@@ -273,6 +275,7 @@ export const JobsApplyTracker: React.FC<JobsApplyTrackerProps> = ({
                             onUpdateStatus={onUpdateStatus}
                             onUpdateNotes={onUpdateNotes}
                             onDeleteClick={handleDeleteClick}
+                            onGetPrompt={onGetPrompt}
                         />
                     ))
                 )}

@@ -61,6 +61,7 @@ const App: React.FC = () => {
         updateStatus,
         updateNotes,
         deleteApplication,
+        getEvaluationPrompt,
         refreshMetadata
     } = useJobTracker(setStatus, expandedSections.jat, selectedModelId);
 
@@ -92,6 +93,7 @@ const App: React.FC = () => {
                     onUpdateStatus={updateStatus}
                     onUpdateNotes={updateNotes}
                     onDelete={deleteApplication}
+                    onGetPrompt={getEvaluationPrompt}
                     onRefresh={refreshMetadata}
                 />
             </CollapsibleSection>

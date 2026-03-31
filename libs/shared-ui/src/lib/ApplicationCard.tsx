@@ -1,5 +1,5 @@
 import React from 'react';
-import { LucideIcon, Trash2, Info, CheckCircle, Clock, Briefcase, XCircle, Edit2, Copy } from 'lucide-react';
+import { LucideIcon, Trash2, Info, CheckCircle, Clock, Briefcase, XCircle, Copy, Terminal, Check } from 'lucide-react';
 import { JobApplication } from '@cata/shared-types';
 
 interface ApplicationCardProps {
@@ -7,6 +7,7 @@ interface ApplicationCardProps {
     onUpdateStatus: (id: number, status: string) => void;
     onDeleteClick: (id: number) => void;
     onUpdateNotes?: (id: number, notes: string) => void;
+    onGetPrompt?: (id: number) => Promise<string>;
     editLink?: React.ReactNode;
 }
 
@@ -28,9 +29,11 @@ const statusIcons: { [key: string]: LucideIcon } = {
 
 const statuses = ['Interested', 'Applied', 'Interview', 'Offer', 'Rejected'];
 
-export const ApplicationCard: React.FC<ApplicationCardProps> = ({ app, onUpdateStatus, onDeleteClick, onUpdateNotes, editLink }) => {
+export const ApplicationCard: React.FC<ApplicationCardProps> = ({ app, onUpdateStatus, onDeleteClick, onUpdateNotes, onGetPrompt, editLink }) => {
     const [isEditingNotes, setIsEditingNotes] = React.useState(false);
     const [notes, setNotes] = React.useState(app.notes || '');
+    const [isPromptLoading, setIsPromptLoading] = React.useState(false);
+    const [promptSuccess, setPromptSuccess] = React.useState(false);
     const Icon = statusIcons[app.status] || Info;
 
     const handleSaveNotes = () => {
@@ -43,6 +46,22 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({ app, onUpdateS
     const handleCancelNotes = () => {
         setNotes(app.notes || '');
         setIsEditingNotes(false);
+    };
+
+    const handleGetPrompt = async () => {
+        if (!onGetPrompt) return;
+        
+        setIsPromptLoading(true);
+        try {
+            const prompt = await onGetPrompt(app.id);
+            await navigator.clipboard.writeText(prompt);
+            setPromptSuccess(true);
+            setTimeout(() => setPromptSuccess(false), 2000);
+        } catch (error) {
+            console.error('Failed to get prompt:', error);
+        } finally {
+            setIsPromptLoading(false);
+        }
     };
 
     return (
@@ -79,6 +98,25 @@ export const ApplicationCard: React.FC<ApplicationCardProps> = ({ app, onUpdateS
                     >
                         <Copy size={12} />
                     </button>
+                    {onGetPrompt && (
+                        <button 
+                            onClick={handleGetPrompt}
+                            disabled={isPromptLoading}
+                            title="Copy Evaluation Prompt"
+                            style={{ 
+                                background: 'none', 
+                                border: 'none', 
+                                color: promptSuccess ? '#10b981' : '#6366f1', 
+                                cursor: isPromptLoading ? 'wait' : 'pointer', 
+                                padding: '2px', 
+                                display: 'flex',
+                                opacity: isPromptLoading ? 0.5 : 1,
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {promptSuccess ? <Check size={12} /> : (isPromptLoading ? <Terminal size={12} className="animate-pulse" /> : <Terminal size={12} />)}
+                        </button>
+                    )}
                 </span>
             </div>
 
